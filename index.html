@@ -211,7 +211,7 @@
   .det-line svg{color:var(--brand);flex:0 0 auto}
   .det-line b{color:var(--ink-2);font-weight:700}
 
-  body[data-lay="tv"] .det-row{display:grid;grid-template-columns:2fr 0.78fr;gap:16px;min-height:0}
+  body[data-lay="tv"] .det-row{display:grid;grid-template-columns:2fr 0.84fr;gap:16px;min-height:0}
   body[data-lay="flow"] .det-row{display:flex;flex-direction:column;gap:14px}
   body[data-lay="tv"] .det-left{display:grid;grid-template-rows:1fr 1fr;gap:14px;min-height:0}
   body[data-lay="tv"] .det-top2{display:grid;grid-template-columns:1fr 1fr;gap:14px;min-height:0}
@@ -244,12 +244,12 @@
   .pkg-tag{position:absolute;top:11px;left:11px;z-index:2;font-size:10.5px;font-weight:700;letter-spacing:.08em;color:#fff;padding:5px 10px;border-radius:7px;display:flex;align-items:center;gap:6px;text-transform:uppercase;backdrop-filter:blur(4px)}
   body[data-lay="tv"] .pkg-tag{font-size:13px;padding:6px 12px}
   .pkg-tag.o{background:rgba(168,124,69,.92)}.pkg-tag.d{background:rgba(43,79,230,.92)}.pkg-tag.p{background:rgba(12,19,34,.8)}.pkg-tag.v{background:rgba(18,140,120,.92)}
-  .pkg-info{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:26px 14px 11px;background:linear-gradient(180deg,rgba(8,12,24,0),rgba(8,12,24,.5) 42%,rgba(8,12,24,.9));color:#fff;pointer-events:none}
-  body[data-lay="tv"] .pkg-info{padding:42px 18px 15px}
-  .pkg-kicker{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.82);margin-bottom:2px}
-  body[data-lay="tv"] .pkg-kicker{font-size:12.5px;margin-bottom:3px}
-  .pkg-name{font-size:15px;font-weight:700;line-height:1.16;color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.55)}
-  body[data-lay="tv"] .pkg-name{font-size:23px}
+  .pkg-info{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:22px 14px 10px;background:linear-gradient(180deg,rgba(8,12,24,0),rgba(8,12,24,.5) 42%,rgba(8,12,24,.9));color:#fff;pointer-events:none}
+  body[data-lay="tv"] .pkg-info{padding:32px 17px 13px}
+  .pkg-kicker{font-size:9px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.8);margin-bottom:2px}
+  body[data-lay="tv"] .pkg-kicker{font-size:11px;margin-bottom:2px}
+  .pkg-name{font-size:13px;font-weight:700;line-height:1.15;color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.55)}
+  body[data-lay="tv"] .pkg-name{font-size:17px}
   .flow-arrow{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center}
   body[data-lay="flow"] .flow-arrow{margin:-4px 0}
   .arrow-badge{width:50px;height:50px;background:linear-gradient(180deg,var(--brand),var(--brand-600));color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 26px -10px rgba(43,79,230,.75),inset 0 1px 0 rgba(255,255,255,.3);clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,13px 100%,0 calc(100% - 13px))}
@@ -263,21 +263,21 @@
   /* time hero */
   .time-card{position:relative;color:#fff;border-radius:var(--r);overflow:hidden;width:100%;background:radial-gradient(130% 120% at 88% -10%,rgba(255,255,255,.16),transparent 55%),linear-gradient(155deg,var(--brand-700),var(--brand-800) 75%);box-shadow:0 26px 50px -24px rgba(21,37,105,.85);clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,0 100%);display:flex;flex-direction:column}
   body[data-lay="flow"] .time-card{padding:20px}
-  body[data-lay="tv"] .time-card{padding:26px 28px}
+  body[data-lay="tv"] .time-card{padding:26px 28px;justify-content:center}
   .time-card::after{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;border:1px solid rgba(255,255,255,.1);border-radius:50%}
   .time-card .lab{font-size:12px;font-weight:600;color:rgba(255,255,255,.82);line-height:1.4}
-  body[data-lay="tv"] .time-card .lab{font-size:17px}
+  body[data-lay="tv"] .time-card .lab{font-size:19px}
   .time-big{display:flex;align-items:baseline;gap:12px;margin-top:10px}
-  .time-big .num{font-weight:800;letter-spacing:-.02em;line-height:.9;text-shadow:0 2px 18px rgba(0,0,0,.25);font-size:50px}
-  body[data-lay="tv"] .time-big .num{font-size:60px}
+  .time-big .num{font-weight:800;letter-spacing:-.02em;line-height:.9;text-shadow:0 2px 18px rgba(0,0,0,.25);font-size:54px;white-space:nowrap}
+  body[data-lay="tv"] .time-big .num{font-size:74px}
   .time-big .un{font-size:13px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.25}
   body[data-lay="tv"] .time-big .un{font-size:17px}
   .time-sub{margin-top:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
   .time-sub .ts-l{font-size:12px;color:rgba(255,255,255,.8);font-weight:600}
-  body[data-lay="tv"] .time-sub .ts-l{font-size:15px}
+  body[data-lay="tv"] .time-sub .ts-l{font-size:17px}
   .time-sub .ts-v{font-size:18px;font-weight:800}
-  body[data-lay="tv"] .time-sub .ts-v{font-size:26px}
-  .time-qr{margin-top:auto;display:flex;align-items:center;gap:13px;padding-top:16px}
+  body[data-lay="tv"] .time-sub .ts-v{font-size:34px}
+  .time-qr{display:none}
   .time-qr .qbox{background:#fff;border-radius:12px;padding:9px;flex:0 0 auto;line-height:0}
   body[data-lay="flow"] .time-qr .qbox{width:92px;height:92px}
   body[data-lay="tv"] .time-qr .qbox{width:116px;height:116px;padding:10px}
@@ -295,6 +295,17 @@
   .ctl-btn:hover{background:var(--brand-50)}.ctl-btn:active{transform:scale(.94)}
   .ctl-btn.play{color:#fff;background:var(--brand);border-color:var(--brand)}
   .prog{flex:1 1 auto;height:7px;background:#dce2ee;border-radius:20px;overflow:hidden;min-width:80px}
+  .d-timerctl{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px}
+  .tctl-btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer;width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s,transform .1s;flex:0 0 auto;padding:0}
+  .tctl-btn:hover{background:var(--brand-50);border-color:var(--brand-100);color:var(--brand)}
+  .tctl-btn:active{transform:scale(.92)}
+  .tctl-btn svg{width:16px;height:16px}
+  body[data-lay="tv"] .tctl-btn{width:40px;height:40px;border-radius:11px}
+  body[data-lay="tv"] .tctl-btn svg{width:22px;height:22px}
+  .d-timer{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--brand);background:var(--brand-50);border:1px solid var(--brand-100);border-radius:999px;padding:5px 11px;font-size:13px;white-space:nowrap;line-height:1;min-width:60px;justify-content:center}
+  .d-timer svg{width:14px;height:14px;flex:0 0 auto}
+  body[data-lay="tv"] .d-timer{font-size:17px;padding:7px 14px;gap:7px}
+  body[data-lay="tv"] .d-timer svg{width:18px;height:18px}
   body[data-lay="tv"] .prog{height:9px}
   .prog-fill{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand-600));border-radius:20px}
   .d-idx{font-size:13px;font-weight:700;color:var(--ink-2);flex:0 0 auto;white-space:nowrap}
@@ -376,7 +387,7 @@
             <div class="field"><label>Texto de status</label><input type="text" data-setting="statusText"></div>
           </div>
           <div class="row2">
-            <div class="field"><label>Intervalo de rodízio (segundos)</label><input type="text" inputmode="numeric" data-setting="intervalSec"></div>
+            <div class="field"><label>Temporizador (troca de tela)</label><select id="setTimer" data-setting="intervalSec"><option value="15">15 segundos</option><option value="30">30 segundos</option><option value="45">45 segundos</option><option value="60">60 segundos</option><option value="120">120 segundos</option></select></div>
             <div class="field"><label>Exibir posto na TV</label><select id="setPosto" data-setting="postoFilter"></select></div>
           </div>
           <div class="field">
@@ -593,6 +604,11 @@
         <button class="ctl-btn play" id="btnPause" title="Pausar/continuar"><svg id="iconPause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
         <button class="ctl-btn" id="btnNext" title="Próximo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
+      <div class="d-timerctl">
+        <button class="tctl-btn" id="btnTimerDown" title="Menos tempo" aria-label="Menos tempo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+        <span class="d-timer" id="d-timer" title="Tempo até a próxima tela · use − e + para ajustar"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9.5V13l2.4 1.6M9.5 2h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="d-timerN">15</span>s</span>
+        <button class="tctl-btn" id="btnTimerUp" title="Mais tempo" aria-label="Mais tempo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+      </div>
       <div class="prog"><div class="prog-fill" id="progFill"></div></div>
       <span class="d-idx" id="d-idx">0 / 0</span>
       <span class="d-meta"><b id="d-updated"></b></span>
@@ -625,6 +641,30 @@
   var KEY="sese_transbordo_v4", OLD3="sese_transbordo_v3", OLD2="sese_transbordo_v2", mem={};
   function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}
   function lsGet(k){try{var v=localStorage.getItem(k);return v==null?(k in mem?mem[k]:null):v;}catch(e){return (k in mem)?mem[k]:null;}}
+  var KEY_AT=KEY+"_at";
+  var lastSavedAt=parseInt(lsGet(KEY_AT)||"0",10)||0;
+  /* IndexedDB = armazenamento local robusto p/ FOTOS e PDFs.
+     (o localStorage estoura a cota com anexos e os dados sumiam ao dar F5) */
+  var IDB_NAME="sese_transbordo_db", IDB_STORE="kv", _idbP=null;
+  function idbDB(){if(_idbP)return _idbP;_idbP=new Promise(function(res,rej){try{if(!window.indexedDB){rej(new Error("no-idb"));return;}var rq=indexedDB.open(IDB_NAME,1);rq.onupgradeneeded=function(){try{rq.result.createObjectStore(IDB_STORE);}catch(e){}};rq.onsuccess=function(){res(rq.result);};rq.onerror=function(){rej(rq.error);};}catch(e){rej(e);}});return _idbP;}
+  function idbSet(k,v){return idbDB().then(function(db){return new Promise(function(res,rej){try{var tx=db.transaction(IDB_STORE,"readwrite");tx.objectStore(IDB_STORE).put(v,k);tx.oncomplete=function(){res(true);};tx.onerror=function(){rej(tx.error);};tx.onabort=function(){rej(tx.error||new Error("abort"));};}catch(e){rej(e);}});});}
+  function idbGet(k){return idbDB().then(function(db){return new Promise(function(res,rej){try{var tx=db.transaction(IDB_STORE,"readonly");var rq=tx.objectStore(IDB_STORE).get(k);rq.onsuccess=function(){res(rq.result);};rq.onerror=function(){rej(rq.error);};}catch(e){rej(e);}});});}
+  function persistLocal(stateObj,ts){
+    var json;try{json=JSON.stringify(stateObj);}catch(e){return;}
+    lastSavedAt=ts;
+    lsSet(KEY_AT,String(ts));                               // timestamp é minúsculo: sempre persiste
+    idbSet(KEY,json).then(function(){return idbSet(KEY_AT,String(ts));}).catch(function(e){console.warn("IDB save:",e);});
+    try{localStorage.setItem(KEY,json);}catch(e){}           // melhor esforço (pode estourar cota; IDB é o principal)
+  }
+  function reRenderAll(){
+    try{setLogo(state.settings.logo);}catch(e){}
+    var dApp=el("d-app");if(dApp)dApp.textContent=state.settings.panelTitle||"";
+    var dStatus=el("d-status");if(dStatus)dStatus.textContent=state.settings.statusText||"";
+    try{renderEditorList();}catch(e){}
+    try{populateForm();}catch(e){}
+    try{rebuildPostoOptions();}catch(e){}
+    if(document.body.dataset.view==="display"){try{window.dispatchEvent(new Event("resize"));}catch(e){}}
+  }
   function el(id){return document.getElementById(id);}
   function $(s,r){return (r||document).querySelector(s);}
   function $all(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
@@ -668,6 +708,20 @@
 
   var state=loadState();
   var currentId=state.items.length?state.items[0].id:null;
+  /* carrega os dados completos (fotos/PDF) do IndexedDB — o localStorage pode estar incompleto por causa da cota */
+  (function hydrateFromIDB(){
+    idbGet(KEY).then(function(j){
+      if(!j)return;
+      return idbGet(KEY_AT).then(function(at){
+        var atN=parseInt(at||"0",10)||0;
+        if(atN<lastSavedAt)return;            // já temos algo igual/mais novo (localStorage ou nuvem)
+        var st;try{st=normalize(JSON.parse(j));}catch(e){return;}
+        state=st;lastSavedAt=Math.max(lastSavedAt,atN);
+        if(!(currentId&&state.items.some(function(i){return i.id===currentId;})))currentId=state.items.length?state.items[0].id:null;
+        reRenderAll();
+      });
+    }).catch(function(){});
+  })();
 
   var saveT;function queueSave(){clearTimeout(saveT);saveT=setTimeout(save,400);}
 
@@ -707,9 +761,18 @@
         return;
       }
       var data = snap.data();
+      var rTs = (typeof data.updatedAt === "number") ? data.updatedAt : 0;
       // ignora o "echo" da própria escrita (evita loop visual)
       if(data.updatedBy === CLIENT_ID){
+        lastSavedAt = Math.max(lastSavedAt, rTs);
         setSyncStatus("Sincronizado", "ok");
+        return;
+      }
+      // Se a nuvem estiver MAIS ANTIGA que o nosso último salvamento local, NÃO sobrescreve.
+      // (acontece quando um anexo grande não coube na nuvem.) Reenvia o nosso por cima.
+      if(rTs <= lastSavedAt){
+        setSyncStatus("Sincronizado", "ok");
+        try{ saveToFirebase(lastSavedAt); }catch(e){}
         return;
       }
       try{
@@ -718,6 +781,7 @@
         // preserva o item selecionado se ainda existir
         var keepId = currentId;
         state = newState;
+        lastSavedAt = rTs;
         if(keepId && state.items.some(function(i){return i.id===keepId;})) {
           currentId = keepId;
         } else if(state.items.length){
@@ -725,18 +789,9 @@
         } else {
           currentId = null;
         }
-        // re-renderiza tudo
-        setLogo(state.settings.logo);
-        var dApp = el("d-app"); if(dApp) dApp.textContent = state.settings.panelTitle||"";
-        var dStatus = el("d-status"); if(dStatus) dStatus.textContent = state.settings.statusText||"";
-        renderEditorList();
-        populateForm();
-        if(document.body.dataset.view === "display"){
-          // se estiver no modo TV, força um rebuild do display
-          try { window.dispatchEvent(new Event("resize")); } catch(e){}
-        }
-        // backup local também
-        lsSet(KEY, JSON.stringify(state));
+        reRenderAll();
+        // guarda localmente o que veio da nuvem (sobrevive ao F5)
+        persistLocal(state, rTs);
         setSyncStatus("Atualizado de outro PC", "ok");
       }catch(e){
         console.error("Erro processando snapshot:", e);
@@ -748,34 +803,38 @@
     });
   }
 
-  function saveToFirebase(){
+  function saveToFirebase(ts){
     if(!FB_REF || !window.__FB) return;
     clearTimeout(FB_SAVE_T);
+    var stamp = (typeof ts==="number"&&ts) ? ts : Date.now();
     FB_SAVE_T = setTimeout(function(){
       var payload = JSON.stringify(state);
-      // alerta se passar do limite do Firestore (1MB por doc)
-      if(payload.length > 900000){
-        setSyncStatus("⚠ Doc muito grande! Reduza fotos", "err");
-        console.warn("Estado próximo do limite de 1MB do Firestore:", payload.length, "bytes");
+      // limite do Firestore é ~1MB por documento. Se passar, os dados CONTINUAM salvos no PC
+      // (IndexedDB) — só não sincronizam para as TVs. Não apagamos nada.
+      if(payload.length > 1000000){
+        setSyncStatus("Salvo no PC · grande p/ TVs", "warn");
+        console.warn("Estado >1MB; salvo localmente, sync p/ TVs ignorado:", payload.length, "bytes");
+        return;
       }
-      setSyncStatus("Salvando...", "warn");
+      setSyncStatus(payload.length>850000?"Salvando (grande)...":"Salvando...", "warn");
       window.__FB.setDoc(FB_REF, {
         state: payload,
-        updatedAt: Date.now(),
+        updatedAt: stamp,
         updatedBy: CLIENT_ID
       }).then(function(){
         setSyncStatus("Sincronizado", "ok");
       }).catch(function(e){
         console.error("Erro Firestore:", e);
-        setSyncStatus("Erro: "+(e.code||"sync"), "err");
+        setSyncStatus("Salvo no PC (sync falhou)", "warn");
       });
     }, 700);
   }
   /* ============ /SINCRONIZAÇÃO FIREBASE ============ */
 
   function save(){
-    lsSet(KEY,JSON.stringify(state));   // backup local (funciona offline)
-    saveToFirebase();                    // sincroniza nuvem
+    var ts=Date.now();
+    persistLocal(state,ts);   // IndexedDB (robusto) + localStorage (melhor esforço)
+    saveToFirebase(ts);       // sincroniza nuvem com o MESMO timestamp
     flashSaved();
   }
   function flashSaved(){var s=el("saved");s.classList.add("show");clearTimeout(flashSaved._t);flashSaved._t=setTimeout(function(){s.classList.remove("show");},1500);}
@@ -841,13 +900,14 @@
   function rebuildPostoOptions(){var sel=el("setPosto"),cur=state.settings.postoFilter||"Todos";sel.innerHTML="";var opts=["Todos"].concat(uniquePostos());if(opts.indexOf(cur)<0)opts.push(cur);opts.forEach(function(p){var o=document.createElement("option");o.value=p;o.textContent=(p==="Todos"?"Todos os postos":p);if(p===cur)o.selected=true;sel.appendChild(o);});}
   function populateForm(){
     $all("[data-setting]").forEach(function(inp){var v=state.settings[inp.getAttribute("data-setting")];if(inp.hasAttribute("data-img")&&isData(v))v="";inp.value=(v==null)?"":v;});
+    (function(){var si=el("setTimer");if(!si)return;var P=[15,30,45,60,120],c=parseInt(state.settings.intervalSec,10)||15;if(P.indexOf(c)<0){c=P.reduce(function(a,b){return Math.abs(b-c)<Math.abs(a-c)?b:a;});state.settings.intervalSec=c;}si.value=String(c);})();
     rebuildPostoOptions();setLogo(state.settings.logo);
     var it=currentItem();el("noItem").hidden=!!it;el("itemForm").style.display=it?"contents":"none";
     if(!it){setThumb("th-part","");setThumb("th-divider","");setThumb("th-origin","");setThumb("th-dest","");updateMtmUI(null);return;}
     $all("[data-field]").forEach(function(inp){var v=getPath(it,inp.getAttribute("data-field"));if(inp.hasAttribute("data-img")&&isData(v))v="";inp.value=(v==null)?"":v;});
     setThumb("th-part",it.partImage);setThumb("th-divider",it.dividerImage);setThumb("th-origin",it.origin.image);setThumb("th-dest",it.dest.image);updateMtmUI(it);
   }
-  $all("[data-setting]").forEach(function(inp){inp.addEventListener("input",function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";if(k==="logo")setLogo(v);queueSave();});});
+  $all("[data-setting]").forEach(function(inp){var _h=function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";if(k==="logo")setLogo(v);queueSave();};inp.addEventListener("input",_h);inp.addEventListener("change",_h);});
   el("setPosto").addEventListener("change",function(){state.settings.postoFilter=el("setPosto").value;queueSave();});
   $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="partName"||f==="partCode"||f==="posto"||f==="time"||f==="partImage")renderEditorList();if(f==="posto")rebuildPostoOptions();if(f==="mtm")updateMtmUI(it);queueSave();});});
 
@@ -925,8 +985,8 @@
     setImg("d-partImg",it.partImage,"d-partPh");setImg("d-divImg",it.dividerImage,"d-divPh");
     setImg("d-oImg",it.origin.image,null);
     setImg("d-dImg",it.dest.image,null);
-    var qr=it.partCode?("https://transbordo.sese.com/p/"+encodeURIComponent(it.partCode)):(it.partName||" ");
-    if(qr!==lastQr){lastQr=qr;buildQR(qr);}
+    /* QR oculto no momento (a pedido). Para reativar: remova ".time-qr{display:none}" do CSS e descomente: */
+    /* var qr=it.partCode?("https://transbordo.sese.com/p/"+encodeURIComponent(it.partCode)):(it.partName||" "); if(qr!==lastQr){lastQr=qr;buildQR(qr);} */
   }
   function buildQR(text){var box=el("qr");box.innerHTML="";try{if(typeof QRCode!=="undefined"){new QRCode(box,{text:text,width:240,height:240,colorDark:"#0B1020",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});return;}}catch(e){}fallbackQR(box);}
   function fallbackQR(box){var N=25,seed=7,s='<svg viewBox="0 0 '+N+' '+N+'" shape-rendering="crispEdges"><rect width="'+N+'" height="'+N+'" fill="#fff"/>';function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return (seed>>8)&1;}function finder(x,y){s+='<rect x="'+x+'" y="'+y+'" width="7" height="7" fill="#0B1020"/><rect x="'+(x+1)+'" y="'+(y+1)+'" width="5" height="5" fill="#fff"/><rect x="'+(x+2)+'" y="'+(y+2)+'" width="3" height="3" fill="#0B1020"/>';}for(var y=0;y<N;y++)for(var x=0;x<N;x++){var inF=(x<8&&y<8)||(x>N-9&&y<8)||(x<8&&y>N-9);if(!inF&&rnd())s+='<rect x="'+x+'" y="'+y+'" width="1" height="1" fill="#0B1020"/>';}finder(0,0);finder(N-7,0);finder(0,N-7);box.innerHTML=s+'</svg>';}
@@ -956,15 +1016,16 @@
   /* rotation */
   var rotIdx=0,rotStart=0,rotRAF=null,rotPaused=false,rotPausedAt=0,rotEmpty=false;
   function interval(){return (state.settings.intervalSec||15)*1000;}
-  function showEmpty(on){rotEmpty=on;var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";e.textContent="Nenhum transbordo em andamento.";el("dMain").appendChild(e);}detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
+  function showEmpty(on){rotEmpty=on;var _dt=el("d-timer");if(_dt)_dt.style.visibility=on?"hidden":"visible";var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";e.textContent="Nenhum transbordo em andamento.";el("dMain").appendChild(e);}detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
   function goTo(i){
     var items=getVisible();if(!items.length){showEmpty(true);return;}showEmpty(false);
     rotIdx=((i%items.length)+items.length)%items.length;
     var detail=el("tvDetail");detail.style.opacity="0";
     window.setTimeout(function(){renderItem(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;highlightList(rotIdx);detail.style.opacity="1";},170);
-    rotStart=performance.now();el("progFill").style.width="0%";cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
+    rotStart=performance.now();el("progFill").style.width="0%";updateTimer(interval());cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
   }
-  function loopProg(){if(rotPaused)return;var t=(performance.now()-rotStart)/interval();if(t>=1){next();return;}el("progFill").style.width=(t*100).toFixed(1)+"%";rotRAF=requestAnimationFrame(loopProg);}
+  function updateTimer(remMs){var n=el("d-timerN");if(!n)return;var s=Math.max(0,Math.ceil(remMs/1000));if(n.textContent!==String(s))n.textContent=String(s);}
+  function loopProg(){if(rotPaused)return;var iv=interval(),elapsed=performance.now()-rotStart;updateTimer(iv-elapsed);if(elapsed>=iv){next();return;}el("progFill").style.width=((elapsed/iv)*100).toFixed(1)+"%";rotRAF=requestAnimationFrame(loopProg);}
   function next(){if(!getVisible().length){showEmpty(true);return;}goTo(rotIdx+1);}
   function prev(){if(!getVisible().length){showEmpty(true);return;}goTo(rotIdx-1);}
   function setPauseIcon(){el("iconPause").innerHTML=rotPaused?'<path d="M7 5l12 7-12 7z"/>':'<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';el("btnPause").title=rotPaused?"Continuar":"Pausar";}
@@ -972,6 +1033,25 @@
   function startRotation(){buildList();if(!getVisible().length){showEmpty(true);return;}showEmpty(false);rotPaused=false;setPauseIcon();goTo(0);}
   function stopRotation(){cancelAnimationFrame(rotRAF);}
   el("btnPrev").addEventListener("click",prev);el("btnNext").addEventListener("click",next);el("btnPause").addEventListener("click",togglePause);
+  var TIMER_PRESETS=[15,30,45,60,120];
+  function applyIntervalSec(sec){
+    sec=parseInt(sec,10)||15;
+    if(TIMER_PRESETS.indexOf(sec)<0){sec=TIMER_PRESETS.reduce(function(a,b){return Math.abs(b-sec)<Math.abs(a-sec)?b:a;});}
+    state.settings.intervalSec=sec;
+    var si=el("setTimer");if(si)si.value=String(sec);
+    // reinicia a contagem da tela atual já com o novo tempo (feedback imediato)
+    rotStart=performance.now();el("progFill").style.width="0%";updateTimer(interval());
+    if(!rotPaused){cancelAnimationFrame(rotRAF);rotRAF=requestAnimationFrame(loopProg);}
+    queueSave();toast("Troca a cada "+sec+"s");
+  }
+  function stepInterval(dir){
+    var cur=parseInt(state.settings.intervalSec,10)||15,i=TIMER_PRESETS.indexOf(cur);
+    if(i<0){cur=TIMER_PRESETS.reduce(function(a,b){return Math.abs(b-cur)<Math.abs(a-cur)?b:a;});i=TIMER_PRESETS.indexOf(cur);}
+    i=Math.max(0,Math.min(TIMER_PRESETS.length-1,i+dir));
+    applyIntervalSec(TIMER_PRESETS[i]);
+  }
+  var _btd=el("btnTimerDown");if(_btd)_btd.addEventListener("click",function(){stepInterval(-1);});
+  var _btu=el("btnTimerUp");if(_btu)_btu.addEventListener("click",function(){stepInterval(1);});
 
   /* view / TV */
   function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}

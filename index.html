@@ -300,6 +300,30 @@
 
   .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);z-index:60;background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;padding:12px 18px;border-radius:30px;box-shadow:0 18px 40px -16px rgba(0,0,0,.6);display:flex;align-items:center;gap:9px;opacity:0;pointer-events:none;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .3s}
   .toast.show{opacity:1;transform:translate(-50%,0)}.toast svg{color:#7CF1C0}
+
+  /* ===== MTM ===== */
+  .mtm-thumb{position:relative}
+  .mtm-thumb.has-pdf::after{content:"PDF";position:absolute;bottom:5px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:800;letter-spacing:.05em;color:#fff;background:var(--bad);padding:2px 7px;border-radius:5px;line-height:1}
+  .mtm-btn{margin-top:12px;appearance:none;border:none;cursor:pointer;font-family:var(--sans);font-weight:700;font-size:13px;color:#fff;background:linear-gradient(180deg,var(--brand),var(--brand-600));box-shadow:0 10px 22px -12px rgba(43,79,230,.8),inset 0 1px 0 rgba(255,255,255,.25);border-radius:11px;padding:10px 15px;display:inline-flex;align-items:center;gap:8px;transition:transform .12s,box-shadow .2s,filter .15s}
+  .mtm-btn:hover{filter:brightness(1.05);box-shadow:0 14px 26px -12px rgba(43,79,230,.9)}
+  .mtm-btn:active{transform:translateY(1px) scale(.99)}
+  .mtm-btn[hidden]{display:none}
+  body[data-lay="tv"] .mtm-btn{font-size:17px;padding:13px 20px;border-radius:13px;margin-top:16px;gap:10px}
+  body[data-lay="tv"] .mtm-btn svg{width:22px;height:22px}
+  .mtm-modal{position:fixed;inset:0;z-index:90;display:flex;align-items:center;justify-content:center;padding:24px}
+  .mtm-modal[hidden]{display:none}
+  .mtm-backdrop{position:absolute;inset:0;background:rgba(6,9,16,.8);backdrop-filter:blur(4px);cursor:zoom-out}
+  .mtm-dialog{position:relative;z-index:1;width:min(1100px,95vw);height:min(90vh,920px);background:#fff;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 50px 100px -30px rgba(0,0,0,.75)}
+  .mtm-bar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);background:var(--card-2)}
+  .mtm-title{font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .mtm-bar-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  .mtm-open{font-size:12.5px;font-weight:600;color:var(--brand-700);text-decoration:none;border:1px solid var(--line);background:#fff;padding:8px 12px;border-radius:10px;white-space:nowrap}
+  .mtm-open:hover{background:var(--brand-50)}
+  .mtm-close{width:36px;height:36px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--ink-2);display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
+  .mtm-close:hover{background:#FDEEEC;color:var(--bad);border-color:#F3D6D2}
+  .mtm-body{flex:1 1 auto;min-height:0;background:#33373f;display:flex;align-items:center;justify-content:center;overflow:auto}
+  .mtm-img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+  .mtm-frame{width:100%;height:100%;border:0;background:#fff}
   @media (prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
@@ -374,6 +398,22 @@
             </div>
           </div>
 
+          <!-- MTM -->
+          <div class="group span">
+            <h2>MTM</h2>
+            <div class="field">
+              <label>Documento MTM — abre ao tocar na TV</label>
+              <div class="photo-pick">
+                <div class="thumb mtm-thumb" id="th-mtm"><span class="ph"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v12.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-17a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13h6M9 16.5h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span></div>
+                <div class="photo-ctl">
+                  <div class="pbtns"><button class="btn btn-ghost btn-sm" id="btnMtmUpload">Enviar MTM</button><button class="btn btn-ghost btn-sm" id="btnMtmClear">Remover</button></div>
+                  <input type="text" data-field="mtm" data-img placeholder="…ou cole o URL do MTM (PDF ou imagem)">
+                  <div class="hint" id="mtmHint">Aceita PDF ou imagem. Na TV aparece o botão “Abrir MTM”.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- DIVISÓRIA -->
           <div class="group span">
             <h2>Divisória</h2>
@@ -428,6 +468,7 @@
 
   <input type="file" id="fileImport" accept="application/json,.json">
   <input type="file" id="filePhoto" accept="image/*">
+  <input type="file" id="fileMtm" accept="image/*,application/pdf,.pdf">
 </div>
 
 <!-- ============ DISPLAY (TV / FLOW) ============ -->
@@ -455,6 +496,7 @@
           <div class="chips"><span class="chip run" id="d-runChip" hidden></span><span class="chip posto" id="d-posto"></span><span class="chip brand" id="d-code"></span></div>
           <h1 class="det-name" id="d-name"></h1>
           <div class="det-line" id="d-supplierRow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7h13l4 5v5a1 1 0 0 1-1 1h-1M3 7v10a1 1 0 0 0 1 1h1m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Fornecedor: <b id="d-supplier"></b></div>
+          <button class="mtm-btn" id="d-mtmBtn" hidden><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v12.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-17a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>Abrir MTM</button>
         </div>
 
         <div class="det-row">
@@ -541,6 +583,21 @@
 
 <div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="toastMsg"></span></div>
 
+<!-- ============ VISUALIZADOR MTM ============ -->
+<div class="mtm-modal" id="mtmModal" hidden>
+  <div class="mtm-backdrop" data-close></div>
+  <div class="mtm-dialog">
+    <div class="mtm-bar">
+      <span class="mtm-title" id="mtmTitle">MTM</span>
+      <div class="mtm-bar-actions">
+        <a class="mtm-open" id="mtmOpenNew" href="#" target="_blank" rel="noopener">Abrir em nova aba</a>
+        <button class="mtm-close" data-close aria-label="Fechar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      </div>
+    </div>
+    <div class="mtm-body" id="mtmBody"></div>
+  </div>
+</div>
+
 <script>
 (function(){
   "use strict";
@@ -559,12 +616,12 @@
   function nowStr(){var d=new Date(),p=function(n){return (n<10?"0":"")+n;};return "Atualizado "+p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes());}
   function fmtTime(ms){try{var d=new Date(ms),p=function(n){return (n<10?"0":"")+n;};return p(d.getHours())+":"+p(d.getMinutes());}catch(e){return "";}}
 
-  function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImage:"",
+  function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImage:"",mtm:"",mtmName:"",
     dividerType:"",dividerImage:"",origin:{name:"",image:""},dest:{name:"",image:""},qtyPerBox:"",time:"00:00",status:"closed",openedAt:null,updated:nowStr()};}
   function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",image:""},o.origin||{});b.dest=Object.assign({name:"",image:""},o.dest||{});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;return b;}
 
   function defaults(){
-    var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImage:"",dividerType:divType,dividerImage:"",origin:{name:oN,image:""},dest:{name:dN,image:""},qtyPerBox:qty,time:time,status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
+    var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImage:"",mtm:"",mtmName:"",dividerType:divType,dividerImage:"",origin:{name:oN,image:""},dest:{name:dN,image:""},qtyPerBox:qty,time:time,status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
     return {
       settings:{panelTitle:"Controle de Transbordo",statusText:"Em operação",logo:"",intervalSec:15,postoFilter:"Todos"},
       items:[
@@ -579,7 +636,7 @@
 
   function migrate3(o){ // old v3 item -> new
     return {id:o.id||uid(),posto:o.posto||"Posto 12",partName:o.productName||o.partName||"",partCode:o.partCode||o.ref||"",supplier:o.supplier||o.line||"",
-      partImage:o.partImage||"",dividerType:o.dividerType||"",dividerImage:o.dividerImage||"",status:o.status==="closed"?"closed":"open",openedAt:(typeof o.openedAt==="number"?o.openedAt:null),origin:{name:(o.origin&&o.origin.name)||"",image:(o.origin&&(o.origin.image||o.origin.photo))||""},
+      partImage:o.partImage||"",mtm:o.mtm||"",mtmName:o.mtmName||"",dividerType:o.dividerType||"",dividerImage:o.dividerImage||"",status:o.status==="closed"?"closed":"open",openedAt:(typeof o.openedAt==="number"?o.openedAt:null),origin:{name:(o.origin&&o.origin.name)||"",image:(o.origin&&(o.origin.image||o.origin.photo))||""},
       dest:{name:(o.dest&&o.dest.name)||"",image:(o.dest&&(o.dest.image||o.dest.photo))||""},
       qtyPerBox:o.qtyPerBox||(o.origin&&o.origin.qty)||"",time:o.time||"00:00",updated:o.updated||nowStr()};
   }
@@ -750,13 +807,13 @@
     $all("[data-setting]").forEach(function(inp){var v=state.settings[inp.getAttribute("data-setting")];if(inp.hasAttribute("data-img")&&isData(v))v="";inp.value=(v==null)?"":v;});
     rebuildPostoOptions();setLogo(state.settings.logo);
     var it=currentItem();el("noItem").hidden=!!it;el("itemForm").style.display=it?"contents":"none";
-    if(!it){setThumb("th-part","");setThumb("th-divider","");setThumb("th-origin","");setThumb("th-dest","");return;}
+    if(!it){setThumb("th-part","");setThumb("th-divider","");setThumb("th-origin","");setThumb("th-dest","");updateMtmUI(null);return;}
     $all("[data-field]").forEach(function(inp){var v=getPath(it,inp.getAttribute("data-field"));if(inp.hasAttribute("data-img")&&isData(v))v="";inp.value=(v==null)?"":v;});
-    setThumb("th-part",it.partImage);setThumb("th-divider",it.dividerImage);setThumb("th-origin",it.origin.image);setThumb("th-dest",it.dest.image);
+    setThumb("th-part",it.partImage);setThumb("th-divider",it.dividerImage);setThumb("th-origin",it.origin.image);setThumb("th-dest",it.dest.image);updateMtmUI(it);
   }
   $all("[data-setting]").forEach(function(inp){inp.addEventListener("input",function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";if(k==="logo")setLogo(v);queueSave();});});
   el("setPosto").addEventListener("change",function(){state.settings.postoFilter=el("setPosto").value;queueSave();});
-  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="partName"||f==="partCode"||f==="posto"||f==="time"||f==="partImage")renderEditorList();if(f==="posto")rebuildPostoOptions();queueSave();});});
+  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="partName"||f==="partCode"||f==="posto"||f==="time"||f==="partImage")renderEditorList();if(f==="posto")rebuildPostoOptions();if(f==="mtm")updateMtmUI(it);queueSave();});});
 
   /* uploads */
   var pendingTarget=null;
@@ -771,6 +828,32 @@
   $all("[data-clear]").forEach(function(b){b.addEventListener("click",function(){setTargetImage(b.getAttribute("data-clear"),"");queueSave();});});
   el("filePhoto").addEventListener("change",function(e){var file=e.target.files&&e.target.files[0];if(!file||!pendingTarget)return;var max=(pendingTarget==="logo")?0:1200;fileToDataURL(file,max,function(url){setTargetImage(pendingTarget,url);queueSave();toast("Imagem carregada");});});
 
+  /* ===== MTM (upload de documento) ===== */
+  function mtmKind(src){var s=String(src||"");if(!s)return null;if(/^data:application\/pdf/i.test(s)||/\.pdf(\?|#|$)/i.test(s))return "pdf";if(/^data:image\//i.test(s)||/\.(png|jpe?g|gif|webp|svg)(\?|#|$)/i.test(s))return "img";return "other";}
+  function updateMtmUI(it){
+    var th=el("th-mtm");if(!th)return;
+    var src=(it&&it.mtm)?String(it.mtm).trim():"";
+    var kind=mtmKind(src),ph=$(".ph",th),im=$("img",th),hint=el("mtmHint");
+    if(kind==="img"){if(!im){im=document.createElement("img");th.appendChild(im);}im.src=src;if(ph)ph.style.display="none";}
+    else{if(im)im.remove();if(ph)ph.style.display="";}
+    th.classList.toggle("has-doc",!!src);
+    th.classList.toggle("has-pdf",!!src&&kind!=="img");
+    if(hint){
+      if(!src)hint.textContent='Aceita PDF ou imagem. Na TV aparece o botão “Abrir MTM”.';
+      else if(kind==="pdf")hint.textContent='PDF anexado ✓ — botão “Abrir MTM” ativo na TV.';
+      else if(kind==="img")hint.textContent='Imagem anexada ✓ — botão “Abrir MTM” ativo na TV.';
+      else hint.textContent='Link anexado ✓ — botão “Abrir MTM” ativo na TV.';
+    }
+  }
+  el("btnMtmUpload").addEventListener("click",function(){el("fileMtm").value="";el("fileMtm").click();});
+  el("btnMtmClear").addEventListener("click",function(){var it=currentItem();if(!it)return;it.mtm="";it.mtmName="";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();});
+  el("fileMtm").addEventListener("change",function(e){
+    var file=e.target.files&&e.target.files[0];if(!file)return;var it=currentItem();if(!it)return;
+    var done=function(url){it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);try{if(String(url).length>700000)toast("MTM grande — p/ arquivos pesados use um link (URL).");else toast("MTM carregado");}catch(_){toast("MTM carregado");}queueSave();};
+    if(/^image\//.test(file.type)){fileToDataURL(file,1600,done);}
+    else{var r=new FileReader();r.onload=function(){done(r.result);};r.readAsDataURL(file);}
+  });
+
   /* import / export */
   el("btnExport").addEventListener("click",function(){var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="painel-transbordo.json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);toast("Configuração exportada");});
   el("btnImport").addEventListener("click",function(){el("fileImport").value="";el("fileImport").click();});
@@ -779,9 +862,11 @@
   el("btnAdd").addEventListener("click",addItem);
 
   /* display: detail */
-  var lastQr=null;
+  var lastQr=null, shownItem=null, mtmWasPlaying=false, mtmBlobUrl=null;
   function renderItem(it){
     if(!it)return;
+    shownItem=it;
+    var _mb=el("d-mtmBtn");if(_mb)_mb.hidden=!(it.mtm&&String(it.mtm).trim());
     var rc=el("d-runChip");if(rc){rc.textContent=it.openedAt?("Em transbordo · desde "+fmtTime(it.openedAt)):"Em transbordo";rc.hidden=false;}
     setChip("d-posto","",it.posto);
     setChip("d-code","COD · ",it.partCode);
@@ -854,7 +939,26 @@
   function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();document.body.dataset.lay="flow";renderEditorList();populateForm();}
   el("btnTv").addEventListener("click",enterDisplay);el("editFab").addEventListener("click",exitDisplay);
   document.addEventListener("fullscreenchange",computeLay);document.addEventListener("webkitfullscreenchange",computeLay);window.addEventListener("resize",computeLay);
-  document.addEventListener("keydown",function(e){if(document.body.dataset.view!=="display")return;if(e.key==="Escape"&&!isFs())exitDisplay();else if(e.key==="ArrowRight")next();else if(e.key==="ArrowLeft")prev();else if(e.key===" "){e.preventDefault();togglePause();}});
+  document.addEventListener("keydown",function(e){if(!el("mtmModal").hidden){if(e.key==="Escape"){e.preventDefault();closeMtm();}return;}if(document.body.dataset.view!=="display")return;if(e.key==="Escape"&&!isFs())exitDisplay();else if(e.key==="ArrowRight")next();else if(e.key==="ArrowLeft")prev();else if(e.key===" "){e.preventDefault();togglePause();}});
+
+  /* ===== Visualizador MTM (abre ao clicar na TV) ===== */
+  function mtmToBlob(src){if(!/^data:/i.test(src))return src;try{var parts=src.split(","),meta=parts[0],data=parts[1];var mime=(meta.match(/data:([^;]+)/)||[])[1]||"application/octet-stream";var isB64=/;base64/i.test(meta);var bin=isB64?atob(data):decodeURIComponent(data);var arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return URL.createObjectURL(new Blob([arr],{type:mime}));}catch(e){return src;}}
+  function revokeMtmBlob(){if(mtmBlobUrl){try{URL.revokeObjectURL(mtmBlobUrl);}catch(e){}mtmBlobUrl=null;}}
+  function openMtm(it){
+    var src=(it&&it.mtm)?String(it.mtm).trim():"";
+    if(!src){toast("Nenhum MTM neste item");return;}
+    revokeMtmBlob();
+    var kind=mtmKind(src),body=el("mtmBody");body.innerHTML="";
+    var openUrl=src;if(/^data:/i.test(src)){var b=mtmToBlob(src);if(b!==src){mtmBlobUrl=b;openUrl=b;}}
+    if(kind==="img"){var img=document.createElement("img");img.className="mtm-img";img.src=src;img.alt="MTM";body.appendChild(img);}
+    else{var fr=document.createElement("iframe");fr.className="mtm-frame";fr.src=openUrl;fr.setAttribute("title","MTM");body.appendChild(fr);}
+    el("mtmOpenNew").href=openUrl;
+    el("mtmTitle").textContent=(it.mtmName&&String(it.mtmName).trim())?it.mtmName:("MTM"+(it.partName?(" — "+it.partName):""));
+    el("mtmModal").hidden=false;document.body.classList.add("mtm-open");
+    mtmWasPlaying=!rotPaused;if(!rotPaused)togglePause();
+  }
+  function closeMtm(){el("mtmModal").hidden=true;el("mtmBody").innerHTML="";document.body.classList.remove("mtm-open");revokeMtmBlob();if(mtmWasPlaying&&rotPaused)togglePause();}
+  (function(){var mb=el("d-mtmBtn");if(mb)mb.addEventListener("click",function(){openMtm(shownItem);});$all("[data-close]",el("mtmModal")).forEach(function(b){b.addEventListener("click",closeMtm);});})();
 
   /* toast */
   var toastT;function toast(msg){var t=el("toast");el("toastMsg").textContent=msg;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("show");},2200);}

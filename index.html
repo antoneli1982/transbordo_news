@@ -978,10 +978,17 @@
   }
   /* Envia um arquivo/blob pro Firebase Storage e devolve o LINK público (downloadURL).
      Assim o estado guarda só o link (leve) e o PDF/imagem sincroniza em qualquer tamanho.
-     Se o Storage não estiver ativado/configurado, a Promise falha e quem chamou cai no embutido. */
-  function uploadAttachment(blob, name){
+     Se o Storage não estiver ativado/configurado, a Promise falha (ou estoura o tempo) e
+     quem chamou cai no embutido — assim NUNCA fica travado em "Enviando...". */
+  function uploadAttachment(blob, name, timeoutMs){
     return new Promise(function(resolve, reject){
       if(!window.__FBS){ reject(new Error("storage-indisponivel")); return; }
+      var sz=(blob&&blob.size)||0;
+      var TO=timeoutMs||Math.min(60000, 12000 + Math.round(sz/100000)*1000); // 12s + 1s/100KB, máx 60s
+      var settled=false;
+      var timer=setTimeout(function(){ if(!settled){ settled=true; reject(new Error("storage-timeout")); } }, TO);
+      function ok(v){ if(settled)return; settled=true; clearTimeout(timer); resolve(v); }
+      function fail(e){ if(settled)return; settled=true; clearTimeout(timer); reject(e); }
       try{
         var S=window.__FBS;
         var safe=String(name||"arquivo").replace(/[^\w.\-]+/g,"_").slice(-60);
@@ -989,8 +996,8 @@
         var sref=S.ref(S.storage, path);
         S.uploadBytes(sref, blob).then(function(snap){
           return S.getDownloadURL(snap.ref);
-        }).then(resolve, reject);
-      }catch(e){ reject(e); }
+        }).then(ok, fail);
+      }catch(e){ fail(e); }
     });
   }
   function fileToDataURL(file,maxDim,cb){var reader=new FileReader();reader.onload=function(){var res=reader.result;if(!maxDim||/image\/svg/.test(file.type)){cb(res);return;}var img=new Image();img.onload=function(){try{
@@ -1098,20 +1105,26 @@
     th.classList.toggle("has-doc",!!src);
     th.classList.toggle("has-pdf",!!src&&kind!=="img");
     if(hint){
+      var nm=(it&&it.mtmName&&String(it.mtmName).trim())?(" ("+String(it.mtmName).trim()+")"):"";
       if(!src)hint.textContent='Aceita PDF ou imagem. Na TV aparece o botão “Abrir MTM”.';
-      else if(kind==="pdf")hint.textContent='PDF anexado ✓ — botão “Abrir MTM” ativo na TV.';
-      else if(kind==="img")hint.textContent='Imagem anexada ✓ — botão “Abrir MTM” ativo na TV.';
-      else hint.textContent='Link anexado ✓ — botão “Abrir MTM” ativo na TV.';
+      else if(kind==="pdf")hint.textContent='PDF anexado ✓'+nm+' — botão “Abrir MTM” ativo na TV.';
+      else if(kind==="img")hint.textContent='Imagem anexada ✓'+nm+' — botão “Abrir MTM” ativo na TV.';
+      else hint.textContent='Link anexado ✓'+nm+' — botão “Abrir MTM” ativo na TV.';
     }
   }
-  el("btnMtmUpload").addEventListener("click",function(){el("fileMtm").value="";el("fileMtm").click();});
+  el("btnMtmUpload").addEventListener("click",function(){
+    if(!currentItem()){ toast("Selecione ou crie uma peça na lista antes de anexar o MTM."); return; }
+    el("fileMtm").value="";el("fileMtm").click();
+  });
   el("btnMtmClear").addEventListener("click",function(){var it=currentItem();if(!it)return;it.mtm="";it.mtmName="";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();});
   el("fileMtm").addEventListener("change",function(e){
-    var file=e.target.files&&e.target.files[0];if(!file)return;var it=currentItem();if(!it)return;
+    var file=e.target.files&&e.target.files[0];if(!file)return;
+    var it=currentItem();
+    if(!it){ toast("Selecione ou crie uma peça antes de anexar o MTM."); e.target.value=""; return; }
     var done=function(url){it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();};
     var embedFallback=function(){
       if(/^image\//.test(file.type)){fileToDataURL(file,1800,function(u){done(u);notifySaveSize("MTM salvo SÓ neste PC");});}
-      else{var r=new FileReader();r.onload=function(){done(r.result);notifySaveSize("MTM salvo SÓ neste PC");};r.readAsDataURL(file);}
+      else{var r=new FileReader();r.onload=function(){done(r.result);notifySaveSize("MTM salvo SÓ neste PC");};r.onerror=function(){toast("Não consegui ler o arquivo.");setSyncStatus("Falha ao ler arquivo","err");};r.readAsDataURL(file);}
     };
     // 1ª opção: sobe pro Firebase Storage -> sincroniza em qualquer tamanho (guarda só o link)
     if(window.__FBS){
@@ -1119,8 +1132,9 @@
       uploadAttachment(file,file.name).then(function(url){
         done(url);toast("MTM enviado — vai aparecer nas TVs");
       }).catch(function(err){
+        var t=(err&&/timeout/.test(String(err.message||err)))?"Storage demorou demais — MTM salvo SÓ neste PC. Verifique se o Storage está ativo.":"Storage ainda não ativo: MTM ficou SÓ neste PC. Ative o Storage p/ sincronizar.";
         console.warn("Storage indisponível, salvando embutido:",err);
-        toast("Storage ainda não ativo: MTM ficou SÓ neste PC. Ative o Storage p/ sincronizar.");
+        toast(t);
         embedFallback();
       });
     }else{ embedFallback(); }

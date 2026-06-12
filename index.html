@@ -806,6 +806,7 @@
         // primeira vez: faz upload do estado atual
         setSyncStatus("Inicializando nuvem...", "warn");
         saveToFirebase();
+        migrateEmbeddedImages();
         return;
       }
       var data = snap.data();
@@ -821,6 +822,7 @@
       if(rTs <= lastSavedAt){
         setSyncStatus("Sincronizado", "ok");
         try{ saveToFirebase(lastSavedAt); }catch(e){}
+        migrateEmbeddedImages();
         return;
       }
       try{
@@ -844,6 +846,7 @@
         // guarda localmente o que veio da nuvem (sobrevive ao F5)
         persistLocal(state, rTs);
         setSyncStatus("Atualizado de outro PC", "ok");
+        migrateEmbeddedImages();
       }catch(e){
         console.error("Erro processando snapshot:", e);
         setSyncStatus("Erro de sync", "err");
@@ -1001,13 +1004,88 @@
   }catch(e){cb(res);}};img.onerror=function(){cb(res);};img.src=res;};reader.readAsDataURL(file);}
   function fieldFor(t){return t==="part"?"partImage":(t==="divider"?"dividerImage":(t==="logo"?null:t+".image"));}
   function thumbFor(t){return "th-"+t;}
-  function setTargetImage(t,url){
-    if(t==="logo"){state.settings.logo=url;var lf=$('[data-setting="logo"]');if(lf)lf.value="";setLogo(url);}
-    else{var it=currentItem();if(!it)return;if(t==="part")it.partImage=url;else if(t==="divider")it.dividerImage=url;else it[t].image=url;it.updated=nowStr();var pf=$('[data-field="'+fieldFor(t)+'"]');if(pf)pf.value="";setThumb(thumbFor(t),url);renderEditorList();}
+  /* aplica uma imagem (data URL OU link do Storage) num item ESPECÍFICO.
+     Recebe o item por parâmetro p/ o upload assíncrono não cair no item errado
+     caso o usuário troque de item enquanto a imagem sobe. */
+  function applyImage(t,item,url){
+    if(t==="logo"){state.settings.logo=url;var lf=$('[data-setting="logo"]');if(lf)lf.value="";setLogo(url);return;}
+    if(!item)return;
+    if(t==="part")item.partImage=url;else if(t==="divider")item.dividerImage=url;else item[t].image=url;
+    item.updated=nowStr();
+    if(currentItem()===item){var pf=$('[data-field="'+fieldFor(t)+'"]');if(pf)pf.value="";setThumb(thumbFor(t),url);}
+    renderEditorList();
   }
+  function setTargetImage(t,url){applyImage(t,(t==="logo")?null:currentItem(),url);}
+  /* converte um data URL (base64) em Blob, p/ enviar ao Firebase Storage */
+  function dataURLtoBlob(durl){var parts=String(durl).split(","),meta=parts[0]||"",data=parts[1]||"";var mime=(meta.match(/data:([^;]+)/)||[])[1]||"application/octet-stream";var isB64=/;base64/i.test(meta);var bin=isB64?atob(data):decodeURIComponent(data);var arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return new Blob([arr],{type:mime});}
   $all("[data-upload]").forEach(function(b){b.addEventListener("click",function(){pendingTarget=b.getAttribute("data-upload");el("filePhoto").value="";el("filePhoto").click();});});
   $all("[data-clear]").forEach(function(b){b.addEventListener("click",function(){setTargetImage(b.getAttribute("data-clear"),"");queueSave();});});
-  el("filePhoto").addEventListener("change",function(e){var file=e.target.files&&e.target.files[0];if(!file||!pendingTarget)return;var max=(pendingTarget==="logo")?0:1440;fileToDataURL(file,max,function(url){setTargetImage(pendingTarget,url);queueSave();notifySaveSize("Imagem carregada");});});
+  el("filePhoto").addEventListener("change",function(e){
+    var file=e.target.files&&e.target.files[0];if(!file||!pendingTarget)return;
+    var target=pendingTarget;
+    var max=(target==="logo")?0:1440;
+    var itAtStart=(target==="logo")?null:currentItem();   // trava o item ALVO agora
+    if(target!=="logo"&&!itAtStart)return;
+    fileToDataURL(file,max,function(url){
+      // 1) mostra na hora e salva local — já funciona NESTE PC
+      applyImage(target,itAtStart,url);queueSave();
+      // 2) sobe pro Storage: o estado passa a guardar só o LINK (leve) e SINCRONIZA com as TVs
+      if(window.__FBS){
+        setSyncStatus("Enviando imagem...","warn");
+        var blob;try{blob=dataURLtoBlob(url);}catch(_e){blob=file;}
+        uploadAttachment(blob,file.name||(target+".jpg")).then(function(link){
+          applyImage(target,itAtStart,link);queueSave();   // troca o base64 pesado pelo link leve
+          toast("Imagem enviada — vai aparecer nas TVs");
+        }).catch(function(err){
+          console.warn("Storage indisponível p/ imagem, ficou embutida:",err);
+          toast("Storage ainda não ativo: a imagem ficou SÓ neste PC. Ative o Storage p/ sincronizar.");
+          notifySaveSize("Imagem salva SÓ neste PC");
+        });
+      }else{notifySaveSize("Imagem carregada (SÓ neste PC)");}
+    });
+  });
+
+  /* ===== Migração automática: imagens já embutidas (base64) viram links do Storage =====
+     Roda uma vez quando o Storage está disponível. Sem isso, as imagens que você JÁ
+     adicionou continuariam só neste PC. Depois de migrar, todas sincronizam nas TVs. */
+  var _migrated=false,_migrating=false;
+  function looksEmbedded(s){return typeof s==="string"&&/^data:/i.test(s);}
+  function migrateEmbeddedImages(){
+    if(_migrated||_migrating||!window.__FBS)return;
+    var jobs=[];
+    if(looksEmbedded(state.settings.logo))jobs.push({get:function(){return state.settings.logo;},set:function(u){state.settings.logo=u;},name:"logo.jpg"});
+    state.items.forEach(function(it){
+      [["partImage","peca.jpg"],["dividerImage","divisoria.jpg"]].forEach(function(p){
+        if(looksEmbedded(it[p[0]]))jobs.push({get:function(){return it[p[0]];},set:function(u){it[p[0]]=u;it.updated=nowStr();},name:p[1]});
+      });
+      ["origin","dest"].forEach(function(k){
+        if(it[k]&&looksEmbedded(it[k].image))jobs.push({get:function(){return it[k].image;},set:function(u){it[k].image=u;it.updated=nowStr();},name:k+".jpg"});
+      });
+      if(looksEmbedded(it.mtm))jobs.push({get:function(){return it.mtm;},set:function(u){it.mtm=u;it.updated=nowStr();},name:(it.mtmName||"mtm")});
+    });
+    if(!jobs.length){_migrated=true;return;}
+    _migrating=true;
+    setSyncStatus("Migrando imagens p/ nuvem ("+jobs.length+")...","warn");
+    var i=0,changed=false;
+    (function nextJob(){
+      if(i>=jobs.length){
+        _migrating=false;_migrated=true;
+        if(changed){reRenderAll();save();toast("Imagens migradas — agora sincronizam nas TVs");}
+        else setSyncStatus("Sincronizado","ok");
+        return;
+      }
+      var job=jobs[i++],blob;
+      try{blob=dataURLtoBlob(job.get());}catch(e){return nextJob();}
+      uploadAttachment(blob,job.name).then(function(link){
+        job.set(link);changed=true;nextJob();
+      }).catch(function(err){
+        // Storage indisponível: aborta a migração silenciosamente (não perde nada)
+        console.warn("Migração interrompida (Storage off):",err);
+        _migrating=false;_migrated=true;
+        if(changed){reRenderAll();save();}
+      });
+    })();
+  }
 
   /* ===== MTM (upload de documento) ===== */
   function mtmKind(src){var s=String(src||"");if(!s)return null;if(/^data:application\/pdf/i.test(s)||/\.pdf(\?|#|$)/i.test(s))return "pdf";if(/^data:image\//i.test(s)||/\.(png|jpe?g|gif|webp|svg)(\?|#|$)/i.test(s))return "img";return "other";}

@@ -15,6 +15,9 @@
   import {
     getFirestore, doc, setDoc, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import {
+    getStorage, ref, uploadBytes, getDownloadURL
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyAo_gNiMOatevfbT5zdhCuizp_yFKTlfCA",
@@ -27,9 +30,11 @@
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
+  const storage = getStorage(app);
 
   // expõe pra dentro da IIFE principal
   window.__FB = { db, doc, setDoc, onSnapshot };
+  window.__FBS = { storage, ref, uploadBytes, getDownloadURL };
   window.dispatchEvent(new Event("firebase-ready"));
 </script>
 <!-- ============ /FIREBASE ============ -->
@@ -968,6 +973,23 @@
       else if(okMsg){ toast(okMsg); }
     }catch(e){ if(okMsg) toast(okMsg); }
   }
+  /* Envia um arquivo/blob pro Firebase Storage e devolve o LINK público (downloadURL).
+     Assim o estado guarda só o link (leve) e o PDF/imagem sincroniza em qualquer tamanho.
+     Se o Storage não estiver ativado/configurado, a Promise falha e quem chamou cai no embutido. */
+  function uploadAttachment(blob, name){
+    return new Promise(function(resolve, reject){
+      if(!window.__FBS){ reject(new Error("storage-indisponivel")); return; }
+      try{
+        var S=window.__FBS;
+        var safe=String(name||"arquivo").replace(/[^\w.\-]+/g,"_").slice(-60);
+        var path="anexos/"+CLIENT_ID+"_"+Date.now().toString(36)+"_"+safe;
+        var sref=S.ref(S.storage, path);
+        S.uploadBytes(sref, blob).then(function(snap){
+          return S.getDownloadURL(snap.ref);
+        }).then(resolve, reject);
+      }catch(e){ reject(e); }
+    });
+  }
   function fileToDataURL(file,maxDim,cb){var reader=new FileReader();reader.onload=function(){var res=reader.result;if(!maxDim||/image\/svg/.test(file.type)){cb(res);return;}var img=new Image();img.onload=function(){try{
     var MAXLEN=440000; // mantém cada imagem dentro do limite p/ sincronizar (Firestore ~1MB por doc)
     function encode(dim,q){var sc=Math.min(1,dim/Math.max(img.width,img.height));var w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.drawImage(img,0,0,w,h);return c.toDataURL("image/jpeg",q);}
@@ -1008,9 +1030,22 @@
   el("btnMtmClear").addEventListener("click",function(){var it=currentItem();if(!it)return;it.mtm="";it.mtmName="";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();});
   el("fileMtm").addEventListener("change",function(e){
     var file=e.target.files&&e.target.files[0];if(!file)return;var it=currentItem();if(!it)return;
-    var done=function(url){it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();notifySaveSize("MTM carregado");};
-    if(/^image\//.test(file.type)){fileToDataURL(file,1800,done);}
-    else{var r=new FileReader();r.onload=function(){done(r.result);};r.readAsDataURL(file);}
+    var done=function(url){it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();};
+    var embedFallback=function(){
+      if(/^image\//.test(file.type)){fileToDataURL(file,1800,function(u){done(u);notifySaveSize("MTM salvo SÓ neste PC");});}
+      else{var r=new FileReader();r.onload=function(){done(r.result);notifySaveSize("MTM salvo SÓ neste PC");};r.readAsDataURL(file);}
+    };
+    // 1ª opção: sobe pro Firebase Storage -> sincroniza em qualquer tamanho (guarda só o link)
+    if(window.__FBS){
+      setSyncStatus("Enviando MTM...","warn");
+      uploadAttachment(file,file.name).then(function(url){
+        done(url);toast("MTM enviado — vai aparecer nas TVs");
+      }).catch(function(err){
+        console.warn("Storage indisponível, salvando embutido:",err);
+        toast("Storage ainda não ativo: MTM ficou SÓ neste PC. Ative o Storage p/ sincronizar.");
+        embedFallback();
+      });
+    }else{ embedFallback(); }
   });
 
   /* import / export */

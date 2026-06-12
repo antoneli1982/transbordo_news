@@ -369,6 +369,31 @@
   .mtm-img{max-width:100%;max-height:100%;object-fit:contain;display:block}
   .mtm-frame{width:100%;height:100%;border:0;background:#fff}
   @media (prefers-reduced-motion:reduce){*{animation:none!important}}
+
+  /* ===== MULTI-IMAGEM EDITOR ===== */
+  .multi-thumbs-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;min-height:60px;align-items:flex-start}
+  .multi-thumb{position:relative;width:72px;height:58px;border-radius:9px;border:1px solid var(--line);overflow:hidden;background:var(--card-2);flex:0 0 auto}
+  .multi-thumb img{width:100%;height:100%;object-fit:cover}
+  .mth-rm{position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:5px;background:rgba(0,0,0,.52);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;line-height:0;transition:background .15s}
+  .mth-rm:hover{background:rgba(224,72,59,.85)}
+  .multi-thumb-ph{width:58px;height:58px;border-radius:9px;border:1.5px dashed var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted-2);background:var(--card-2)}
+  .btn-add-img{color:var(--ok);border-color:rgba(21,163,110,.3)!important}
+  .btn-add-img:hover{background:rgba(21,163,110,.07)!important}
+
+  /* ===== TIMER POR SLOT (imagens múltiplas na TV) ===== */
+  .slot-timer{position:absolute;bottom:10px;right:10px;z-index:5;width:40px;height:40px;display:flex;align-items:center;justify-content:center;pointer-events:none;filter:drop-shadow(0 1px 5px rgba(0,0,0,.45))}
+  body[data-lay="tv"] .slot-timer{width:50px;height:50px;bottom:12px;right:12px}
+  .slot-timer svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
+  .stt{fill:none;stroke:rgba(255,255,255,.22);stroke-width:3.5}
+  .stf{fill:none;stroke:rgba(255,255,255,.9);stroke-width:3.5;stroke-linecap:round}
+  .stn{position:relative;z-index:1;font-size:11px;font-weight:800;color:#fff;line-height:1;font-family:var(--sans);font-variant-numeric:tabular-nums;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+  body[data-lay="tv"] .stn{font-size:14px}
+
+  /* ===== DOTS DE NAVEGAÇÃO POR IMAGEM ===== */
+  .img-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:5;display:flex;gap:5px;align-items:center;pointer-events:none}
+  .img-dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.38);transition:all .25s}
+  .img-dot.act{background:#fff;transform:scale(1.35);box-shadow:0 0 5px rgba(255,255,255,.55)}
+  body[data-lay="tv"] .img-dot{width:7px;height:7px}
 </style>
 </head>
 <body data-view="editor" data-lay="flow">
@@ -436,8 +461,8 @@
             <div class="field">
               <label>Imagem da peça</label>
               <div class="photo-pick">
-                <div class="thumb" id="th-part"><span class="ph"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M12 2.6 21 7.5v9L12 21.4 3 16.5v-9L12 2.6Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M3.3 7.6 12 12.4l8.7-4.8M12 12.4v9" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="part">Enviar imagem</button><button class="btn btn-ghost btn-sm" data-clear="part">Remover</button></div><input type="text" data-field="partImage" data-img placeholder="…ou cole o URL de uma imagem"></div>
+                <div class="multi-thumbs-row" id="mt-part"></div>
+                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="part">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="part"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="part">Remover</button></div><input type="text" data-imgslot="part" data-img placeholder="…ou cole URL da imagem (acrescenta)"><div class="hint">Use <b>+ Foto</b> para adicionar mais imagens — na TV cada uma exibe com temporizador.</div></div>
               </div>
             </div>
           </div>
@@ -465,8 +490,8 @@
             <div class="field">
               <label>Imagem da divisória</label>
               <div class="photo-pick">
-                <div class="thumb" id="th-divider"><span class="ph"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M9 4v16M15 4v16M3 12h18" stroke="currentColor" stroke-width="1.3"/></svg></span></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="divider">Enviar imagem</button><button class="btn btn-ghost btn-sm" data-clear="divider">Remover</button></div><input type="text" data-field="dividerImage" data-img placeholder="…ou cole o URL de uma imagem"><div class="hint">Sem imagem, mostra um ícone padrão.</div></div>
+                <div class="multi-thumbs-row" id="mt-divider"></div>
+                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="divider">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="divider"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="divider">Remover</button></div><input type="text" data-imgslot="divider" data-img placeholder="…ou cole URL da imagem (acrescenta)"><div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador automático na TV.</div></div>
               </div>
             </div>
           </div>
@@ -478,8 +503,8 @@
             <div class="field">
               <label>Imagem da embalagem de origem</label>
               <div class="photo-pick">
-                <div class="thumb" id="th-origin"><span class="ph"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" stroke="currentColor" stroke-width="1.6"/></svg></span></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="origin">Enviar imagem</button><button class="btn btn-ghost btn-sm" data-clear="origin">Remover</button></div><input type="text" data-field="origin.image" data-img placeholder="…ou cole o URL de uma imagem"><div class="hint">Sem imagem, mostra a ilustração padrão (caixa).</div></div>
+                <div class="multi-thumbs-row" id="mt-origin"></div>
+                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="origin">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="origin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="origin">Remover</button></div><input type="text" data-imgslot="origin" data-img placeholder="…ou cole URL da imagem (acrescenta)"><div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador na TV.</div></div>
               </div>
             </div>
           </div>
@@ -491,8 +516,8 @@
             <div class="field">
               <label>Imagem da embalagem de destino</label>
               <div class="photo-pick">
-                <div class="thumb" id="th-dest"><span class="ph"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.2" stroke="currentColor" stroke-width="1.6"/></svg></span></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="dest">Enviar imagem</button><button class="btn btn-ghost btn-sm" data-clear="dest">Remover</button></div><input type="text" data-field="dest.image" data-img placeholder="…ou cole o URL de uma imagem"><div class="hint">Sem imagem, mostra a ilustração padrão (contentor).</div></div>
+                <div class="multi-thumbs-row" id="mt-dest"></div>
+                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="dest">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="dest"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="dest">Remover</button></div><input type="text" data-imgslot="dest" data-img placeholder="…ou cole URL da imagem (acrescenta)"><div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador na TV.</div></div>
               </div>
             </div>
           </div>
@@ -554,18 +579,22 @@
           <div class="det-left">
             <div class="det-top2">
               <article class="pkg">
-                <div class="pkg-figure">
+                <div class="pkg-figure" id="fig-part">
                   <span class="pkg-tag p">Peça</span>
                   <img id="d-partImg" class="pkg-photo" hidden alt="">
                   <div class="part-ph" id="d-partPh"><svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M12 2.6 21 7.5v9L12 21.4 3 16.5v-9L12 2.6Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M3.3 7.6 12 12.4l8.7-4.8M12 12.4v9" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>Imagem da peça</span></div>
+                  <div class="slot-timer" id="st-part" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-part"/></svg><span class="stn" id="stn-part">0</span></div>
+                  <div class="img-dots" id="dots-part" hidden></div>
                 </div>
                 <div class="pkg-info"><div class="pkg-kicker">Peça</div><div class="pkg-name" id="d-name2"></div></div>
               </article>
               <article class="pkg">
-                <div class="pkg-figure">
+                <div class="pkg-figure" id="fig-divider">
                   <span class="pkg-tag v">Divisória</span>
                   <img id="d-divImg" class="pkg-photo" hidden alt="">
                   <div class="part-ph" id="d-divPh"><svg width="46" height="46" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M9 4v16M15 4v16M3 12h18" stroke="currentColor" stroke-width="1.3"/></svg><span>Imagem da divisória</span></div>
+                  <div class="slot-timer" id="st-divider" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-divider"/></svg><span class="stn" id="stn-divider">0</span></div>
+                  <div class="img-dots" id="dots-divider" hidden></div>
                 </div>
                 <div class="pkg-info"><div class="pkg-kicker">Divisória</div><div class="pkg-name" id="d-divType"></div></div>
               </article>
@@ -575,7 +604,7 @@
             <div class="d-flow">
               <div class="flow-line"></div>
               <article class="pkg">
-                <div class="pkg-figure">
+                <div class="pkg-figure" id="fig-origin">
                   <span class="pkg-tag o">Origem</span>
                   <img id="d-oImg" class="pkg-photo" hidden alt="">
                   <svg class="pkg-svg" viewBox="0 0 240 200">
@@ -586,12 +615,14 @@
                     <rect x="70" y="92" width="64" height="40" rx="4" fill="#F6F2E9" stroke="#CBC0A6"/><rect x="76" y="98" width="42" height="4" rx="2" fill="#B9AE96"/><rect x="76" y="106" width="52" height="3" rx="1.5" fill="#CDC3AD"/>
                     <g fill="#26201A"><rect x="76" y="115" width="2" height="12"/><rect x="80" y="115" width="1.4" height="12"/><rect x="83" y="115" width="2.4" height="12"/><rect x="88" y="115" width="1.4" height="12"/><rect x="91" y="115" width="3" height="12"/><rect x="96" y="115" width="1.4" height="12"/><rect x="99" y="115" width="2" height="12"/><rect x="103" y="115" width="2.6" height="12"/><rect x="108" y="115" width="1.4" height="12"/><rect x="112" y="115" width="2" height="12"/><rect x="116" y="115" width="3" height="12"/><rect x="121" y="115" width="1.6" height="12"/></g>
                   </svg>
+                  <div class="slot-timer" id="st-origin" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-origin"/></svg><span class="stn" id="stn-origin">0</span></div>
+                  <div class="img-dots" id="dots-origin" hidden></div>
                 </div>
                 <div class="pkg-info"><div class="pkg-kicker">Embalagem de origem</div><div class="pkg-name" id="d-oName"></div></div>
               </article>
               <div class="flow-arrow"><div class="arrow-badge"><svg class="arrow-ico" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="arrow-meta"><span class="t">Transbordo</span></div></div>
               <article class="pkg">
-                <div class="pkg-figure">
+                <div class="pkg-figure" id="fig-dest">
                   <span class="pkg-tag d">Destino</span>
                   <img id="d-dImg" class="pkg-photo" hidden alt="">
                   <svg class="pkg-svg" viewBox="0 0 240 200">
@@ -601,6 +632,8 @@
                     <g stroke="#34507F" stroke-width="3"><line x1="74" y1="92" x2="74" y2="146"/><line x1="88" y1="92" x2="88" y2="146"/><line x1="102" y1="92" x2="102" y2="146"/><line x1="116" y1="92" x2="116" y2="146"/><line x1="130" y1="92" x2="130" y2="146"/><line x1="144" y1="92" x2="144" y2="146"/></g>
                     <line x1="60" y1="86" x2="160" y2="86" stroke="rgba(255,255,255,.18)" stroke-width="1.4"/><rect x="92" y="93" width="52" height="11" rx="5.5" fill="#16243F"/>
                     <rect x="74" y="116" width="58" height="24" rx="3" fill="#EAF0FA" stroke="#26426F"/><rect x="80" y="121" width="34" height="3.5" rx="1.7" fill="#8FA0C2"/><rect x="80" y="128" width="46" height="3" rx="1.5" fill="#B7C3DC"/></svg>
+                  <div class="slot-timer" id="st-dest" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-dest"/></svg><span class="stn" id="stn-dest">0</span></div>
+                  <div class="img-dots" id="dots-dest" hidden></div>
                 </div>
                 <div class="pkg-info"><div class="pkg-kicker">Embalagem de destino</div><div class="pkg-name" id="d-dName"></div></div>
               </article>
@@ -704,12 +737,12 @@
   function nowStr(){var d=new Date(),p=function(n){return (n<10?"0":"")+n;};return "Atualizado "+p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes());}
   function fmtTime(ms){try{var d=new Date(ms),p=function(n){return (n<10?"0":"")+n;};return p(d.getHours())+":"+p(d.getMinutes());}catch(e){return "";}}
 
-  function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImage:"",mtm:"",mtmName:"",
-    dividerType:"",dividerImage:"",origin:{name:"",image:""},dest:{name:"",image:""},qtyPerBox:"",qtyBoxes:"",time:"00:00",status:"closed",openedAt:null,updated:nowStr()};}
-  function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",image:""},o.origin||{});b.dest=Object.assign({name:"",image:""},o.dest||{});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;return b;}
+  function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImages:[],mtm:"",mtmName:"",
+    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyBoxes:"",time:"00:00",status:"closed",openedAt:null,updated:nowStr()};}
+  function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",images:[]},o.origin||{});b.dest=Object.assign({name:"",images:[]},o.dest||{});if(!Array.isArray(b.partImages))b.partImages=(b.partImage&&String(b.partImage).trim())?[b.partImage]:[];if(!Array.isArray(b.dividerImages))b.dividerImages=(b.dividerImage&&String(b.dividerImage).trim())?[b.dividerImage]:[];if(!Array.isArray(b.origin.images))b.origin.images=(b.origin.image&&String(b.origin.image).trim())?[b.origin.image]:[];if(!Array.isArray(b.dest.images))b.dest.images=(b.dest.image&&String(b.dest.image).trim())?[b.dest.image]:[];b.partImages=b.partImages.filter(function(v){return typeof v==="string"&&v;});b.dividerImages=b.dividerImages.filter(function(v){return typeof v==="string"&&v;});b.origin.images=b.origin.images.filter(function(v){return typeof v==="string"&&v;});b.dest.images=b.dest.images.filter(function(v){return typeof v==="string"&&v;});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;return b;}
 
   function defaults(){
-    var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImage:"",mtm:"",mtmName:"",dividerType:divType,dividerImage:"",origin:{name:oN,image:""},dest:{name:dN,image:""},qtyPerBox:qty,qtyBoxes:"",time:time,status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
+    var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImages:[],mtm:"",mtmName:"",dividerType:divType,dividerImages:[],origin:{name:oN,images:[]},dest:{name:dN,images:[]},qtyPerBox:qty,qtyBoxes:"",time:time,status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
     return {
       settings:{panelTitle:"Controle de Transbordo",statusText:"Em operação",logo:"",intervalSec:15,postoFilter:"Todos"},
       items:[
@@ -734,17 +767,25 @@
       ((remoteState&&remoteState.items)||[]).forEach(function(rit){
         var lit=(rit&&rit.id)?byId[rit.id]:null; if(!lit) return;
         if((rit.mtm==null||rit.mtm==="")&&lit.mtm){ rit.mtm=lit.mtm; if(!rit.mtmName) rit.mtmName=lit.mtmName||""; }
-        ["partImage","dividerImage"].forEach(function(f){ if((rit[f]==null||rit[f]==="")&&lit[f]) rit[f]=lit[f]; });
-        ["origin","dest"].forEach(function(g){ if(rit[g]&&lit[g]&&(rit[g].image==null||rit[g].image==="")&&lit[g].image) rit[g].image=lit[g].image; });
+        function mergeArr(rA,lA){
+          if(!Array.isArray(rA))rA=[];if(!Array.isArray(lA))lA=[];
+          var out=rA.map(function(v,i){return (v==null||v==="")?lA[i]||"":v;});
+          for(var j=out.length;j<lA.length;j++)out.push(lA[j]);return out;
+        }
+        rit.partImages=mergeArr(rit.partImages,lit.partImages);
+        rit.dividerImages=mergeArr(rit.dividerImages,lit.dividerImages);
+        if(rit.origin&&lit.origin)rit.origin.images=mergeArr(rit.origin.images,lit.origin.images);
+        if(rit.dest&&lit.dest)rit.dest.images=mergeArr(rit.dest.images,lit.dest.images);
       });
     }catch(e){}
     return remoteState;
   }
 
   function migrate3(o){ // old v3 item -> new
+    var pI=o.partImage||"",dI=o.dividerImage||"",oI=(o.origin&&(o.origin.image||o.origin.photo))||"",dsI=(o.dest&&(o.dest.image||o.dest.photo))||"";
     return {id:o.id||uid(),posto:o.posto||"Posto 12",partName:o.productName||o.partName||"",partCode:o.partCode||o.ref||"",supplier:o.supplier||o.line||"",
-      partImage:o.partImage||"",mtm:o.mtm||"",mtmName:o.mtmName||"",dividerType:o.dividerType||"",dividerImage:o.dividerImage||"",status:o.status==="closed"?"closed":"open",openedAt:(typeof o.openedAt==="number"?o.openedAt:null),origin:{name:(o.origin&&o.origin.name)||"",image:(o.origin&&(o.origin.image||o.origin.photo))||""},
-      dest:{name:(o.dest&&o.dest.name)||"",image:(o.dest&&(o.dest.image||o.dest.photo))||""},
+      partImages:pI?[pI]:[],mtm:o.mtm||"",mtmName:o.mtmName||"",dividerType:o.dividerType||"",dividerImages:dI?[dI]:[],status:o.status==="closed"?"closed":"open",openedAt:(typeof o.openedAt==="number"?o.openedAt:null),origin:{name:(o.origin&&o.origin.name)||"",images:oI?[oI]:[]},
+      dest:{name:(o.dest&&o.dest.name)||"",images:dsI?[dsI]:[]},
       qtyPerBox:o.qtyPerBox||(o.origin&&o.origin.qty)||"",qtyBoxes:o.qtyBoxes||"",time:o.time||"00:00",updated:o.updated||nowStr()};
   }
   function loadState(){
@@ -922,9 +963,10 @@
     }
     if(c.settings) c.settings.logo=conv(c.settings.logo);
     (c.items||[]).forEach(function(it){
-      it.partImage=conv(it.partImage); it.dividerImage=conv(it.dividerImage);
-      if(it.origin) it.origin.image=conv(it.origin.image);
-      if(it.dest) it.dest.image=conv(it.dest.image);
+      if(Array.isArray(it.partImages))it.partImages=it.partImages.map(conv);
+      if(Array.isArray(it.dividerImages))it.dividerImages=it.dividerImages.map(conv);
+      if(it.origin&&Array.isArray(it.origin.images))it.origin.images=it.origin.images.map(conv);
+      if(it.dest&&Array.isArray(it.dest.images))it.dest.images=it.dest.images.map(conv);
       it.mtm=conv(it.mtm);
     });
     return c;
@@ -933,12 +975,14 @@
   function hydrateState(st,done){
     var need={};
     function note(v){ if(typeof v==="string"&&v.indexOf("fb:")===0){var tok=v.slice(3); if(!(tok in attCache)) need[tok]=1;} }
+    function noteArr(arr){ if(Array.isArray(arr))arr.forEach(note); }
     if(st.settings) note(st.settings.logo);
-    (st.items||[]).forEach(function(it){ note(it.partImage);note(it.dividerImage); if(it.origin)note(it.origin.image); if(it.dest)note(it.dest.image); note(it.mtm); });
+    (st.items||[]).forEach(function(it){ noteArr(it.partImages);noteArr(it.dividerImages); if(it.origin)noteArr(it.origin.images); if(it.dest)noteArr(it.dest.images); note(it.mtm); });
     function finish(){
       function conv(v){ if(typeof v==="string"&&v.indexOf("fb:")===0) return attCache[v.slice(3)]||""; return v; }
+      function convArr(arr){ return Array.isArray(arr)?arr.map(conv):arr; }
       if(st.settings) st.settings.logo=conv(st.settings.logo);
-      (st.items||[]).forEach(function(it){ it.partImage=conv(it.partImage);it.dividerImage=conv(it.dividerImage); if(it.origin)it.origin.image=conv(it.origin.image); if(it.dest)it.dest.image=conv(it.dest.image); it.mtm=conv(it.mtm); });
+      (st.items||[]).forEach(function(it){ it.partImages=convArr(it.partImages);it.dividerImages=convArr(it.dividerImages); if(it.origin)it.origin.images=convArr(it.origin.images); if(it.dest)it.dest.images=convArr(it.dest.images); it.mtm=conv(it.mtm); });
       done(st);
     }
     var toks=Object.keys(need);
@@ -1025,7 +1069,8 @@
       var open=it.status==="open";
       var row=document.createElement("div");row.className="ed-item"+(it.id===currentId?" sel":"")+(open?"":" closed");
       var th=document.createElement("span");th.className="ei-thumb";
-      if(it.partImage){var im=document.createElement("img");im.src=it.partImage;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"20");
+      var _fi=(Array.isArray(it.partImages)&&it.partImages[0])||"";
+      if(_fi){var im=document.createElement("img");im.src=_fi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"20");
       var info=document.createElement("div");info.className="ei-info";
       var nm=document.createElement("div");nm.className="ei-name";nm.textContent=it.partName||"(sem nome)";
       var sub=document.createElement("div");sub.className="ei-sub";
@@ -1054,16 +1099,17 @@
     (function(){var si=el("setTimer");if(!si)return;var P=[15,30,45,60,120],c=parseInt(state.settings.intervalSec,10)||15;if(P.indexOf(c)<0){c=P.reduce(function(a,b){return Math.abs(b-c)<Math.abs(a-c)?b:a;});state.settings.intervalSec=c;}si.value=String(c);})();
     rebuildPostoOptions();setLogo(state.settings.logo);
     var it=currentItem();el("noItem").hidden=!!it;el("itemForm").style.display=it?"contents":"none";
-    if(!it){setThumb("th-part","");setThumb("th-divider","");setThumb("th-origin","");setThumb("th-dest","");updateMtmUI(null);return;}
+    if(!it){renderMultiThumbs("part",[]);renderMultiThumbs("divider",[]);renderMultiThumbs("origin",[]);renderMultiThumbs("dest",[]);updateMtmUI(null);return;}
     $all("[data-field]").forEach(function(inp){var v=getPath(it,inp.getAttribute("data-field"));if(inp.hasAttribute("data-img")&&isData(v))v="";inp.value=(v==null)?"":v;});
-    setThumb("th-part",it.partImage);setThumb("th-divider",it.dividerImage);setThumb("th-origin",it.origin.image);setThumb("th-dest",it.dest.image);updateMtmUI(it);
+    renderMultiThumbs("part",it.partImages);renderMultiThumbs("divider",it.dividerImages);renderMultiThumbs("origin",it.origin.images);renderMultiThumbs("dest",it.dest.images);
+    $all("[data-imgslot]").forEach(function(inp){var sl=inp.getAttribute("data-imgslot");var arr=getItemImages(it,sl);inp.value=(Array.isArray(arr)&&arr[0]&&!isData(arr[0]))?arr[0]:"";});
+    updateMtmUI(it);
   }
   $all("[data-setting]").forEach(function(inp){var _h=function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";if(k==="logo")setLogo(v);queueSave();};inp.addEventListener("input",_h);inp.addEventListener("change",_h);});
   el("setPosto").addEventListener("change",function(){state.settings.postoFilter=el("setPosto").value;queueSave();});
-  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="partName"||f==="partCode"||f==="posto"||f==="time"||f==="partImage")renderEditorList();if(f==="posto")rebuildPostoOptions();if(f==="mtm")updateMtmUI(it);queueSave();});});
+  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="partName"||f==="partCode"||f==="posto"||f==="time")renderEditorList();if(f==="posto")rebuildPostoOptions();if(f==="mtm")updateMtmUI(it);queueSave();});});
 
-  /* uploads */
-  var pendingTarget=null;
+  /* notificação de tamanho */
   /* Avisa, ao anexar, se o conteúdo ficou grande demais para sincronizar com as TVs.
      Limite prático do registro na nuvem (Firestore) é ~1MB; deixamos folga em 950KB. */
   function notifySaveSize(okMsg){
@@ -1106,33 +1152,85 @@
     while(out.length>MAXLEN&&dim>1000){dim=Math.round(dim*0.85);out=encode(dim,Math.max(q,0.78));} // depois a dimensão, sem perder visibilidade
     cb(out);
   }catch(e){cb(res);}};img.onerror=function(){cb(res);};img.src=res;};reader.readAsDataURL(file);}
-  function fieldFor(t){return t==="part"?"partImage":(t==="divider"?"dividerImage":(t==="logo"?null:t+".image"));}
-  function thumbFor(t){return "th-"+t;}
-  /* aplica uma imagem (data URL OU link do Storage) num item ESPECÍFICO.
-     Recebe o item por parâmetro p/ o upload assíncrono não cair no item errado
-     caso o usuário troque de item enquanto a imagem sobe. */
+  /* ===== MULTI-IMAGEM: helpers e handlers ===== */
+  function getItemImages(it,slot){
+    if(!it)return[];
+    if(slot==="part"){if(!Array.isArray(it.partImages))it.partImages=[];return it.partImages;}
+    if(slot==="divider"){if(!Array.isArray(it.dividerImages))it.dividerImages=[];return it.dividerImages;}
+    if(slot==="origin"){if(!it.origin)it.origin={name:"",images:[]};if(!Array.isArray(it.origin.images))it.origin.images=[];return it.origin.images;}
+    if(slot==="dest"){if(!it.dest)it.dest={name:"",images:[]};if(!Array.isArray(it.dest.images))it.dest.images=[];return it.dest.images;}
+    return[];
+  }
+  function getSlotImages(it,slot){return getItemImages(it,slot).filter(Boolean);}
+  function renderMultiThumbs(slot,images){
+    var row=el("mt-"+slot);if(!row)return;
+    row.innerHTML="";
+    var imgs=Array.isArray(images)?images.filter(Boolean):[];
+    imgs.forEach(function(src,i){
+      var t=document.createElement("div");t.className="multi-thumb";
+      var img=document.createElement("img");img.src=src;img.alt="";
+      var rm=document.createElement("button");rm.type="button";rm.className="mth-rm";rm.title="Remover";
+      rm.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
+      (function(idx){rm.addEventListener("click",function(e){e.stopPropagation();removeSlotImage(slot,idx);});})(i);
+      t.appendChild(img);t.appendChild(rm);row.appendChild(t);
+    });
+    if(!imgs.length){
+      var ph=document.createElement("div");ph.className="multi-thumb-ph";
+      ph.innerHTML='<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 18l5-5 4 4 4-6 5 7" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><rect x="3" y="3" width="18" height="18" rx="3" stroke="currentColor" stroke-width="1.5"/></svg>';
+      row.appendChild(ph);
+    }
+  }
+  function removeSlotImage(slot,idx){
+    var it=currentItem();if(!it)return;
+    var arr=getItemImages(it,slot);arr.splice(idx,1);
+    it.updated=nowStr();renderMultiThumbs(slot,arr);renderEditorList();queueSave();
+  }
   function applyImage(t,item,url){
     if(t==="logo"){state.settings.logo=url;var lf=$('[data-setting="logo"]');if(lf)lf.value="";setLogo(url);return;}
     if(!item)return;
-    if(t==="part")item.partImage=url;else if(t==="divider")item.dividerImage=url;else item[t].image=url;
+    var arr=getItemImages(item,t);arr.splice(0,arr.length);if(url)arr.push(url);
     item.updated=nowStr();
-    if(currentItem()===item){var pf=$('[data-field="'+fieldFor(t)+'"]');if(pf)pf.value="";setThumb(thumbFor(t),url);}
+    if(currentItem()===item){
+      var si=$('[data-imgslot="'+t+'"]');if(si)si.value=(url&&!isData(url))?url:"";
+      renderMultiThumbs(t,arr);
+    }
+    renderEditorList();
+  }
+  function applyImageAdd(t,item,url){
+    if(!item||!url)return;
+    var arr=getItemImages(item,t);arr.push(url);
+    item.updated=nowStr();
+    if(currentItem()===item)renderMultiThumbs(t,arr);
     renderEditorList();
   }
   function setTargetImage(t,url){applyImage(t,(t==="logo")?null:currentItem(),url);}
   /* converte um data URL (base64) em Blob, p/ enviar ao Firebase Storage */
   function dataURLtoBlob(durl){var parts=String(durl).split(","),meta=parts[0]||"",data=parts[1]||"";var mime=(meta.match(/data:([^;]+)/)||[])[1]||"application/octet-stream";var isB64=/;base64/i.test(meta);var bin=isB64?atob(data):decodeURIComponent(data);var arr=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);return new Blob([arr],{type:mime});}
-  $all("[data-upload]").forEach(function(b){b.addEventListener("click",function(){pendingTarget=b.getAttribute("data-upload");el("filePhoto").value="";el("filePhoto").click();});});
-  $all("[data-clear]").forEach(function(b){b.addEventListener("click",function(){setTargetImage(b.getAttribute("data-clear"),"");queueSave();});});
+  var pendingTarget=null, pendingMode="replace";
+  $all("[data-upload]").forEach(function(b){b.addEventListener("click",function(){pendingTarget=b.getAttribute("data-upload");pendingMode="replace";el("filePhoto").value="";el("filePhoto").click();});});
+  $all("[data-upload-add]").forEach(function(b){b.addEventListener("click",function(){pendingTarget=b.getAttribute("data-upload-add");pendingMode="add";el("filePhoto").value="";el("filePhoto").click();});});
+  $all("[data-clear]").forEach(function(b){b.addEventListener("click",function(){
+    var t=b.getAttribute("data-clear");
+    if(t==="logo"){setTargetImage("logo","");}
+    else{var it=currentItem();if(!it)return;var arr=getItemImages(it,t);arr.splice(0,arr.length);it.updated=nowStr();renderMultiThumbs(t,[]);var si=$('[data-imgslot="'+t+'"]');if(si)si.value="";renderEditorList();}
+    queueSave();
+  });});
+  /* handler URL paste */
+  $all("[data-imgslot]").forEach(function(inp){inp.addEventListener("change",function(){
+    var it=currentItem();if(!it)return;var slot=inp.getAttribute("data-imgslot");var url=inp.value.trim();
+    if(!url)return;var arr=getItemImages(it,slot);
+    if(arr.length===0)arr.push(url);else arr[0]=url;
+    it.updated=nowStr();renderMultiThumbs(slot,arr);queueSave();
+  });});
   el("filePhoto").addEventListener("change",function(e){
     var file=e.target.files&&e.target.files[0];if(!file||!pendingTarget)return;
-    var target=pendingTarget;
+    var target=pendingTarget, mode=pendingMode;
     var max=(target==="logo")?0:1440;
-    var itAtStart=(target==="logo")?null:currentItem();   // trava o item ALVO agora
+    var itAtStart=(target==="logo")?null:currentItem();
     if(target!=="logo"&&!itAtStart)return;
     fileToDataURL(file,max,function(url){
-      applyImage(target,itAtStart,url);   // mostra na hora
-      queueSave();                         // salva: o save manda a imagem p/ um doc próprio e sincroniza
+      if(mode==="add"){applyImageAdd(target,itAtStart,url);}else{applyImage(target,itAtStart,url);}
+      queueSave();
       if(url.length>ATT_MAX) toast("Imagem enorme (acima de ~4MB) — ficou SÓ neste PC.");
       else notifySaveSize("Imagem carregada");
     });
@@ -1207,14 +1305,78 @@
     el("d-qty").textContent=(it.qtyPerBox&&String(it.qtyPerBox).trim())?it.qtyPerBox:"—";
     var _bx=el("d-boxes");if(_bx&&document.activeElement!==_bx)_bx.value=(it.qtyBoxes&&String(it.qtyBoxes).trim())?it.qtyBoxes:"";
     el("d-updated").textContent=it.updated||"";
-    setImg("d-partImg",it.partImage,"d-partPh");setImg("d-divImg",it.dividerImage,"d-divPh");
-    setImg("d-oImg",it.origin.image,null);
-    setImg("d-dImg",it.dest.image,null);
+    setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");
+    setImg("d-oImg",getSlotImages(it,"origin")[0]||"",null);
+    setImg("d-dImg",getSlotImages(it,"dest")[0]||"",null);
     /* QR oculto no momento (a pedido). Para reativar: remova ".time-qr{display:none}" do CSS e descomente: */
     /* var qr=it.partCode?("https://transbordo.sese.com/p/"+encodeURIComponent(it.partCode)):(it.partName||" "); if(qr!==lastQr){lastQr=qr;buildQR(qr);} */
   }
   function buildQR(text){var box=el("qr");box.innerHTML="";try{if(typeof QRCode!=="undefined"){new QRCode(box,{text:text,width:240,height:240,colorDark:"#0B1020",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});return;}}catch(e){}fallbackQR(box);}
   function fallbackQR(box){var N=25,seed=7,s='<svg viewBox="0 0 '+N+' '+N+'" shape-rendering="crispEdges"><rect width="'+N+'" height="'+N+'" fill="#fff"/>';function rnd(){seed=(seed*1103515245+12345)&0x7fffffff;return (seed>>8)&1;}function finder(x,y){s+='<rect x="'+x+'" y="'+y+'" width="7" height="7" fill="#0B1020"/><rect x="'+(x+1)+'" y="'+(y+1)+'" width="5" height="5" fill="#fff"/><rect x="'+(x+2)+'" y="'+(y+2)+'" width="3" height="3" fill="#0B1020"/>';}for(var y=0;y<N;y++)for(var x=0;x<N;x++){var inF=(x<8&&y<8)||(x>N-9&&y<8)||(x<8&&y>N-9);if(!inF&&rnd())s+='<rect x="'+x+'" y="'+y+'" width="1" height="1" fill="#0B1020"/>';}finder(0,0);finder(N-7,0);finder(0,N-7);box.innerHTML=s+'</svg>';}
+
+  /* ===== CARD SLIDESHOWS — temporizador por imagem ===== */
+  var cardSS={};
+  var _CIRC_C=(2*Math.PI*16).toFixed(3); // circunferência p/ r=16 ≈ 100.53
+  function stopCardSS(){
+    Object.keys(cardSS).forEach(function(s){if(cardSS[s]&&cardSS[s].raf)cancelAnimationFrame(cardSS[s].raf);});
+    cardSS={};
+    ["part","divider","origin","dest"].forEach(function(s){
+      var t=el("st-"+s);if(t)t.hidden=true;
+      var d=el("dots-"+s);if(d){d.hidden=true;d.innerHTML="";}
+    });
+  }
+  function setSlotTimerUI(slot,remaining,total){
+    var te=el("st-"+slot),fl=el("stf-"+slot),nu=el("stn-"+slot);
+    if(!te||!fl||!nu)return;
+    te.hidden=false;
+    var prog=1-Math.max(0,Math.min(1,remaining/total));
+    fl.style.strokeDasharray=_CIRC_C;
+    fl.style.strokeDashoffset=(parseFloat(_CIRC_C)*prog).toFixed(2);
+    nu.textContent=String(Math.max(1,Math.ceil(remaining/1000)));
+  }
+  function setSlotDotsUI(slot,total,active){
+    var de=el("dots-"+slot);if(!de)return;
+    if(total<=1){de.hidden=true;de.innerHTML="";return;}
+    de.hidden=false;de.innerHTML="";
+    for(var i=0;i<total;i++){var d=document.createElement("span");d.className="img-dot"+(i===active?" act":"");de.appendChild(d);}
+  }
+  function showSlotImg(slot,imgs,idx){
+    var imgId,phId;
+    if(slot==="part"){imgId="d-partImg";phId="d-partPh";}
+    else if(slot==="divider"){imgId="d-divImg";phId="d-divPh";}
+    else if(slot==="origin"){imgId="d-oImg";phId=null;}
+    else if(slot==="dest"){imgId="d-dImg";phId=null;}
+    else return;
+    setImg(imgId,imgs[idx]||"",phId);
+  }
+  function tickCardSS(slot){
+    var s=cardSS[slot];if(!s)return;
+    var now=performance.now();
+    if(!rotPaused){if(s.lastTick!==null)s.elapsed+=now-s.lastTick;s.lastTick=now;}
+    else{s.lastTick=null;}
+    var rem=Math.max(0,s.perImg-s.elapsed);
+    setSlotTimerUI(slot,rem,s.perImg);
+    setSlotDotsUI(slot,s.imgs.length,s.idx);
+    if(!rotPaused&&s.elapsed>=s.perImg){
+      s.idx=(s.idx+1)%s.imgs.length;s.elapsed=0;s.lastTick=now;
+      showSlotImg(slot,s.imgs,s.idx);
+      setSlotTimerUI(slot,s.perImg,s.perImg);
+      setSlotDotsUI(slot,s.imgs.length,s.idx);
+    }
+    s.raf=requestAnimationFrame(function(){tickCardSS(slot);});
+  }
+  function startCardSS(it){
+    stopCardSS();
+    var iv=interval();
+    ["part","divider","origin","dest"].forEach(function(slot){
+      var imgs=getSlotImages(it,slot);
+      if(imgs.length<=1)return;
+      var perImg=iv/imgs.length;
+      cardSS[slot]={raf:null,imgs:imgs,idx:0,elapsed:0,lastTick:performance.now(),perImg:perImg};
+      tickCardSS(slot);
+    });
+  }
+  /* ===== /CARD SLIDESHOWS ===== */
 
   /* display: list + posto filter */
   var urlPosto=null;
@@ -1225,7 +1387,7 @@
     el("d-count").textContent=items.length;el("d-postoLabel").textContent=(postoActive()==="Todos"?"Todos os postos":postoActive());
     items.forEach(function(it,idx){
       var b=document.createElement("button");b.className="li";b.setAttribute("data-i",idx);
-      var th=document.createElement("span");th.className="li-thumb";if(it.partImage){var im=document.createElement("img");im.src=it.partImage;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"22");
+      var th=document.createElement("span");th.className="li-thumb";var _lfi=(Array.isArray(it.partImages)&&it.partImages[0])||"";if(_lfi){var im=document.createElement("img");im.src=_lfi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"22");
       var bd=document.createElement("div");bd.className="li-body";
       var nm=document.createElement("div");nm.className="li-name";nm.textContent=it.partName||"(sem nome)";
       var mt=document.createElement("div");mt.className="li-meta";var po=document.createElement("span");po.className="li-posto";po.textContent=it.posto||"—";var rf=document.createElement("span");rf.className="li-ref";rf.textContent=it.partCode||"";mt.appendChild(po);mt.appendChild(rf);
@@ -1246,7 +1408,7 @@
     var items=getVisible();if(!items.length){showEmpty(true);return;}showEmpty(false);
     rotIdx=((i%items.length)+items.length)%items.length;
     var detail=el("tvDetail");detail.style.opacity="0";
-    window.setTimeout(function(){renderItem(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;highlightList(rotIdx);detail.style.opacity="1";},170);
+    window.setTimeout(function(){renderItem(items[rotIdx]);startCardSS(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;highlightList(rotIdx);detail.style.opacity="1";},170);
     rotStart=performance.now();el("progFill").style.width="0%";updateTimer(interval());cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
   }
   function updateTimer(remMs){var n=el("d-timerN");if(!n)return;var s=Math.max(0,Math.ceil(remMs/1000));if(n.textContent!==String(s))n.textContent=String(s);}
@@ -1256,7 +1418,7 @@
   function setPauseIcon(){el("iconPause").innerHTML=rotPaused?'<path d="M7 5l12 7-12 7z"/>':'<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';el("btnPause").title=rotPaused?"Continuar":"Pausar";}
   function togglePause(){if(!rotPaused){rotPaused=true;rotPausedAt=performance.now();cancelAnimationFrame(rotRAF);}else{rotPaused=false;rotStart+=(performance.now()-rotPausedAt);rotRAF=requestAnimationFrame(loopProg);}setPauseIcon();}
   function startRotation(){buildList();if(!getVisible().length){showEmpty(true);return;}showEmpty(false);rotPaused=false;setPauseIcon();goTo(0);}
-  function stopRotation(){cancelAnimationFrame(rotRAF);}
+  function stopRotation(){cancelAnimationFrame(rotRAF);stopCardSS();}
   el("btnPrev").addEventListener("click",prev);el("btnNext").addEventListener("click",next);el("btnPause").addEventListener("click",togglePause);
   var TIMER_PRESETS=[15,30,45,60,120];
   function applyIntervalSec(sec){
@@ -1264,9 +1426,9 @@
     if(TIMER_PRESETS.indexOf(sec)<0){sec=TIMER_PRESETS.reduce(function(a,b){return Math.abs(b-sec)<Math.abs(a-sec)?b:a;});}
     state.settings.intervalSec=sec;
     var si=el("setTimer");if(si)si.value=String(sec);
-    // reinicia a contagem da tela atual já com o novo tempo (feedback imediato)
     rotStart=performance.now();el("progFill").style.width="0%";updateTimer(interval());
     if(!rotPaused){cancelAnimationFrame(rotRAF);rotRAF=requestAnimationFrame(loopProg);}
+    if(shownItem)startCardSS(shownItem);
     queueSave();toast("Troca a cada "+sec+"s");
   }
   function stepInterval(dir){
@@ -1360,7 +1522,7 @@
       if(!items.length){showEmpty(true);return;}
       if(rotEmpty){showEmpty(false);goTo(0);return;}
       showEmpty(false);if(rotIdx>=items.length)rotIdx=0;
-      renderItem(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;highlightList(rotIdx);
+      renderItem(items[rotIdx]);startCardSS(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;highlightList(rotIdx);
     }else{renderEditorList();populateForm();}
   });
 

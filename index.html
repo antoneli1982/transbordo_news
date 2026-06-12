@@ -273,6 +273,21 @@
   .time-big .un{font-size:13px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.25}
   body[data-lay="tv"] .time-big .un{font-size:17px}
   .time-sub{margin-top:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .time-sub+.time-sub{margin-top:10px}
+  .time-sub.tsx-hl{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.34)}
+  .time-sub.tsx-edit{flex-direction:column;align-items:stretch;gap:9px}
+  .time-sub.tsx-edit .ts-l{text-align:center}
+  .ts-edit{display:flex;align-items:center;justify-content:center;gap:10px}
+  body[data-lay="tv"] .ts-edit{gap:12px}
+  .ts-btn{appearance:none;border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.14);color:#fff;cursor:pointer;width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;flex:0 0 auto;padding:0}
+  .ts-btn:hover{background:rgba(255,255,255,.26)}
+  .ts-btn:active{transform:scale(.9)}
+  .ts-btn svg{width:16px;height:16px}
+  body[data-lay="tv"] .ts-btn{width:40px;height:40px;border-radius:11px}
+  body[data-lay="tv"] .ts-btn svg{width:22px;height:22px}
+  .ts-input{appearance:none;border:1px solid transparent;background:rgba(255,255,255,.1);color:#fff;font-weight:800;text-align:center;width:2.6em;padding:3px 4px;border-radius:8px;font-family:var(--sans);font-variant-numeric:tabular-nums;outline:none}
+  .ts-input:focus{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.45)}
+  .ts-input::placeholder{color:rgba(255,255,255,.45)}
   .time-sub .ts-l{font-size:12px;color:rgba(255,255,255,.8);font-weight:600}
   body[data-lay="tv"] .time-sub .ts-l{font-size:17px}
   .time-sub .ts-v{font-size:18px;font-weight:800}
@@ -481,9 +496,10 @@
           <div class="group span">
             <h2>Transbordo</h2>
             <div class="row2">
+              <div class="field"><label>Caixas para transbordar</label><input type="text" data-field="qtyBoxes" placeholder="Ex.: 8"></div>
               <div class="field"><label>Quantidade de peças / caixa</label><input type="text" data-field="qtyPerBox" placeholder="Ex.: 24"></div>
-              <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" placeholder="Ex.: 02:45"></div>
             </div>
+            <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" placeholder="Ex.: 02:45"></div>
           </div>
         </div>
       </div>
@@ -590,6 +606,14 @@
             <div class="time-card">
               <div class="lab">Tempo médio por caixa</div>
               <div class="time-big"><span class="num" id="d-time"></span></div>
+              <div class="time-sub tsx-hl tsx-edit">
+                <span class="ts-l">Caixas para transbordar</span>
+                <span class="ts-edit">
+                  <button class="ts-btn" id="btnBoxDown" type="button" aria-label="Menos uma caixa"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+                  <input class="ts-v ts-input" id="d-boxes" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
+                  <button class="ts-btn" id="btnBoxUp" type="button" aria-label="Mais uma caixa"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+                </span>
+              </div>
               <div class="time-sub"><span class="ts-l">Peças por caixa</span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt">Aponte a câmera<br>para abrir a ficha</span></div>
             </div>
@@ -676,11 +700,11 @@
   function fmtTime(ms){try{var d=new Date(ms),p=function(n){return (n<10?"0":"")+n;};return p(d.getHours())+":"+p(d.getMinutes());}catch(e){return "";}}
 
   function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImage:"",mtm:"",mtmName:"",
-    dividerType:"",dividerImage:"",origin:{name:"",image:""},dest:{name:"",image:""},qtyPerBox:"",time:"00:00",status:"closed",openedAt:null,updated:nowStr()};}
+    dividerType:"",dividerImage:"",origin:{name:"",image:""},dest:{name:"",image:""},qtyPerBox:"",qtyBoxes:"",time:"00:00",status:"closed",openedAt:null,updated:nowStr()};}
   function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",image:""},o.origin||{});b.dest=Object.assign({name:"",image:""},o.dest||{});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;return b;}
 
   function defaults(){
-    var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImage:"",mtm:"",mtmName:"",dividerType:divType,dividerImage:"",origin:{name:oN,image:""},dest:{name:dN,image:""},qtyPerBox:qty,time:time,status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
+    var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImage:"",mtm:"",mtmName:"",dividerType:divType,dividerImage:"",origin:{name:oN,image:""},dest:{name:dN,image:""},qtyPerBox:qty,qtyBoxes:"",time:time,status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
     return {
       settings:{panelTitle:"Controle de Transbordo",statusText:"Em operação",logo:"",intervalSec:15,postoFilter:"Todos"},
       items:[
@@ -697,7 +721,7 @@
     return {id:o.id||uid(),posto:o.posto||"Posto 12",partName:o.productName||o.partName||"",partCode:o.partCode||o.ref||"",supplier:o.supplier||o.line||"",
       partImage:o.partImage||"",mtm:o.mtm||"",mtmName:o.mtmName||"",dividerType:o.dividerType||"",dividerImage:o.dividerImage||"",status:o.status==="closed"?"closed":"open",openedAt:(typeof o.openedAt==="number"?o.openedAt:null),origin:{name:(o.origin&&o.origin.name)||"",image:(o.origin&&(o.origin.image||o.origin.photo))||""},
       dest:{name:(o.dest&&o.dest.name)||"",image:(o.dest&&(o.dest.image||o.dest.photo))||""},
-      qtyPerBox:o.qtyPerBox||(o.origin&&o.origin.qty)||"",time:o.time||"00:00",updated:o.updated||nowStr()};
+      qtyPerBox:o.qtyPerBox||(o.origin&&o.origin.qty)||"",qtyBoxes:o.qtyBoxes||"",time:o.time||"00:00",updated:o.updated||nowStr()};
   }
   function loadState(){
     var v4=lsGet(KEY); if(v4){try{return normalize(JSON.parse(v4));}catch(e){}}
@@ -981,6 +1005,7 @@
     el("d-dName").textContent=it.dest.name||"—";el("d-divType").textContent=(it.dividerType&&it.dividerType.trim())?it.dividerType:"—";
     el("d-time").textContent=it.time||"";
     el("d-qty").textContent=(it.qtyPerBox&&String(it.qtyPerBox).trim())?it.qtyPerBox:"—";
+    var _bx=el("d-boxes");if(_bx&&document.activeElement!==_bx)_bx.value=(it.qtyBoxes&&String(it.qtyBoxes).trim())?it.qtyBoxes:"";
     el("d-updated").textContent=it.updated||"";
     setImg("d-partImg",it.partImage,"d-partPh");setImg("d-divImg",it.dividerImage,"d-divPh");
     setImg("d-oImg",it.origin.image,null);
@@ -1052,6 +1077,25 @@
   }
   var _btd=el("btnTimerDown");if(_btd)_btd.addEventListener("click",function(){stepInterval(-1);});
   var _btu=el("btnTimerUp");if(_btu)_btu.addEventListener("click",function(){stepInterval(1);});
+  /* editar "Caixas para transbordar" direto na TV (card azul) */
+  function holdRotation(){rotStart=performance.now();if(!rotPaused){el("progFill").style.width="0%";updateTimer(interval());}}
+  function adjustBoxes(delta){
+    if(document.body.dataset.view!=="display")return;
+    var it=shownItem;if(!it)return;
+    var cur=parseInt(String(it.qtyBoxes||"").replace(/[^0-9]/g,""),10);if(isNaN(cur))cur=0;
+    cur=Math.max(0,cur+delta);it.qtyBoxes=String(cur);it.updated=nowStr();
+    var bx=el("d-boxes");if(bx)bx.value=String(cur);
+    var fi=$('[data-field="qtyBoxes"]');if(fi&&currentItem()===it)fi.value=String(cur);
+    holdRotation();queueSave();
+  }
+  var _bxd=el("btnBoxDown");if(_bxd)_bxd.addEventListener("click",function(){adjustBoxes(-1);});
+  var _bxu=el("btnBoxUp");if(_bxu)_bxu.addEventListener("click",function(){adjustBoxes(1);});
+  var _bxi=el("d-boxes");
+  if(_bxi){
+    _bxi.addEventListener("input",function(){var it=shownItem;if(!it||document.body.dataset.view!=="display")return;var v=_bxi.value.replace(/[^0-9]/g,"");if(v!==_bxi.value)_bxi.value=v;it.qtyBoxes=v;it.updated=nowStr();var fi=$('[data-field="qtyBoxes"]');if(fi&&currentItem()===it)fi.value=v;holdRotation();queueSave();});
+    _bxi.addEventListener("focus",holdRotation);
+    _bxi.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();_bxi.blur();}});
+  }
 
   /* view / TV */
   function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}

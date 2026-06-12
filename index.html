@@ -882,21 +882,42 @@
      O estado em memória continua com as imagens "de verdade" (data URL), então toda a tela/render
      funciona igual — a conversão só acontece na hora de salvar/carregar da nuvem. */
   var ATT_PREFIX="att_";
-  var attCache={};      // token -> dataURL (resolvido ao carregar da nuvem)
-  var hashToToken={};   // hash do conteúdo -> token (evita reenviar a mesma imagem a cada save)
-  var ATT_MAX=1000000;  // teto por documento (~1MB). Acima disso, o anexo fica SÓ neste PC.
+  var attCache={};        // token -> dataURL (resolvido ao carregar da nuvem)
+  var hashToToken={};     // hash do conteúdo -> token (evita reenviar o mesmo anexo a cada save)
+  var CHUNK=900000;       // tamanho máx. de cada pedaço por documento (~900KB, abaixo do limite de 1MB)
+  var ATT_MAX=6000000;    // teto total por anexo (~6M chars base64 ≈ ~4,4MB de arquivo). Acima disso, fica só local.
   function attHash(str){var h1=0xdeadbeef^str.length,h2=0x41c6ce57^str.length;for(var i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);}
-  function attDocRef(tok){var FB=window.__FB;return FB.doc(FB.db,"paineis",tok);}
-  function writeAttDoc(tok,dataURL){var FB=window.__FB;return FB.setDoc(attDocRef(tok),{d:dataURL,updatedBy:CLIENT_ID,updatedAt:Date.now()});}
-  function readAttDoc(tok){var FB=window.__FB;return FB.getDoc(attDocRef(tok)).then(function(s){return (s&&s.exists())?(s.data().d||""):"";});}
+  /* pedaço 0 = doc "att_xxx"; pedaços extras = "att_xxx_c1", "att_xxx_c2"... */
+  function chunkRef(tok,i){var FB=window.__FB;return FB.doc(FB.db,"paineis",(i?(tok+"_c"+i):tok));}
+  /* grava o anexo: 1 doc se couber; vários docs (pedaços) se for grande (ex.: PDF de 2MB) */
+  function writeAttDoc(tok,dataURL){
+    var FB=window.__FB, parts=[];
+    for(var i=0;i<dataURL.length;i+=CHUNK) parts.push(dataURL.slice(i,i+CHUNK));
+    if(parts.length<=1){ return FB.setDoc(chunkRef(tok,0),{d:dataURL,updatedBy:CLIENT_ID,updatedAt:Date.now()}); }
+    var writes=[ FB.setDoc(chunkRef(tok,0),{d:parts[0],n:parts.length,updatedBy:CLIENT_ID,updatedAt:Date.now()}) ];
+    for(var j=1;j<parts.length;j++){ writes.push(FB.setDoc(chunkRef(tok,j),{d:parts[j],updatedAt:Date.now()})); }
+    return Promise.all(writes);
+  }
+  /* lê o anexo (junta os pedaços, se houver) */
+  function readAttDoc(tok){
+    var FB=window.__FB;
+    return FB.getDoc(chunkRef(tok,0)).then(function(s){
+      if(!(s&&s.exists())) return "";
+      var data=s.data(), first=data.d||"", n=(typeof data.n==="number")?data.n:1;
+      if(n<=1) return first;
+      var reads=[];
+      for(var j=1;j<n;j++){ reads.push(FB.getDoc(chunkRef(tok,j)).then(function(cs){return (cs&&cs.exists())?(cs.data().d||""):"";})); }
+      return Promise.all(reads).then(function(rest){ return first+rest.join(""); });
+    });
+  }
   /* estado COM data URLs -> versão LEVE com referências; coleta os anexos novos em "pending" */
   function dehydrateState(st,pending){
-    var c=JSON.parse(JSON.stringify(st));
+    var c=JSON.parse(JSON.stringify(st)), seen={};
     function conv(v){
       if(typeof v!=="string"||v.indexOf("data:")!==0) return v;   // vazio / http / já-referência: mantém
-      if(v.length>ATT_MAX) return "";                              // grande demais p/ 1 doc -> não sincroniza (fica só local)
-      var h=attHash(v),tok=hashToToken[h];
-      if(!tok){ tok=ATT_PREFIX+uid(); hashToToken[h]=tok; attCache[tok]=v; pending.push({tok:tok,data:v}); }
+      if(v.length>ATT_MAX) return "";                              // grande demais até p/ pedaços -> não sincroniza (só local)
+      var h=attHash(v), tok=hashToToken[h]||seen[h];
+      if(!tok){ tok=ATT_PREFIX+uid(); seen[h]=tok; attCache[tok]=v; pending.push({tok:tok,data:v,hash:h}); }
       return "fb:"+tok;
     }
     if(c.settings) c.settings.logo=conv(c.settings.logo);
@@ -946,8 +967,9 @@
         return;
       }
       setSyncStatus(pending.length?("Enviando "+pending.length+" anexo(s)..."):"Salvando...", "warn");
-      // 1) sobe cada anexo NOVO no seu próprio doc; 2) depois grava o doc principal leve
-      var writes=pending.map(function(p){ return (p.data.length>ATT_MAX)?Promise.resolve():writeAttDoc(p.tok,p.data); });
+      // 1) sobe cada anexo NOVO (em pedaços se for grande); só marca como "já enviado" se DER CERTO.
+      //    2) depois grava o doc principal leve. Assim o painel nunca aponta p/ um anexo pela metade.
+      var writes=pending.map(function(p){ return writeAttDoc(p.tok,p.data).then(function(){ hashToToken[p.hash]=p.tok; }); });
       Promise.all(writes).then(function(){
         return window.__FB.setDoc(FB_REF, { state: payload, updatedAt: stamp, updatedBy: CLIENT_ID });
       }).then(function(){
@@ -1111,7 +1133,7 @@
     fileToDataURL(file,max,function(url){
       applyImage(target,itAtStart,url);   // mostra na hora
       queueSave();                         // salva: o save manda a imagem p/ um doc próprio e sincroniza
-      if(url.length>ATT_MAX) toast("Imagem muito grande p/ sincronizar — ficou SÓ neste PC.");
+      if(url.length>ATT_MAX) toast("Imagem enorme (acima de ~4MB) — ficou SÓ neste PC.");
       else notifySaveSize("Imagem carregada");
     });
   });
@@ -1147,7 +1169,7 @@
       it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();
       var pf=$('[data-field="mtm"]');if(pf)pf.value="";
       updateMtmUI(it);queueSave();
-      if(url.length>ATT_MAX) toast("MTM grande demais p/ sincronizar grátis — ficou SÓ neste PC. Use uma imagem menor ou cole um link (ex.: Google Drive) no campo de URL.");
+      if(url.length>ATT_MAX) toast("MTM enorme (acima de ~4MB) — ficou SÓ neste PC. Reduza o PDF ou cole um link (ex.: Google Drive) no campo de URL.");
       else toast("MTM anexado — vai aparecer nas TVs.");
     };
     if(/^image\//.test(file.type)){

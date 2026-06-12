@@ -717,6 +717,25 @@
   }
   function normalize(s){if(!s||typeof s!=="object")return defaults();var d=defaults();s.settings=Object.assign(clone(d.settings),s.settings||{});if(!Array.isArray(s.items))s.items=[];s.items=s.items.map(itemFrom);return s;}
 
+  /* Mantém anexos LOCAIS quando a cópia da nuvem vier sem eles (ex.: um PDF grande que
+     não coube no limite de ~1MB e por isso nunca subiu). Assim, uma edição feita em outra
+     tela NÃO apaga o anexo guardado neste computador.
+     Obs.: por isso, apagar um anexo em OUTRA tela não se propaga sozinho (o anexo "reaparece");
+     para este painel, evitar perda acidental é o que mais importa. */
+  function mergeKeepLocalAttachments(remoteState, localState){
+    try{
+      var byId={};
+      ((localState&&localState.items)||[]).forEach(function(it){ if(it&&it.id) byId[it.id]=it; });
+      ((remoteState&&remoteState.items)||[]).forEach(function(rit){
+        var lit=(rit&&rit.id)?byId[rit.id]:null; if(!lit) return;
+        if((rit.mtm==null||rit.mtm==="")&&lit.mtm){ rit.mtm=lit.mtm; if(!rit.mtmName) rit.mtmName=lit.mtmName||""; }
+        ["partImage","dividerImage"].forEach(function(f){ if((rit[f]==null||rit[f]==="")&&lit[f]) rit[f]=lit[f]; });
+        ["origin","dest"].forEach(function(g){ if(rit[g]&&lit[g]&&(rit[g].image==null||rit[g].image==="")&&lit[g].image) rit[g].image=lit[g].image; });
+      });
+    }catch(e){}
+    return remoteState;
+  }
+
   function migrate3(o){ // old v3 item -> new
     return {id:o.id||uid(),posto:o.posto||"Posto 12",partName:o.productName||o.partName||"",partCode:o.partCode||o.ref||"",supplier:o.supplier||o.line||"",
       partImage:o.partImage||"",mtm:o.mtm||"",mtmName:o.mtmName||"",dividerType:o.dividerType||"",dividerImage:o.dividerImage||"",status:o.status==="closed"?"closed":"open",openedAt:(typeof o.openedAt==="number"?o.openedAt:null),origin:{name:(o.origin&&o.origin.name)||"",image:(o.origin&&(o.origin.image||o.origin.photo))||""},
@@ -802,6 +821,9 @@
       try{
         var remote = JSON.parse(data.state||"{}");
         var newState = normalize(remote);
+        // ESSENCIAL: não deixa a cópia da nuvem (que pode estar SEM um anexo que ainda não
+        // subiu, por ser grande) apagar os anexos já salvos neste PC.
+        newState = mergeKeepLocalAttachments(newState, state);
         // preserva o item selecionado se ainda existir
         var keepId = currentId;
         state = newState;
@@ -937,6 +959,15 @@
 
   /* uploads */
   var pendingTarget=null;
+  /* Avisa, ao anexar, se o conteúdo ficou grande demais para sincronizar com as TVs.
+     Limite prático do registro na nuvem (Firestore) é ~1MB; deixamos folga em 950KB. */
+  function notifySaveSize(okMsg){
+    try{
+      var len=JSON.stringify(state).length;
+      if(len>950000){ toast("Conteúdo pesado: salvo neste PC, mas NÃO vai p/ as TVs. Para PDF pesado, cole um LINK (URL) no campo do MTM."); }
+      else if(okMsg){ toast(okMsg); }
+    }catch(e){ if(okMsg) toast(okMsg); }
+  }
   function fileToDataURL(file,maxDim,cb){var reader=new FileReader();reader.onload=function(){var res=reader.result;if(!maxDim||/image\/svg/.test(file.type)){cb(res);return;}var img=new Image();img.onload=function(){try{
     var MAXLEN=440000; // mantém cada imagem dentro do limite p/ sincronizar (Firestore ~1MB por doc)
     function encode(dim,q){var sc=Math.min(1,dim/Math.max(img.width,img.height));var w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.drawImage(img,0,0,w,h);return c.toDataURL("image/jpeg",q);}
@@ -954,7 +985,7 @@
   }
   $all("[data-upload]").forEach(function(b){b.addEventListener("click",function(){pendingTarget=b.getAttribute("data-upload");el("filePhoto").value="";el("filePhoto").click();});});
   $all("[data-clear]").forEach(function(b){b.addEventListener("click",function(){setTargetImage(b.getAttribute("data-clear"),"");queueSave();});});
-  el("filePhoto").addEventListener("change",function(e){var file=e.target.files&&e.target.files[0];if(!file||!pendingTarget)return;var max=(pendingTarget==="logo")?0:1440;fileToDataURL(file,max,function(url){setTargetImage(pendingTarget,url);queueSave();toast("Imagem carregada");});});
+  el("filePhoto").addEventListener("change",function(e){var file=e.target.files&&e.target.files[0];if(!file||!pendingTarget)return;var max=(pendingTarget==="logo")?0:1440;fileToDataURL(file,max,function(url){setTargetImage(pendingTarget,url);queueSave();notifySaveSize("Imagem carregada");});});
 
   /* ===== MTM (upload de documento) ===== */
   function mtmKind(src){var s=String(src||"");if(!s)return null;if(/^data:application\/pdf/i.test(s)||/\.pdf(\?|#|$)/i.test(s))return "pdf";if(/^data:image\//i.test(s)||/\.(png|jpe?g|gif|webp|svg)(\?|#|$)/i.test(s))return "img";return "other";}
@@ -977,7 +1008,7 @@
   el("btnMtmClear").addEventListener("click",function(){var it=currentItem();if(!it)return;it.mtm="";it.mtmName="";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();});
   el("fileMtm").addEventListener("change",function(e){
     var file=e.target.files&&e.target.files[0];if(!file)return;var it=currentItem();if(!it)return;
-    var done=function(url){it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);try{if(String(url).length>700000)toast("MTM grande — p/ arquivos pesados use um link (URL).");else toast("MTM carregado");}catch(_){toast("MTM carregado");}queueSave();};
+    var done=function(url){it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();notifySaveSize("MTM carregado");};
     if(/^image\//.test(file.type)){fileToDataURL(file,1800,done);}
     else{var r=new FileReader();r.onload=function(){done(r.result);};r.readAsDataURL(file);}
   });

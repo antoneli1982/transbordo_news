@@ -13,7 +13,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import {
-    getFirestore, doc, setDoc, onSnapshot
+    getFirestore, doc, setDoc, onSnapshot, getDoc
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
   import {
     getStorage, ref, uploadBytes, getDownloadURL
@@ -33,7 +33,7 @@
   const storage = getStorage(app);
 
   // expõe pra dentro da IIFE principal
-  window.__FB = { db, doc, setDoc, onSnapshot };
+  window.__FB = { db, doc, setDoc, onSnapshot, getDoc };
   window.__FBS = { storage, ref, uploadBytes, getDownloadURL };
   window.dispatchEvent(new Event("firebase-ready"));
 </script>
@@ -794,6 +794,26 @@
     }
   }
 
+  /* Traduz o erro REAL do Firebase numa frase clara (em vez de esconder em "Sem conexão"). */
+  var _fbHintShown=false;
+  function fbErrText(e){
+    var s=((e&&(e.code||e.name))||"")+" "+((e&&e.message)||String(e||""));
+    if(/permission-denied|insufficient permissions|PERMISSION_DENIED/i.test(s)) return "Firestore BLOQUEADO — ajuste as Regras";
+    if(/unauthenticated/i.test(s)) return "Firestore exige login (Regras)";
+    if(/unavailable|deadline|network|transport|offline/i.test(s)) return "Sem conexão com o Firestore";
+    if(/not-?found/i.test(s)) return "Projeto/coleção não encontrada";
+    if(/quota|resource-exhausted/i.test(s)) return "Cota do Firestore esgotada";
+    return "Erro Firestore ("+(((e&&e.code)||"?")+")");
+  }
+  function reportFirebaseError(e){
+    setSyncStatus(fbErrText(e), "err");
+    var s=((e&&(e.code||e.name))||"")+" "+((e&&e.message)||String(e||""));
+    if(/permission-denied|insufficient permissions|PERMISSION_DENIED|unauthenticated/i.test(s) && !_fbHintShown){
+      _fbHintShown=true;
+      console.error("%c[Painel] O Firestore recusou a escrita/leitura — isso é REGRA DE SEGURANÇA, não conexão.\nNo Console do Firebase → Firestore Database → Regras, publique:\n\nrules_version = '2';\nservice cloud.firestore {\n  match /databases/{db}/documents {\n    match /paineis/{doc} { allow read, write: if true; }\n  }\n}","color:#E0483B;font-weight:bold");
+    }
+  }
+
   function connectFirebase(){
     if(!window.__FB){ setSyncStatus("Offline (local)", "warn"); return; }
     var FB = window.__FB;
@@ -806,7 +826,6 @@
         // primeira vez: faz upload do estado atual
         setSyncStatus("Inicializando nuvem...", "warn");
         saveToFirebase();
-        migrateEmbeddedImages();
         return;
       }
       var data = snap.data();
@@ -822,38 +841,92 @@
       if(rTs <= lastSavedAt){
         setSyncStatus("Sincronizado", "ok");
         try{ saveToFirebase(lastSavedAt); }catch(e){}
-        migrateEmbeddedImages();
         return;
       }
       try{
-        var remote = JSON.parse(data.state||"{}");
-        var newState = normalize(remote);
-        // ESSENCIAL: não deixa a cópia da nuvem (que pode estar SEM um anexo que ainda não
-        // subiu, por ser grande) apagar os anexos já salvos neste PC.
-        newState = mergeKeepLocalAttachments(newState, state);
-        // preserva o item selecionado se ainda existir
-        var keepId = currentId;
-        state = newState;
-        lastSavedAt = rTs;
-        if(keepId && state.items.some(function(i){return i.id===keepId;})) {
-          currentId = keepId;
-        } else if(state.items.length){
-          currentId = state.items[0].id;
-        } else {
-          currentId = null;
-        }
-        reRenderAll();
-        // guarda localmente o que veio da nuvem (sobrevive ao F5)
-        persistLocal(state, rTs);
-        setSyncStatus("Atualizado de outro PC", "ok");
-        migrateEmbeddedImages();
+        var remote = normalize(JSON.parse(data.state||"{}"));
+        // resolve as referências "fb:att_xxx" em imagens de verdade ANTES de aplicar
+        hydrateState(remote, function(hy){
+          // ESSENCIAL: não deixa a cópia da nuvem (que pode estar SEM um anexo que ainda não
+          // subiu, por ser grande) apagar os anexos já salvos neste PC.
+          var newState = mergeKeepLocalAttachments(hy, state);
+          var keepId = currentId;
+          state = newState;
+          lastSavedAt = rTs;
+          if(keepId && state.items.some(function(i){return i.id===keepId;})) {
+            currentId = keepId;
+          } else if(state.items.length){
+            currentId = state.items[0].id;
+          } else {
+            currentId = null;
+          }
+          reRenderAll();
+          // guarda localmente o que veio da nuvem (sobrevive ao F5)
+          persistLocal(state, rTs);
+          setSyncStatus("Atualizado de outro PC", "ok");
+        });
       }catch(e){
         console.error("Erro processando snapshot:", e);
         setSyncStatus("Erro de sync", "err");
       }
     }, function(err){
       console.error("Firestore listener error:", err);
-      setSyncStatus("Sem conexão", "err");
+      reportFirebaseError(err);
+    });
+  }
+
+  /* ====== ANEXOS EM DOCUMENTOS PRÓPRIOS DO FIRESTORE (plano grátis, sem Storage) ======
+     Cada imagem/PDF vira um doc "paineis/att_xxx" (cada um cabe no limite de ~1MB do Firestore).
+     No painel principal guardamos só a referência "fb:att_xxx" (leve). Resultado: o doc principal
+     nunca estoura o limite e TUDO (texto + imagens + MTM que couber) sincroniza entre navegadores.
+     O estado em memória continua com as imagens "de verdade" (data URL), então toda a tela/render
+     funciona igual — a conversão só acontece na hora de salvar/carregar da nuvem. */
+  var ATT_PREFIX="att_";
+  var attCache={};      // token -> dataURL (resolvido ao carregar da nuvem)
+  var hashToToken={};   // hash do conteúdo -> token (evita reenviar a mesma imagem a cada save)
+  var ATT_MAX=1000000;  // teto por documento (~1MB). Acima disso, o anexo fica SÓ neste PC.
+  function attHash(str){var h1=0xdeadbeef^str.length,h2=0x41c6ce57^str.length;for(var i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);}
+  function attDocRef(tok){var FB=window.__FB;return FB.doc(FB.db,"paineis",tok);}
+  function writeAttDoc(tok,dataURL){var FB=window.__FB;return FB.setDoc(attDocRef(tok),{d:dataURL,updatedBy:CLIENT_ID,updatedAt:Date.now()});}
+  function readAttDoc(tok){var FB=window.__FB;return FB.getDoc(attDocRef(tok)).then(function(s){return (s&&s.exists())?(s.data().d||""):"";});}
+  /* estado COM data URLs -> versão LEVE com referências; coleta os anexos novos em "pending" */
+  function dehydrateState(st,pending){
+    var c=JSON.parse(JSON.stringify(st));
+    function conv(v){
+      if(typeof v!=="string"||v.indexOf("data:")!==0) return v;   // vazio / http / já-referência: mantém
+      if(v.length>ATT_MAX) return "";                              // grande demais p/ 1 doc -> não sincroniza (fica só local)
+      var h=attHash(v),tok=hashToToken[h];
+      if(!tok){ tok=ATT_PREFIX+uid(); hashToToken[h]=tok; attCache[tok]=v; pending.push({tok:tok,data:v}); }
+      return "fb:"+tok;
+    }
+    if(c.settings) c.settings.logo=conv(c.settings.logo);
+    (c.items||[]).forEach(function(it){
+      it.partImage=conv(it.partImage); it.dividerImage=conv(it.dividerImage);
+      if(it.origin) it.origin.image=conv(it.origin.image);
+      if(it.dest) it.dest.image=conv(it.dest.image);
+      it.mtm=conv(it.mtm);
+    });
+    return c;
+  }
+  /* referências "fb:att_xxx" -> data URLs (busca os docs que ainda não estão em cache) */
+  function hydrateState(st,done){
+    var need={};
+    function note(v){ if(typeof v==="string"&&v.indexOf("fb:")===0){var tok=v.slice(3); if(!(tok in attCache)) need[tok]=1;} }
+    if(st.settings) note(st.settings.logo);
+    (st.items||[]).forEach(function(it){ note(it.partImage);note(it.dividerImage); if(it.origin)note(it.origin.image); if(it.dest)note(it.dest.image); note(it.mtm); });
+    function finish(){
+      function conv(v){ if(typeof v==="string"&&v.indexOf("fb:")===0) return attCache[v.slice(3)]||""; return v; }
+      if(st.settings) st.settings.logo=conv(st.settings.logo);
+      (st.items||[]).forEach(function(it){ it.partImage=conv(it.partImage);it.dividerImage=conv(it.dividerImage); if(it.origin)it.origin.image=conv(it.origin.image); if(it.dest)it.dest.image=conv(it.dest.image); it.mtm=conv(it.mtm); });
+      done(st);
+    }
+    var toks=Object.keys(need);
+    if(!toks.length){ finish(); return; }
+    var left=toks.length;
+    toks.forEach(function(tok){
+      readAttDoc(tok).then(function(d){ attCache[tok]=d; if(d) hashToToken[attHash(d)]=tok; })
+                     .catch(function(){ if(!(tok in attCache)) attCache[tok]=""; })
+                     .then(function(){ if(--left<=0) finish(); });
     });
   }
 
@@ -862,24 +935,26 @@
     clearTimeout(FB_SAVE_T);
     var stamp = (typeof ts==="number"&&ts) ? ts : Date.now();
     FB_SAVE_T = setTimeout(function(){
-      var payload = JSON.stringify(state);
-      // limite do Firestore é ~1MB por documento. Se passar, os dados CONTINUAM salvos no PC
-      // (IndexedDB) — só não sincronizam para as TVs. Não apagamos nada.
+      var pending=[], light;
+      try{ light = dehydrateState(state, pending); }
+      catch(err){ console.error("dehydrate:",err); setSyncStatus("Erro ao preparar sync","err"); return; }
+      var payload = JSON.stringify(light);
+      // com referências, o doc principal é minúsculo; só estouraria com MILHARES de itens.
       if(payload.length > 1000000){
-        setSyncStatus("Salvo no PC · grande p/ TVs", "warn");
-        console.warn("Estado >1MB; salvo localmente, sync p/ TVs ignorado:", payload.length, "bytes");
+        setSyncStatus("Texto grande demais p/ nuvem", "warn");
+        console.warn("Doc principal >1MB mesmo com referências:", payload.length, "bytes");
         return;
       }
-      setSyncStatus(payload.length>850000?"Salvando (grande)...":"Salvando...", "warn");
-      window.__FB.setDoc(FB_REF, {
-        state: payload,
-        updatedAt: stamp,
-        updatedBy: CLIENT_ID
+      setSyncStatus(pending.length?("Enviando "+pending.length+" anexo(s)..."):"Salvando...", "warn");
+      // 1) sobe cada anexo NOVO no seu próprio doc; 2) depois grava o doc principal leve
+      var writes=pending.map(function(p){ return (p.data.length>ATT_MAX)?Promise.resolve():writeAttDoc(p.tok,p.data); });
+      Promise.all(writes).then(function(){
+        return window.__FB.setDoc(FB_REF, { state: payload, updatedAt: stamp, updatedBy: CLIENT_ID });
       }).then(function(){
         setSyncStatus("Sincronizado", "ok");
       }).catch(function(e){
         console.error("Erro Firestore:", e);
-        setSyncStatus("Salvo no PC (sync falhou)", "warn");
+        reportFirebaseError(e);
       });
     }, 700);
   }
@@ -1034,65 +1109,12 @@
     var itAtStart=(target==="logo")?null:currentItem();   // trava o item ALVO agora
     if(target!=="logo"&&!itAtStart)return;
     fileToDataURL(file,max,function(url){
-      // 1) mostra na hora e salva local — já funciona NESTE PC
-      applyImage(target,itAtStart,url);queueSave();
-      // 2) sobe pro Storage: o estado passa a guardar só o LINK (leve) e SINCRONIZA com as TVs
-      if(window.__FBS){
-        setSyncStatus("Enviando imagem...","warn");
-        var blob;try{blob=dataURLtoBlob(url);}catch(_e){blob=file;}
-        uploadAttachment(blob,file.name||(target+".jpg")).then(function(link){
-          applyImage(target,itAtStart,link);queueSave();   // troca o base64 pesado pelo link leve
-          toast("Imagem enviada — vai aparecer nas TVs");
-        }).catch(function(err){
-          console.warn("Storage indisponível p/ imagem, ficou embutida:",err);
-          toast("Storage ainda não ativo: a imagem ficou SÓ neste PC. Ative o Storage p/ sincronizar.");
-          notifySaveSize("Imagem salva SÓ neste PC");
-        });
-      }else{notifySaveSize("Imagem carregada (SÓ neste PC)");}
+      applyImage(target,itAtStart,url);   // mostra na hora
+      queueSave();                         // salva: o save manda a imagem p/ um doc próprio e sincroniza
+      if(url.length>ATT_MAX) toast("Imagem muito grande p/ sincronizar — ficou SÓ neste PC.");
+      else notifySaveSize("Imagem carregada");
     });
   });
-
-  /* ===== Migração automática: imagens já embutidas (base64) viram links do Storage =====
-     Roda uma vez quando o Storage está disponível. Sem isso, as imagens que você JÁ
-     adicionou continuariam só neste PC. Depois de migrar, todas sincronizam nas TVs. */
-  var _migrated=false,_migrating=false;
-  function looksEmbedded(s){return typeof s==="string"&&/^data:/i.test(s);}
-  function migrateEmbeddedImages(){
-    if(_migrated||_migrating||!window.__FBS)return;
-    var jobs=[];
-    if(looksEmbedded(state.settings.logo))jobs.push({get:function(){return state.settings.logo;},set:function(u){state.settings.logo=u;},name:"logo.jpg"});
-    state.items.forEach(function(it){
-      [["partImage","peca.jpg"],["dividerImage","divisoria.jpg"]].forEach(function(p){
-        if(looksEmbedded(it[p[0]]))jobs.push({get:function(){return it[p[0]];},set:function(u){it[p[0]]=u;it.updated=nowStr();},name:p[1]});
-      });
-      ["origin","dest"].forEach(function(k){
-        if(it[k]&&looksEmbedded(it[k].image))jobs.push({get:function(){return it[k].image;},set:function(u){it[k].image=u;it.updated=nowStr();},name:k+".jpg"});
-      });
-      if(looksEmbedded(it.mtm))jobs.push({get:function(){return it.mtm;},set:function(u){it.mtm=u;it.updated=nowStr();},name:(it.mtmName||"mtm")});
-    });
-    if(!jobs.length){_migrated=true;return;}
-    _migrating=true;
-    setSyncStatus("Migrando imagens p/ nuvem ("+jobs.length+")...","warn");
-    var i=0,changed=false;
-    (function nextJob(){
-      if(i>=jobs.length){
-        _migrating=false;_migrated=true;
-        if(changed){reRenderAll();save();toast("Imagens migradas — agora sincronizam nas TVs");}
-        else setSyncStatus("Sincronizado","ok");
-        return;
-      }
-      var job=jobs[i++],blob;
-      try{blob=dataURLtoBlob(job.get());}catch(e){return nextJob();}
-      uploadAttachment(blob,job.name).then(function(link){
-        job.set(link);changed=true;nextJob();
-      }).catch(function(err){
-        // Storage indisponível: aborta a migração silenciosamente (não perde nada)
-        console.warn("Migração interrompida (Storage off):",err);
-        _migrating=false;_migrated=true;
-        if(changed){reRenderAll();save();}
-      });
-    })();
-  }
 
   /* ===== MTM (upload de documento) ===== */
   function mtmKind(src){var s=String(src||"");if(!s)return null;if(/^data:application\/pdf/i.test(s)||/\.pdf(\?|#|$)/i.test(s))return "pdf";if(/^data:image\//i.test(s)||/\.(png|jpe?g|gif|webp|svg)(\?|#|$)/i.test(s))return "img";return "other";}
@@ -1121,23 +1143,21 @@
     var file=e.target.files&&e.target.files[0];if(!file)return;
     var it=currentItem();
     if(!it){ toast("Selecione ou crie uma peça antes de anexar o MTM."); e.target.value=""; return; }
-    var done=function(url){it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();};
-    var embedFallback=function(){
-      if(/^image\//.test(file.type)){fileToDataURL(file,1800,function(u){done(u);notifySaveSize("MTM salvo SÓ neste PC");});}
-      else{var r=new FileReader();r.onload=function(){done(r.result);notifySaveSize("MTM salvo SÓ neste PC");};r.onerror=function(){toast("Não consegui ler o arquivo.");setSyncStatus("Falha ao ler arquivo","err");};r.readAsDataURL(file);}
+    var done=function(url){
+      it.mtm=url;it.mtmName=file.name||"";it.updated=nowStr();
+      var pf=$('[data-field="mtm"]');if(pf)pf.value="";
+      updateMtmUI(it);queueSave();
+      if(url.length>ATT_MAX) toast("MTM grande demais p/ sincronizar grátis — ficou SÓ neste PC. Use uma imagem menor ou cole um link (ex.: Google Drive) no campo de URL.");
+      else toast("MTM anexado — vai aparecer nas TVs.");
     };
-    // 1ª opção: sobe pro Firebase Storage -> sincroniza em qualquer tamanho (guarda só o link)
-    if(window.__FBS){
-      setSyncStatus("Enviando MTM...","warn");
-      uploadAttachment(file,file.name).then(function(url){
-        done(url);toast("MTM enviado — vai aparecer nas TVs");
-      }).catch(function(err){
-        var t=(err&&/timeout/.test(String(err.message||err)))?"Storage demorou demais — MTM salvo SÓ neste PC. Verifique se o Storage está ativo.":"Storage ainda não ativo: MTM ficou SÓ neste PC. Ative o Storage p/ sincronizar.";
-        console.warn("Storage indisponível, salvando embutido:",err);
-        toast(t);
-        embedFallback();
-      });
-    }else{ embedFallback(); }
+    if(/^image\//.test(file.type)){
+      fileToDataURL(file,1800,function(u){done(u);});                 // imagem é comprimida (cabe num doc)
+    }else{
+      var r=new FileReader();
+      r.onload=function(){done(r.result);};
+      r.onerror=function(){toast("Não consegui ler o arquivo.");setSyncStatus("Falha ao ler arquivo","err");};
+      r.readAsDataURL(file);
+    }
   });
 
   /* import / export */

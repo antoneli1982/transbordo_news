@@ -817,6 +817,12 @@
   /* ============ SINCRONIZAÇÃO FIREBASE ============ */
   var CLIENT_ID = "c"+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
   var FB_READY = false, FB_REF = null, FB_SAVE_T = null, FB_IGNORE_NEXT = false;
+  /* Controle de sincronização à prova de "trocar de navegador":
+     - initialSyncDone: na 1ª vez que conectamos e achamos dados, a nuvem é a verdade (adota sempre).
+     - localDirty: marca que ESTE navegador tem edição ainda não confirmada na nuvem.
+       A decisão "fico com o meu x pego o da nuvem" passa a depender disto (e NÃO do relógio,
+       que varia de um PC para outro e fazia o painel rejeitar/sobrescrever dados bons). */
+  var initialSyncDone = false, localDirty = false;
   var SYNC_BADGE = null;
 
   function setSyncStatus(txt, cls){
@@ -863,53 +869,69 @@
 
     FB.onSnapshot(FB_REF, function(snap){
       FB_READY = true;
+
+      // Aplica o estado da nuvem por cima do local: resolve as imagens "fb:att_xxx" ANTES de
+      // mostrar e preserva anexos que só existem neste PC (um PDF grande que não coube na nuvem).
+      function adoptRemote(data, rTs){
+        try{
+          var remote = normalize(JSON.parse(data.state||"{}"));
+          hydrateState(remote, function(hy){
+            var newState = mergeKeepLocalAttachments(hy, state);
+            var keepId = currentId;
+            state = newState;
+            lastSavedAt = Math.max(lastSavedAt, rTs);
+            initialSyncDone = true;
+            localDirty = false;
+            if(keepId && state.items.some(function(i){return i.id===keepId;})) currentId = keepId;
+            else currentId = state.items.length ? state.items[0].id : null;
+            reRenderAll();
+            persistLocal(state, lastSavedAt);   // grava local p/ sobreviver ao F5 e à troca de navegador
+            setSyncStatus("Atualizado de outro PC", "ok");
+          });
+        }catch(e){
+          console.error("Erro processando snapshot:", e);
+          setSyncStatus("Erro de sync", "err");
+        }
+      }
+
       if(!snap.exists()){
-        // primeira vez: faz upload do estado atual
+        // Nuvem vazia. Só "semeia" com o estado local quando o SERVIDOR confirma que não existe.
+        // Um evento vindo só do cache NÃO pode apagar uma nuvem que, de fato, já tem dados —
+        // era um dos jeitos de "abrir em outro navegador e perder tudo".
+        if(snap.metadata && snap.metadata.fromCache) return;
+        initialSyncDone = true;
         setSyncStatus("Inicializando nuvem...", "warn");
         saveToFirebase();
         return;
       }
+
       var data = snap.data();
       var rTs = (typeof data.updatedAt === "number") ? data.updatedAt : 0;
-      // ignora o "echo" da própria escrita (evita loop visual)
+
+      // Eco da nossa própria escrita: confirma que a nuvem já guardou o que salvamos.
       if(data.updatedBy === CLIENT_ID){
         lastSavedAt = Math.max(lastSavedAt, rTs);
+        initialSyncDone = true;
+        localDirty = false;
         setSyncStatus("Sincronizado", "ok");
         return;
       }
-      // Se a nuvem estiver MAIS ANTIGA que o nosso último salvamento local, NÃO sobrescreve.
-      // (acontece quando um anexo grande não coube na nuvem.) Reenvia o nosso por cima.
-      if(rTs <= lastSavedAt){
+
+      // Atualização vinda de OUTRO navegador/PC.
+      // 1ª conexão com dados na nuvem => a nuvem é a verdade: adota SEMPRE.
+      //    (é isto que faz "abrir em outro navegador" mostrar o painel certo, não o exemplo.)
+      if(!initialSyncDone){ adoptRemote(data, rTs); return; }
+
+      // Depois disso: se NÃO há edição local pendente, segue a nuvem (TVs sempre atualizadas).
+      // Se HÁ edição local pendente, é conflito real => preserva o que está sendo editado aqui
+      // e republica. Decidir por "edição pendente" (e não por relógio) deixa a sincronização
+      // imune à diferença de horário entre computadores.
+      if(localDirty){
         setSyncStatus("Sincronizado", "ok");
-        try{ saveToFirebase(lastSavedAt); }catch(e){}
+        try{ saveToFirebase(); }catch(e){}
         return;
       }
-      try{
-        var remote = normalize(JSON.parse(data.state||"{}"));
-        // resolve as referências "fb:att_xxx" em imagens de verdade ANTES de aplicar
-        hydrateState(remote, function(hy){
-          // ESSENCIAL: não deixa a cópia da nuvem (que pode estar SEM um anexo que ainda não
-          // subiu, por ser grande) apagar os anexos já salvos neste PC.
-          var newState = mergeKeepLocalAttachments(hy, state);
-          var keepId = currentId;
-          state = newState;
-          lastSavedAt = rTs;
-          if(keepId && state.items.some(function(i){return i.id===keepId;})) {
-            currentId = keepId;
-          } else if(state.items.length){
-            currentId = state.items[0].id;
-          } else {
-            currentId = null;
-          }
-          reRenderAll();
-          // guarda localmente o que veio da nuvem (sobrevive ao F5)
-          persistLocal(state, rTs);
-          setSyncStatus("Atualizado de outro PC", "ok");
-        });
-      }catch(e){
-        console.error("Erro processando snapshot:", e);
-        setSyncStatus("Erro de sync", "err");
-      }
+      adoptRemote(data, rTs);
     }, function(err){
       console.error("Firestore listener error:", err);
       reportFirebaseError(err);
@@ -1028,6 +1050,10 @@
 
   function save(){
     var ts=Date.now();
+    // Edição feita DEPOIS do 1º sync com a nuvem tem prioridade até ser confirmada lá.
+    // (Antes do 1º sync não marcamos: seria uma edição em cima do exemplo, que não pode
+    //  vencer a configuração real que ainda está chegando da nuvem.)
+    if(initialSyncDone) localDirty = true;
     persistLocal(state,ts);   // IndexedDB (robusto) + localStorage (melhor esforço)
     saveToFirebase(ts);       // sincroniza nuvem com o MESMO timestamp
     flashSaved();
@@ -1070,7 +1096,7 @@
       var row=document.createElement("div");row.className="ed-item"+(it.id===currentId?" sel":"")+(open?"":" closed");
       var th=document.createElement("span");th.className="ei-thumb";
       var _fi=(Array.isArray(it.partImages)&&it.partImages[0])||"";
-      if(_fi){var im=document.createElement("img");im.src=_fi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"20");
+      if(_fi){var im=document.createElement("img");im.alt="";im.onerror=function(){th.innerHTML=PART_ICON.replace(/W/g,"20");};im.src=_fi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"20");
       var info=document.createElement("div");info.className="ei-info";
       var nm=document.createElement("div");nm.className="ei-name";nm.textContent=it.partName||"(sem nome)";
       var sub=document.createElement("div");sub.className="ei-sub";
@@ -1168,7 +1194,7 @@
     var imgs=Array.isArray(images)?images.filter(Boolean):[];
     imgs.forEach(function(src,i){
       var t=document.createElement("div");t.className="multi-thumb";
-      var img=document.createElement("img");img.src=src;img.alt="";
+      var img=document.createElement("img");img.alt="";img.onerror=function(){t.style.display="none";};img.src=src;
       var rm=document.createElement("button");rm.type="button";rm.className="mth-rm";rm.title="Remover";
       rm.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
       (function(idx){rm.addEventListener("click",function(e){e.stopPropagation();removeSlotImage(slot,idx);});})(i);
@@ -1387,7 +1413,7 @@
     el("d-count").textContent=items.length;el("d-postoLabel").textContent=(postoActive()==="Todos"?"Todos os postos":postoActive());
     items.forEach(function(it,idx){
       var b=document.createElement("button");b.className="li";b.setAttribute("data-i",idx);
-      var th=document.createElement("span");th.className="li-thumb";var _lfi=(Array.isArray(it.partImages)&&it.partImages[0])||"";if(_lfi){var im=document.createElement("img");im.src=_lfi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"22");
+      var th=document.createElement("span");th.className="li-thumb";var _lfi=(Array.isArray(it.partImages)&&it.partImages[0])||"";if(_lfi){var im=document.createElement("img");im.alt="";im.onerror=function(){th.innerHTML=PART_ICON.replace(/W/g,"22");};im.src=_lfi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"22");
       var bd=document.createElement("div");bd.className="li-body";
       var nm=document.createElement("div");nm.className="li-name";nm.textContent=it.partName||"(sem nome)";
       var mt=document.createElement("div");mt.className="li-meta";var po=document.createElement("span");po.className="li-posto";po.textContent=it.posto||"—";var rf=document.createElement("span");rf.className="li-ref";rf.textContent=it.partCode||"";mt.appendChild(po);mt.appendChild(rf);

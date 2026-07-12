@@ -266,9 +266,10 @@
   body[data-lay="tv"] .arrow-meta .t{font-size:13px}
 
   /* time hero */
-  .time-card{position:relative;color:#fff;border-radius:var(--r);overflow:hidden;width:100%;background:radial-gradient(130% 120% at 88% -10%,rgba(255,255,255,.16),transparent 55%),linear-gradient(155deg,var(--brand-700),var(--brand-800) 75%);box-shadow:0 26px 50px -24px rgba(21,37,105,.85);clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,0 100%);display:flex;flex-direction:column}
+  .time-card{position:relative;color:#fff;border-radius:var(--r);overflow:hidden;width:100%;background:radial-gradient(130% 120% at 88% -10%,rgba(255,255,255,.16),transparent 55%),linear-gradient(155deg,var(--brand-700),var(--brand-800) 75%);box-shadow:0 26px 50px -24px rgba(21,37,105,.85);clip-path:polygon(0 0,calc(100% - 24px) 0,100% 24px,100% 100%,0 100%);display:flex;flex-direction:column;min-height:0}
   body[data-lay="flow"] .time-card{padding:20px}
-  body[data-lay="tv"] .time-card{padding:26px 28px;justify-content:center}
+  body[data-lay="tv"] .time-card{padding:22px 26px;justify-content:center;align-items:center}
+  .tc-fit{width:100%;transform-origin:center center}
   .time-card::after{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;border:1px solid rgba(255,255,255,.1);border-radius:50%}
   .time-card .lab{font-size:12px;font-weight:600;color:rgba(255,255,255,.82);line-height:1.4}
   body[data-lay="tv"] .time-card .lab{font-size:19px}
@@ -277,8 +278,8 @@
   body[data-lay="tv"] .time-big .num{font-size:74px}
   .time-big .un{font-size:13px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.25}
   body[data-lay="tv"] .time-big .un{font-size:17px}
-  .time-sub{margin-top:14px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .time-sub+.time-sub{margin-top:10px}
+  .time-sub{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .time-sub+.time-sub{margin-top:8px}
   .time-sub.tsx-hl{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.34)}
   .time-sub.tsx-edit{flex-direction:column;align-items:stretch;gap:9px}
   .time-sub.tsx-edit .ts-l{text-align:center}
@@ -293,10 +294,10 @@
   .ts-input{appearance:none;border:1px solid transparent;background:rgba(255,255,255,.1);color:#fff;font-weight:800;text-align:center;width:2.6em;padding:3px 4px;border-radius:8px;font-family:var(--sans);font-variant-numeric:tabular-nums;outline:none}
   .ts-input:focus{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.45)}
   .ts-input::placeholder{color:rgba(255,255,255,.45)}
-  .time-sub .ts-l{font-size:12px;color:rgba(255,255,255,.8);font-weight:600}
-  body[data-lay="tv"] .time-sub .ts-l{font-size:17px}
-  .time-sub .ts-v{font-size:18px;font-weight:800}
-  body[data-lay="tv"] .time-sub .ts-v{font-size:34px}
+  .time-sub .ts-l{font-size:12px;color:rgba(255,255,255,.8);font-weight:600;line-height:1.3;min-width:0}
+  body[data-lay="tv"] .time-sub .ts-l{font-size:15px}
+  .time-sub .ts-v{font-size:18px;font-weight:800;line-height:1;white-space:nowrap;flex:0 0 auto}
+  body[data-lay="tv"] .time-sub .ts-v{font-size:30px}
   .time-qr{display:none}
   .time-qr .qbox{background:#fff;border-radius:12px;padding:9px;flex:0 0 auto;line-height:0}
   body[data-lay="flow"] .time-qr .qbox{width:92px;height:92px}
@@ -642,6 +643,7 @@
 
           <aside class="d-right">
             <div class="time-card">
+              <div class="tc-fit">
               <div class="lab">Tempo médio por caixa</div>
               <div class="time-big"><span class="num" id="d-time"></span></div>
               <div class="time-sub tsx-hl tsx-edit">
@@ -655,6 +657,7 @@
               <div class="time-sub tsx-hl"><span class="ts-l">Tempo total do processo</span><span class="ts-v" id="d-total">—</span></div>
               <div class="time-sub"><span class="ts-l">Peças por caixa</span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt">Aponte a câmera<br>para abrir a ficha</span></div>
+              </div>
             </div>
           </aside>
         </div>
@@ -1356,7 +1359,7 @@
     el("d-time").textContent=it.time||"";
     el("d-qty").textContent=(it.qtyPerBox&&String(it.qtyPerBox).trim())?it.qtyPerBox:"—";
     var _bx=el("d-boxes");if(_bx&&document.activeElement!==_bx)_bx.value=(it.qtyBoxes&&String(it.qtyBoxes).trim())?it.qtyBoxes:"";
-    updateTotalTime();
+    updateTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";
     setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");
     setImg("d-oImg",getSlotImages(it,"origin")[0]||"",null);
@@ -1501,13 +1504,13 @@
     cur=Math.max(0,cur+delta);it.qtyBoxes=String(cur);it.updated=nowStr();
     var bx=el("d-boxes");if(bx)bx.value=String(cur);
     var fi=$('[data-field="qtyBoxes"]');if(fi&&currentItem()===it)fi.value=String(cur);
-    updateTotalTime();holdRotation();queueSave();
+    updateTotalTime();fitTimeCard();holdRotation();queueSave();
   }
   var _bxd=el("btnBoxDown");if(_bxd)_bxd.addEventListener("click",function(){adjustBoxes(-1);});
   var _bxu=el("btnBoxUp");if(_bxu)_bxu.addEventListener("click",function(){adjustBoxes(1);});
   var _bxi=el("d-boxes");
   if(_bxi){
-    _bxi.addEventListener("input",function(){var it=shownItem;if(!it||document.body.dataset.view!=="display")return;var v=_bxi.value.replace(/[^0-9]/g,"");if(v!==_bxi.value)_bxi.value=v;it.qtyBoxes=v;it.updated=nowStr();var fi=$('[data-field="qtyBoxes"]');if(fi&&currentItem()===it)fi.value=v;updateTotalTime();holdRotation();queueSave();});
+    _bxi.addEventListener("input",function(){var it=shownItem;if(!it||document.body.dataset.view!=="display")return;var v=_bxi.value.replace(/[^0-9]/g,"");if(v!==_bxi.value)_bxi.value=v;it.qtyBoxes=v;it.updated=nowStr();var fi=$('[data-field="qtyBoxes"]');if(fi&&currentItem()===it)fi.value=v;updateTotalTime();fitTimeCard();holdRotation();queueSave();});
     _bxi.addEventListener("focus",holdRotation);
     _bxi.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();_bxi.blur();}});
   }
@@ -1517,11 +1520,24 @@
   function reqFs(){var d=document.documentElement;try{(d.requestFullscreen||d.webkitRequestFullscreen||function(){}).call(d);}catch(e){}}
   function exitFs(){try{if(isFs())(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);}catch(e){}}
   function computeLay(){var big=window.matchMedia("(min-width:1000px) and (orientation:landscape)").matches||isFs();document.body.dataset.lay=(document.body.dataset.view==="display"&&big)?"tv":"flow";applyScale();}
-  function applyScale(){var stage=el("stage");if(document.body.dataset.view==="display"&&document.body.dataset.lay==="tv"){var s=Math.min(window.innerWidth/1280,window.innerHeight/720);stage.style.transform="translate(-50%,-50%) scale("+s+")";}else{stage.style.transform="";}}
-  function enterDisplay(){document.body.dataset.view="display";el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setLogo(state.settings.logo);reqFs();setTimeout(computeLay,60);startRotation();}
+  function fitTimeCard(){
+    var card=document.querySelector(".time-card");if(!card)return;
+    var fit=card.querySelector(".tc-fit");if(!fit)return;
+    fit.style.transform="none";
+    if(document.body.dataset.lay!=="tv")return; /* só a TV precisa caber sem rolagem */
+    var cs=getComputedStyle(card);
+    var availH=card.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
+    var availW=card.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
+    var natH=fit.scrollHeight,natW=fit.scrollWidth;
+    if(natH<=0||availH<=0)return;
+    var s=Math.min(1,availH/natH,availW/natW);
+    fit.style.transform=(s<0.999)?("scale("+s+")"):"";
+  }
+  function applyScale(){var stage=el("stage");if(document.body.dataset.view==="display"&&document.body.dataset.lay==="tv"){var s=Math.min(window.innerWidth/1280,window.innerHeight/720);stage.style.transform="translate(-50%,-50%) scale("+s+")";}else{stage.style.transform="";}fitTimeCard();}
+  function enterDisplay(){document.body.dataset.view="display";el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setLogo(state.settings.logo);reqFs();setTimeout(computeLay,60);startRotation();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);}
   function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();document.body.dataset.lay="flow";renderEditorList();populateForm();}
   el("btnTv").addEventListener("click",enterDisplay);el("editFab").addEventListener("click",exitDisplay);
-  document.addEventListener("fullscreenchange",computeLay);document.addEventListener("webkitfullscreenchange",computeLay);window.addEventListener("resize",computeLay);
+  document.addEventListener("fullscreenchange",computeLay);document.addEventListener("webkitfullscreenchange",computeLay);window.addEventListener("resize",computeLay);window.addEventListener("load",fitTimeCard);
   document.addEventListener("keydown",function(e){if(!el("mtmModal").hidden){if(e.key==="Escape"){e.preventDefault();closeMtm();}return;}if(document.body.dataset.view!=="display")return;if(e.key==="Escape"&&!isFs())exitDisplay();else if(e.key==="ArrowRight")next();else if(e.key==="ArrowLeft")prev();else if(e.key===" "){e.preventDefault();togglePause();}});
 
   /* ===== Visualizador MTM (abre ao clicar na TV) ===== */

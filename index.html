@@ -272,14 +272,15 @@
   .tc-fit{width:100%;transform-origin:center center}
   .time-card::after{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;border:1px solid rgba(255,255,255,.1);border-radius:50%}
   .time-card .lab{font-size:12px;font-weight:600;color:rgba(255,255,255,.82);line-height:1.4}
-  body[data-lay="tv"] .time-card .lab{font-size:19px}
+  body[data-lay="tv"] .time-card .lab{font-size:15px}
   .time-big{display:flex;align-items:baseline;gap:12px;margin-top:10px}
-  .time-big .num{font-weight:800;letter-spacing:-.02em;line-height:.9;text-shadow:0 2px 18px rgba(0,0,0,.25);font-size:54px;white-space:nowrap}
-  body[data-lay="tv"] .time-big .num{font-size:74px}
+  .time-big .num{font-weight:800;letter-spacing:-.02em;line-height:1;text-shadow:0 2px 18px rgba(0,0,0,.25);font-size:18px;white-space:nowrap}
+  body[data-lay="tv"] .time-big .num{font-size:30px}
   .time-big .un{font-size:13px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.25}
   body[data-lay="tv"] .time-big .un{font-size:17px}
   .time-sub{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
   .time-sub+.time-sub{margin-top:8px}
+  .tc-fit>.time-sub:first-child{margin-top:0}
   .time-sub.tsx-hl{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.34)}
   .time-sub.tsx-edit{flex-direction:column;align-items:stretch;gap:9px}
   .time-sub.tsx-edit .ts-l{text-align:center}
@@ -644,8 +645,7 @@
           <aside class="d-right">
             <div class="time-card">
               <div class="tc-fit">
-              <div class="lab">Tempo médio por caixa</div>
-              <div class="time-big"><span class="num" id="d-time"></span></div>
+              <div class="time-sub"><span class="ts-l">Tempo médio por caixa</span><span class="ts-v" id="d-time"></span></div>
               <div class="time-sub tsx-hl tsx-edit">
                 <span class="ts-l">Caixas para transbordar</span>
                 <span class="ts-edit">

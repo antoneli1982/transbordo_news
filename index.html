@@ -130,6 +130,15 @@
   .ei-ord:hover:not(:disabled){background:var(--brand-50);color:var(--brand-700);border-color:var(--brand-100)}
   .ei-ord:active:not(:disabled){transform:scale(.94)}
   .ei-ord:disabled{opacity:.3;cursor:default}
+  /* marcar item como PRIORIDADE dentro da sequência de transbordo */
+  .ei-prio{flex:0 0 auto;width:32px;border:1px solid #F3D6D2;background:#FDEEEC;color:var(--bad);border-radius:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s,border-color .15s,filter .15s}
+  .ei-prio:hover{background:#FBDDD9;border-color:#E9B7B0}
+  .ei-prio.on{background:linear-gradient(180deg,#F13C2D,#C91F16);border-color:#C91F16;color:#fff;box-shadow:0 4px 12px -6px rgba(201,31,22,.9)}
+  .ei-prio.on:hover{filter:brightness(1.06);background:linear-gradient(180deg,#F13C2D,#C91F16)}
+  .ei-prio:active{transform:scale(.94)}
+  .ed-item.prio{border-color:#F3B0A9;background:#FFF7F6}
+  .ed-item.prio.sel{border-color:var(--bad);box-shadow:0 0 0 3px rgba(224,72,59,.16)}
+  .ei-prio-tag{font-size:9.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:var(--bad);padding:1px 7px;border-radius:5px}
   .ei-toggle{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:var(--ink-2);transition:background .15s,transform .12s,filter .15s}
   .ei-toggle:active{transform:scale(.95)}
   .ei-toggle.open{color:#fff;background:var(--ok);border-color:var(--ok)}.ei-toggle.open:hover{filter:brightness(1.06)}
@@ -202,13 +211,10 @@
   body[data-lay="tv"] .d-status{font-size:14px;padding:8px 14px}
   .d-status i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(21,163,110,.45)}70%{box-shadow:0 0 0 7px rgba(21,163,110,0)}100%{box-shadow:0 0 0 0 rgba(21,163,110,0)}}
-  .priority-alert{appearance:none;border:2px solid #ffb3ac;background:linear-gradient(180deg,#F13C2D,#C91F16);color:#fff;font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:10px;box-shadow:0 0 0 0 rgba(224,72,59,.7);animation:priorityBlink 1s steps(2,end) infinite;cursor:pointer;transition:background .15s,border-color .15s,color .15s}
-  .priority-alert:focus-visible{outline:2px solid var(--brand-700);outline-offset:2px}
-  /* estado SEQUENCIAL: sem fundo e sem piscar */
-  .priority-alert.is-seq{background:none;background-color:transparent;border:1px solid var(--line);color:var(--muted);font-weight:700;box-shadow:none;animation:none;padding:8px 14px}
-  .priority-alert.is-seq:hover{color:var(--ink-2);border-color:var(--brand-100)}
+  /* selo que aparece na TV só quando o item exibido está marcado como PRIORIDADE */
+  .priority-alert{display:inline-flex;align-items:center;gap:7px;border:2px solid #ffb3ac;background:linear-gradient(180deg,#F13C2D,#C91F16);color:#fff;font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:10px;box-shadow:0 0 0 0 rgba(224,72,59,.7);animation:priorityBlink 1s steps(2,end) infinite;cursor:default;user-select:none}
+  .priority-alert[hidden]{display:none}
   body[data-lay="tv"] .priority-alert{font-size:15px;padding:9px 16px;border-radius:11px}
-  body[data-lay="tv"] .priority-alert.is-seq{padding:10px 17px}
   @keyframes priorityBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(224,72,59,.75),0 8px 20px -10px rgba(201,31,22,.9)}50%{opacity:.38;box-shadow:0 0 0 9px rgba(224,72,59,0)}}
 
   .d-main{display:grid;min-height:0}
@@ -386,6 +392,11 @@
   body[data-lay="tv"] .d-meta{font-size:14px}.d-meta b{color:var(--ink-2);font-weight:700}
   body[data-lay="flow"] .d-meta{flex:1 1 100%;text-align:left;margin-top:4px}
   .d-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px;text-align:center;padding:40px}
+  /* faixa de identificação do documento (rodapé da TV) */
+  .d-docinfo{flex:0 0 auto;margin-top:9px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:2px 10px;font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);line-height:1.3}
+  .d-docinfo i{font-style:normal;color:var(--muted-2);opacity:.55}
+  body[data-lay="tv"] .d-docinfo{font-size:13.5px;margin-top:12px}
+  body[data-lay="flow"] .d-docinfo{justify-content:flex-start;margin-top:12px;font-size:10.5px}
 
   .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,30px);z-index:60;background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;padding:12px 18px;border-radius:30px;box-shadow:0 18px 40px -16px rgba(0,0,0,.6);display:flex;align-items:center;gap:9px;opacity:0;pointer-events:none;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .3s}
   .toast.show{opacity:1;transform:translate(-50%,0)}.toast svg{color:#7CF1C0}
@@ -600,7 +611,7 @@
 
     <header class="d-header">
       <div class="d-brand"><span class="logo-slot" data-logo><img class="logo logo-img" alt="logo"></span><span class="d-app" id="d-app">Controle de Transbordo</span></div>
-      <div class="d-hright"><span class="d-count"><b id="d-count">0</b> itens em transbordo</span><button class="priority-alert" id="d-priority" type="button" aria-label="Prioridade">Prioridade</button><span class="d-status"><i></i><span id="d-status">Em operação</span></span><button class="edit-fab" id="editFab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 6 4 12l6 6M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Modo cadastro de dados</button></div>
+      <div class="d-hright"><span class="d-count"><b id="d-count">0</b> itens em transbordo</span><span class="priority-alert" id="d-priority" role="status" aria-label="Item prioritário" hidden>Prioridade</span><span class="d-status"><i></i><span id="d-status">Em operação</span></span><button class="edit-fab" id="editFab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 6 4 12l6 6M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Modo cadastro de dados</button></div>
     </header>
 
     <div class="d-main" id="dMain">
@@ -727,6 +738,11 @@
       <span class="d-idx" id="d-idx">0 / 0</span>
       <span class="d-meta"><b id="d-updated"></b></span>
     </footer>
+
+    <!-- identificação do documento — edite os textos abaixo se mudar a revisão -->
+    <div class="d-docinfo" id="dDocInfo">
+      <span>KSU Classe 10.4</span><i>|</i><span>F-05BR-SCA-234</span><i>|</i><span>Data de emissão 20/08/2026</span><i>|</i><span>REV.0</span>
+    </div>
   </div>
 </div>
 
@@ -774,7 +790,7 @@
     try{setLogo(state.settings.logo);}catch(e){}
     var dApp=el("d-app");if(dApp)dApp.textContent=state.settings.panelTitle||"";
     var dStatus=el("d-status");if(dStatus)dStatus.textContent=state.settings.statusText||"";
-    try{applyPriorityUI();}catch(e){}
+    try{var _si=shownItem?state.items.filter(function(x){return x.id===shownItem.id;})[0]:null;applyPriorityUI(_si);}catch(e){}
     try{renderEditorList();}catch(e){}
     try{populateForm();}catch(e){}
     try{rebuildPostoOptions();}catch(e){}
@@ -791,13 +807,13 @@
   function fmtTime(ms){try{var d=new Date(ms),p=function(n){return (n<10?"0":"")+n;};return p(d.getHours())+":"+p(d.getMinutes());}catch(e){return "";}}
 
   function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImages:[],mtm:"",mtmName:"",
-    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyBoxes:"",time:"00:00",status:"closed",openedAt:null,updated:nowStr()};}
-  function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",images:[]},o.origin||{});b.dest=Object.assign({name:"",images:[]},o.dest||{});if(!Array.isArray(b.partImages))b.partImages=(b.partImage&&String(b.partImage).trim())?[b.partImage]:[];if(!Array.isArray(b.dividerImages))b.dividerImages=(b.dividerImage&&String(b.dividerImage).trim())?[b.dividerImage]:[];if(!Array.isArray(b.origin.images))b.origin.images=(b.origin.image&&String(b.origin.image).trim())?[b.origin.image]:[];if(!Array.isArray(b.dest.images))b.dest.images=(b.dest.image&&String(b.dest.image).trim())?[b.dest.image]:[];b.partImages=b.partImages.filter(function(v){return typeof v==="string"&&v;});b.dividerImages=b.dividerImages.filter(function(v){return typeof v==="string"&&v;});b.origin.images=b.origin.images.filter(function(v){return typeof v==="string"&&v;});b.dest.images=b.dest.images.filter(function(v){return typeof v==="string"&&v;});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;return b;}
+    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyBoxes:"",time:"00:00",status:"closed",openedAt:null,priority:false,updated:nowStr()};}
+  function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",images:[]},o.origin||{});b.dest=Object.assign({name:"",images:[]},o.dest||{});if(!Array.isArray(b.partImages))b.partImages=(b.partImage&&String(b.partImage).trim())?[b.partImage]:[];if(!Array.isArray(b.dividerImages))b.dividerImages=(b.dividerImage&&String(b.dividerImage).trim())?[b.dividerImage]:[];if(!Array.isArray(b.origin.images))b.origin.images=(b.origin.image&&String(b.origin.image).trim())?[b.origin.image]:[];if(!Array.isArray(b.dest.images))b.dest.images=(b.dest.image&&String(b.dest.image).trim())?[b.dest.image]:[];b.partImages=b.partImages.filter(function(v){return typeof v==="string"&&v;});b.dividerImages=b.dividerImages.filter(function(v){return typeof v==="string"&&v;});b.origin.images=b.origin.images.filter(function(v){return typeof v==="string"&&v;});b.dest.images=b.dest.images.filter(function(v){return typeof v==="string"&&v;});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;b.priority=(o.priority===true);return b;}
 
   function defaults(){
     var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImages:[],mtm:"",mtmName:"",dividerType:divType,dividerImages:[],origin:{name:oN,images:[]},dest:{name:dN,images:[]},qtyPerBox:qty,qtyBoxes:"",time:time,status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
     return {
-      settings:{panelTitle:"Controle de Transbordo",statusText:"Em operação",logo:"",intervalSec:15,postoFilter:"Todos",priority:true},
+      settings:{panelTitle:"Controle de Transbordo",statusText:"Em operação",logo:"",intervalSec:15,postoFilter:"Todos"},
       items:[
         mk("Posto 12","Módulo de Faróis Dianteiros LED","4815-DM-07","Valeo","Berço termoformado (PET)","Caixa de Papelão Dupla — C-40","Contentor Plástico KLT 6429","24","02:45","open"),
         mk("Posto 12","Maçaneta Externa — Porta D.E.","2207-MC-03","Brose","Divisória de papelão 5×8","Caixa de Papelão — C-25","Contentor Plástico KLT 4329","40","01:50","open"),
@@ -806,7 +822,7 @@
       ]
     };
   }
-  function normalize(s){if(!s||typeof s!=="object")return defaults();var d=defaults();s.settings=Object.assign(clone(d.settings),s.settings||{});s.settings.priority=(s.settings.priority!==false);if(!Array.isArray(s.items))s.items=[];s.items=s.items.map(itemFrom);return s;}
+  function normalize(s){if(!s||typeof s!=="object")return defaults();var d=defaults();s.settings=Object.assign(clone(d.settings),s.settings||{});delete s.settings.priority;if(!Array.isArray(s.items))s.items=[];s.items=s.items.map(itemFrom);return s;}
 
   /* Mantém anexos LOCAIS quando a cópia da nuvem vier sem eles (ex.: um PDF grande que
      não coube no limite de ~1MB e por isso nunca subiu). Assim, uma edição feita em outra
@@ -1113,26 +1129,23 @@
   }
   function flashSaved(){var s=el("saved");s.classList.add("show");clearTimeout(flashSaved._t);flashSaved._t=setTimeout(function(){s.classList.remove("show");},1500);}
 
-  /* ===== Botão Prioridade / Sequencial =====
-     Clique alterna entre PRIORIDADE (vermelho piscando) e SEQUENCIAL (sem fundo).
-     O modo fica salvo em state.settings.priority e sobe para a nuvem, então todas
-     as telas abertas (TV e cadastro) mostram o mesmo estado. */
-  function isPriority(){return !state||!state.settings||state.settings.priority!==false;}
-  function applyPriorityUI(){
+  /* ===== PRIORIDADE (marcada item a item, na sequência de transbordo) =====
+     O selo vermelho piscando só aparece na TV quando o item que está na tela
+     está marcado como prioritário (it.priority). A marcação é salva junto com
+     o item e sobe para a nuvem, então todas as telas mostram o mesmo. */
+  function applyPriorityUI(it){
     var b=el("d-priority");if(!b)return;
-    var on=isPriority();
-    b.classList.toggle("is-seq",!on);
-    b.textContent=on?"Prioridade":"Sequencial";
-    b.setAttribute("aria-pressed",on?"true":"false");
-    b.setAttribute("aria-label",on?"Prioridade":"Sequencial");
-    b.title=on?"Clique para mudar para SEQUENCIAL":"Clique para mudar para PRIORIDADE";
+    b.hidden=!(it&&it.priority===true);
   }
-  function togglePriority(){
-    if(!state.settings)state.settings={};
-    state.settings.priority=!isPriority();
-    applyPriorityUI();
-    save();
-    try{toast(isPriority()?"Modo prioridade":"Modo sequencial");}catch(e){}
+  /* liga/desliga a prioridade de um item (usado no cadastro) */
+  function togglePrioridadeItem(id){
+    var it=state.items.filter(function(x){return x.id===id;})[0];if(!it)return;
+    it.priority=!(it.priority===true);
+    it.updated=nowStr();
+    renderEditorList();
+    if(shownItem&&shownItem.id===id)applyPriorityUI(it);
+    queueSave();
+    try{toast(it.priority?"Item marcado como PRIORIDADE":"Prioridade removida");}catch(e){}
   }
   function currentItem(){return state.items.filter(function(i){return i.id===currentId;})[0]||null;}
   function uniquePostos(){var seen={},out=[];state.items.forEach(function(i){var p=(i.posto||"").trim();if(p&&!seen[p]){seen[p]=1;out.push(p);}});return out;}
@@ -1208,7 +1221,7 @@
   /* monta o cartao de um item; seq>0 desenha o numero da sequencia */
   function edItemRow(it,seq){
       var open=it.status==="open";
-      var row=document.createElement("div");row.className="ed-item"+(it.id===currentId?" sel":"")+(open?"":" closed");
+      var row=document.createElement("div");row.className="ed-item"+(it.id===currentId?" sel":"")+(open?"":" closed")+((open&&it.priority)?" prio":"");
       var th=document.createElement("span");th.className="ei-thumb";
       var _fi=(Array.isArray(it.partImages)&&it.partImages[0])||"";
       if(_fi){var im=document.createElement("img");im.alt="";im.onerror=function(){th.innerHTML=PART_ICON.replace(/W/g,"20");};im.src=_fi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"20");
@@ -1218,6 +1231,7 @@
       var st=document.createElement("span");st.className="ei-status "+(open?"open":"closed");st.textContent=open?"Em transbordo":"Fechado";
       var po=document.createElement("span");po.className="ei-posto";po.textContent=it.posto||"—";
       sub.appendChild(st);sub.appendChild(po);
+      if(open&&it.priority){var pt=document.createElement("span");pt.className="ei-prio-tag";pt.textContent="Prioridade";sub.appendChild(pt);}
       info.appendChild(nm);info.appendChild(sub);
       var tg=document.createElement("button");tg.className="ei-toggle "+(open?"close":"open");
       tg.innerHTML=open?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Fechar':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Abrir';
@@ -1226,6 +1240,12 @@
       del.addEventListener("click",function(e){e.stopPropagation();removeItem(it.id);});
       var foot=document.createElement("div");foot.className="ei-foot";foot.appendChild(tg);
       if(seq>0){
+        var pr=document.createElement("button");pr.className="ei-prio"+(it.priority?" on":"");pr.type="button";
+        pr.title=it.priority?"Tirar a prioridade deste item":"Marcar este item como PRIORIDADE";
+        pr.setAttribute("aria-label",pr.title);pr.setAttribute("aria-pressed",it.priority?"true":"false");
+        pr.innerHTML='<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3v11" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/></svg>';
+        pr.addEventListener("click",function(e){e.stopPropagation();togglePrioridadeItem(it.id);});
+        foot.appendChild(pr);
         var up=document.createElement("button");up.className="ei-ord";up.type="button";up.title="Subir na sequência";up.setAttribute("aria-label","Subir na sequência");
         up.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 19V5m0 0-6 6m6-6 6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
         up.disabled=(seq<=1);
@@ -1482,6 +1502,7 @@
   function renderItem(it){
     if(!it)return;
     shownItem=it;
+    applyPriorityUI(it);
     var _mb=el("d-mtmBtn");if(_mb)_mb.hidden=!(it.mtm&&String(it.mtm).trim());
     renderMtmThumb(it);
     setChip("d-posto","",it.posto);
@@ -1594,7 +1615,7 @@
   /* rotation */
   var rotIdx=0,rotStart=0,rotRAF=null,rotPaused=false,rotPausedAt=0,rotEmpty=false;
   function interval(){return (state.settings.intervalSec||15)*1000;}
-  function showEmpty(on){rotEmpty=on;var _dt=el("d-timer");if(_dt)_dt.style.visibility=on?"hidden":"visible";var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";e.textContent="Nenhum transbordo em andamento.";el("dMain").appendChild(e);}detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
+  function showEmpty(on){rotEmpty=on;if(on){shownItem=null;applyPriorityUI(null);}var _dt=el("d-timer");if(_dt)_dt.style.visibility=on?"hidden":"visible";var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";e.textContent="Nenhum transbordo em andamento.";el("dMain").appendChild(e);}detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
   function goTo(i){
     var items=getVisible();if(!items.length){showEmpty(true);return;}showEmpty(false);
     rotIdx=((i%items.length)+items.length)%items.length;
@@ -1669,10 +1690,9 @@
     fit.style.transform=(s<0.999)?("scale("+s+")"):"";
   }
   function applyScale(){var stage=el("stage");if(document.body.dataset.view==="display"&&document.body.dataset.lay==="tv"){var s=Math.min(window.innerWidth/1280,window.innerHeight/720);stage.style.transform="translate(-50%,-50%) scale("+s+")";}else{stage.style.transform="";}fitTimeCard();}
-  function enterDisplay(){document.body.dataset.view="display";el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setLogo(state.settings.logo);applyPriorityUI();reqFs();setTimeout(computeLay,60);startRotation();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);}
+  function enterDisplay(){document.body.dataset.view="display";el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setLogo(state.settings.logo);reqFs();setTimeout(computeLay,60);startRotation();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);}
   function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();document.body.dataset.lay="flow";renderEditorList();populateForm();}
   el("btnTv").addEventListener("click",enterDisplay);el("editFab").addEventListener("click",exitDisplay);
-  (function(){var pb=el("d-priority");if(pb)pb.addEventListener("click",togglePriority);})();
   document.addEventListener("fullscreenchange",computeLay);document.addEventListener("webkitfullscreenchange",computeLay);window.addEventListener("resize",computeLay);window.addEventListener("load",fitTimeCard);
   document.addEventListener("keydown",function(e){if(!el("mtmModal").hidden){if(e.key==="Escape"){e.preventDefault();closeMtm();}return;}if(document.body.dataset.view!=="display")return;if(e.key==="Escape"&&!isFs())exitDisplay();else if(e.key==="ArrowRight")next();else if(e.key==="ArrowLeft")prev();else if(e.key===" "){e.preventDefault();togglePause();}});
 
@@ -1721,7 +1741,6 @@
   window.addEventListener("storage",function(e){
     if(e.key!==KEY||e.newValue==null)return;
     try{state=normalize(JSON.parse(e.newValue));}catch(err){return;}
-    applyPriorityUI();
     if(currentId&&!state.items.filter(function(x){return x.id===currentId;})[0])currentId=state.items.length?state.items[0].id:null;
     if(document.body.dataset.view==="display"){
       buildList();var items=getVisible();
@@ -1734,7 +1753,7 @@
 
   /* boot */
   (function(){var m=location.search.match(/[?&]posto=([^&]+)/);if(m)urlPosto=decodeURIComponent(m[1]);})();
-  setLogo(state.settings.logo);el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setPauseIcon();applyPriorityUI();
+  setLogo(state.settings.logo);el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setPauseIcon();
   renderEditorList();populateForm();
   if(/[?&]tv=1/.test(location.search)){enterDisplay();}
   computeLay();

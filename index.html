@@ -495,7 +495,7 @@
             <div class="field"><label>Texto de status</label><input type="text" data-setting="statusText"></div>
           </div>
           <div class="row2">
-            <div class="field"><label>Temporizador (troca de tela)</label><select id="setTimer" data-setting="intervalSec"><option value="15">15 segundos</option><option value="30">30 segundos</option><option value="45">45 segundos</option><option value="60">60 segundos</option><option value="120">120 segundos</option></select></div>
+            <div class="field"><label>Temporizador (troca de tela)</label><select id="setTimer" data-setting="intervalSec"><option value="10">10 segundos</option><option value="15">15 segundos</option><option value="30">30 segundos</option><option value="45">45 segundos</option><option value="60">60 segundos</option><option value="120">120 segundos</option></select></div>
             <div class="field"><label>Exibir posto na TV</label><select id="setPosto" data-setting="postoFilter"></select></div>
           </div>
           <div class="field">
@@ -1281,7 +1281,7 @@
   function rebuildPostoOptions(){var sel=el("setPosto"),cur=state.settings.postoFilter||"Todos";sel.innerHTML="";var opts=["Todos"].concat(uniquePostos());if(opts.indexOf(cur)<0)opts.push(cur);opts.forEach(function(p){var o=document.createElement("option");o.value=p;o.textContent=(p==="Todos"?"Todos os postos":p);if(p===cur)o.selected=true;sel.appendChild(o);});}
   function populateForm(){
     $all("[data-setting]").forEach(function(inp){var v=state.settings[inp.getAttribute("data-setting")];if(inp.hasAttribute("data-img")&&isData(v))v="";inp.value=(v==null)?"":v;});
-    (function(){var si=el("setTimer");if(!si)return;var P=[15,30,45,60,120],c=parseInt(state.settings.intervalSec,10)||15;if(P.indexOf(c)<0){c=P.reduce(function(a,b){return Math.abs(b-c)<Math.abs(a-c)?b:a;});state.settings.intervalSec=c;}si.value=String(c);})();
+    (function(){var si=el("setTimer");if(!si)return;var P=[10,15,30,45,60,120],c=parseInt(state.settings.intervalSec,10)||15;if(P.indexOf(c)<0){c=P.reduce(function(a,b){return Math.abs(b-c)<Math.abs(a-c)?b:a;});state.settings.intervalSec=c;}si.value=String(c);})();
     rebuildPostoOptions();setLogo(state.settings.logo);
     var it=currentItem();el("noItem").hidden=!!it;el("itemForm").style.display=it?"contents":"none";
     if(!it){renderMultiThumbs("part",[]);renderMultiThumbs("divider",[]);renderMultiThumbs("origin",[]);renderMultiThumbs("dest",[]);updateMtmUI(null);return;}
@@ -1632,7 +1632,7 @@
   function startRotation(){buildList();if(!getVisible().length){showEmpty(true);return;}showEmpty(false);rotPaused=false;setPauseIcon();goTo(0);}
   function stopRotation(){cancelAnimationFrame(rotRAF);stopCardSS();}
   el("btnPrev").addEventListener("click",prev);el("btnNext").addEventListener("click",next);el("btnPause").addEventListener("click",togglePause);
-  var TIMER_PRESETS=[15,30,45,60,120];
+  var TIMER_PRESETS=[10,15,30,45,60,120];
   function applyIntervalSec(sec){
     sec=parseInt(sec,10)||15;
     if(TIMER_PRESETS.indexOf(sec)<0){sec=TIMER_PRESETS.reduce(function(a,b){return Math.abs(b-sec)<Math.abs(a-sec)?b:a;});}

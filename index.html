@@ -293,6 +293,8 @@
   .d-flow{position:relative;min-height:0}
   body[data-lay="flow"] .d-flow{display:flex;flex-direction:column}
   body[data-lay="tv"] .d-flow{display:grid;grid-template-columns:1fr auto 1fr;align-items:stretch;gap:14px}
+  body[data-lay="tv"] .det-top2.tv-one-card{grid-template-columns:1fr}
+  body[data-lay="tv"] .d-flow.tv-one-card{grid-template-columns:1fr}
   .flow-line{position:absolute;left:50%;top:8px;bottom:8px;width:2px;transform:translateX(-50%);z-index:0;background:repeating-linear-gradient(180deg,var(--brand-100) 0 6px,transparent 6px 12px)}
   body[data-lay="tv"] .flow-line{display:none}
   .pkg{position:relative;z-index:1;background:#fff;border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh1);display:flex;flex-direction:column;min-height:0}
@@ -639,7 +641,7 @@
         <div class="det-row">
           <div class="det-left">
             <div class="det-top2">
-              <article class="pkg">
+              <article class="pkg" id="card-part">
                 <div class="pkg-figure" id="fig-part">
                   <span class="pkg-tag p">Peça</span>
                   <img id="d-partImg" class="pkg-photo" hidden alt="">
@@ -649,7 +651,7 @@
                 </div>
                 <div class="pkg-info"><div class="pkg-kicker">Peça</div><div class="pkg-name" id="d-name2"></div></div>
               </article>
-              <article class="pkg">
+              <article class="pkg" id="card-divider">
                 <div class="pkg-figure" id="fig-divider">
                   <span class="pkg-tag v">Divisória</span>
                   <img id="d-divImg" class="pkg-photo" hidden alt="">
@@ -664,7 +666,7 @@
             <!-- packaging flow -->
             <div class="d-flow">
               <div class="flow-line"></div>
-              <article class="pkg">
+              <article class="pkg" id="card-origin">
                 <div class="pkg-figure" id="fig-origin">
                   <span class="pkg-tag o">Origem</span>
                   <img id="d-oImg" class="pkg-photo" hidden alt="">
@@ -681,8 +683,8 @@
                 </div>
                 <div class="pkg-info"><div class="pkg-kicker">Embalagem de origem</div><div class="pkg-name" id="d-oName"></div></div>
               </article>
-              <div class="flow-arrow"><div class="arrow-badge"><svg class="arrow-ico" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="arrow-meta"><span class="t">Transbordo</span></div></div>
-              <article class="pkg">
+              <div class="flow-arrow" id="flow-arrow"><div class="arrow-badge"><svg class="arrow-ico" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="arrow-meta"><span class="t">Transbordo</span></div></div>
+              <article class="pkg" id="card-dest">
                 <div class="pkg-figure" id="fig-dest">
                   <span class="pkg-tag d">Destino</span>
                   <img id="d-dImg" class="pkg-photo" hidden alt="">
@@ -1218,6 +1220,20 @@
       fechados.forEach(function(it){box.appendChild(edItemRow(it,0));});
     }
   }
+  /* Proteção diária para ações destrutivas. Formato da senha: DDMMAA. */
+  function dailyDeletePassword(){
+    var d=new Date(),p=function(n){return(n<10?"0":"")+n;};
+    return p(d.getDate())+p(d.getMonth()+1)+String(d.getFullYear()).slice(-2);
+  }
+  function authorizeDestructive(action){
+    var typed=window.prompt("Ação protegida: "+action+".\nDigite a senha diária (DDMMAA) para continuar:","");
+    if(typed===null)return false;
+    if(String(typed).trim()!==dailyDeletePassword()){
+      toast("Senha incorreta. A ação foi cancelada.");
+      return false;
+    }
+    return true;
+  }
   /* monta o cartao de um item; seq>0 desenha o numero da sequencia */
   function edItemRow(it,seq){
       var open=it.status==="open";
@@ -1263,7 +1279,7 @@
   }
   function selectItem(id){currentId=id;renderEditorList();populateForm();}
   function addItem(){var it=blankItem();state.items.push(it);currentId=it.id;renderEditorList();populateForm();rebuildPostoOptions();queueSave();}
-  function removeItem(id){var i=state.items.map(function(x){return x.id;}).indexOf(id);if(i<0)return;state.items.splice(i,1);if(currentId===id)currentId=state.items.length?state.items[Math.max(0,i-1)].id:null;renderEditorList();populateForm();rebuildPostoOptions();queueSave();}
+  function removeItem(id){var i=state.items.map(function(x){return x.id;}).indexOf(id);if(i<0)return;if(!authorizeDestructive("remover este item cadastrado"))return;state.items.splice(i,1);if(currentId===id)currentId=state.items.length?state.items[Math.max(0,i-1)].id:null;renderEditorList();populateForm();rebuildPostoOptions();queueSave();toast("Item removido");}
   /* Troca a posição do item na sequência do transbordo (dir=-1 sobe, dir=1 desce).
      Só os itens ABERTOS entram na conta: os fechados ficam onde estão. */
   function moverNaSequencia(id,dir){
@@ -1367,6 +1383,7 @@
   }
   function removeSlotImage(slot,idx){
     var it=currentItem();if(!it)return;
+    if(!authorizeDestructive("remover esta imagem"))return;
     var arr=getItemImages(it,slot);arr.splice(idx,1);
     it.updated=nowStr();renderMultiThumbs(slot,arr);renderEditorList();queueSave();
   }
@@ -1396,6 +1413,7 @@
   $all("[data-upload-add]").forEach(function(b){b.addEventListener("click",function(){pendingTarget=b.getAttribute("data-upload-add");pendingMode="add";el("filePhoto").value="";el("filePhoto").click();});});
   $all("[data-clear]").forEach(function(b){b.addEventListener("click",function(){
     var t=b.getAttribute("data-clear");
+    if(!authorizeDestructive(t==="logo"?"restaurar o logo padrão":"remover todas as imagens deste campo"))return;
     if(t==="logo"){setTargetImage("logo","");}
     else{var it=currentItem();if(!it)return;var arr=getItemImages(it,t);arr.splice(0,arr.length);it.updated=nowStr();renderMultiThumbs(t,[]);var si=$('[data-imgslot="'+t+'"]');if(si)si.value="";renderEditorList();}
     queueSave();
@@ -1443,7 +1461,7 @@
     if(!currentItem()){ toast("Selecione ou crie uma peça na lista antes de anexar o MTM."); return; }
     el("fileMtm").value="";el("fileMtm").click();
   });
-  el("btnMtmClear").addEventListener("click",function(){var it=currentItem();if(!it)return;it.mtm="";it.mtmName="";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();});
+  el("btnMtmClear").addEventListener("click",function(){var it=currentItem();if(!it)return;if(!authorizeDestructive("remover o documento MTM"))return;it.mtm="";it.mtmName="";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();toast("MTM removido");});
   el("fileMtm").addEventListener("change",function(e){
     var file=e.target.files&&e.target.files[0];if(!file)return;
     var it=currentItem();
@@ -1467,9 +1485,9 @@
 
   /* import / export */
   el("btnExport").addEventListener("click",function(){var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="painel-transbordo.json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);toast("Configuração exportada");});
-  el("btnImport").addEventListener("click",function(){el("fileImport").value="";el("fileImport").click();});
+  el("btnImport").addEventListener("click",function(){if(!authorizeDestructive("importar e substituir os dados atuais"))return;el("fileImport").value="";el("fileImport").click();});
   el("fileImport").addEventListener("change",function(e){var file=e.target.files&&e.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(){try{state=normalize(JSON.parse(r.result));currentId=state.items.length?state.items[0].id:null;renderEditorList();populateForm();save();toast("Configuração importada");}catch(err){toast("Arquivo inválido");}};r.readAsText(file);});
-  el("btnReset").addEventListener("click",function(){if(!confirm("Restaurar os dados de exemplo? As alterações atuais serão substituídas."))return;state=defaults();currentId=state.items[0].id;renderEditorList();populateForm();save();toast("Exemplo restaurado");});
+  el("btnReset").addEventListener("click",function(){if(!authorizeDestructive("restaurar o exemplo e substituir os dados atuais"))return;if(!confirm("Restaurar os dados de exemplo? As alterações atuais serão substituídas."))return;state=defaults();currentId=state.items[0].id;renderEditorList();populateForm();save();toast("Exemplo restaurado");});
   el("btnAdd").addEventListener("click",addItem);
 
   /* display: detail */
@@ -1512,6 +1530,12 @@
     return visible;
   }
 
+  /* Oculta o CARTÃO inteiro quando o campo e as imagens dele estão vazios. */
+  function setTvCard(cardId,hasContent){
+    var card=el(cardId);if(card)card.style.display=hasContent?"":"none";
+    return hasContent;
+  }
+
   function renderItem(it){
     if(!it)return;
     shownItem=it;
@@ -1529,6 +1553,15 @@
     setTvField("d-divType",it.dividerType,".pkg-info");
     setTvField("d-time",it.time,".time-sub");
     setTvField("d-qty",it.qtyPerBox,".time-sub");
+    var hasPart=setTvCard("card-part",hasTvValue(it.partName)||getSlotImages(it,"part").length>0);
+    var hasDivider=setTvCard("card-divider",hasTvValue(it.dividerType)||getSlotImages(it,"divider").length>0);
+    var hasOrigin=setTvCard("card-origin",hasTvValue(it.origin&&it.origin.name)||getSlotImages(it,"origin").length>0);
+    var hasDest=setTvCard("card-dest",hasTvValue(it.dest&&it.dest.name)||getSlotImages(it,"dest").length>0);
+    var topGrid=el("card-part")&&el("card-part").parentElement;
+    if(topGrid)topGrid.classList.toggle("tv-one-card",(hasPart?1:0)+(hasDivider?1:0)<=1);
+    var flow=el("card-origin")&&el("card-origin").parentElement;
+    var arrow=el("flow-arrow");if(arrow)arrow.style.display=(hasOrigin&&hasDest)?"":"none";
+    if(flow)flow.classList.toggle("tv-one-card",(hasOrigin?1:0)+(hasDest?1:0)<=1);
     var _bx=el("d-boxes");if(_bx){
       var _hasBoxes=hasTvValue(it.qtyBoxes);
       if(document.activeElement!==_bx)_bx.value=_hasBoxes?it.qtyBoxes:"";

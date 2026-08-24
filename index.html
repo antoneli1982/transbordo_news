@@ -162,6 +162,10 @@
   .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
   .field input,.field select{width:100%;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--card-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;transition:border-color .15s,box-shadow .15s}
   .field input:focus,.field select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,79,230,.14);background:#fff}
+  /* Todos os campos de texto do cadastro trabalham em MAIÚSCULO.
+     Campos de URL (data-img / data-imgslot) ficam de fora: link é sensível a maiúsculas. */
+  .field input[type="text"]:not([data-img]):not([data-imgslot]){text-transform:uppercase}
+  .field input[type="text"]:not([data-img])::placeholder{text-transform:none}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
   @media (max-width:480px){.row2{grid-template-columns:1fr}}
 
@@ -430,6 +434,23 @@
   .mtm-open:hover{background:var(--brand-50)}
   .mtm-close{width:36px;height:36px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;color:var(--ink-2);display:flex;align-items:center;justify-content:center;transition:background .15s,color .15s}
   .mtm-close:hover{background:#FDEEEC;color:var(--bad);border-color:#F3D6D2}
+
+  /* ===== Modal de senha (ações protegidas) ===== */
+  .pw-modal{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:22px}
+  .pw-modal[hidden]{display:none}
+  .pw-backdrop{position:absolute;inset:0;background:rgba(6,9,16,.72);backdrop-filter:blur(3px)}
+  .pw-dialog{position:relative;z-index:1;width:min(420px,94vw);background:#fff;border-radius:18px;padding:22px;box-shadow:0 50px 100px -30px rgba(0,0,0,.7)}
+  .pw-head{display:flex;gap:13px;align-items:flex-start;margin-bottom:17px}
+  .pw-ico{flex:0 0 auto;width:42px;height:42px;border-radius:12px;background:#FDEEEC;color:var(--bad);display:flex;align-items:center;justify-content:center}
+  .pw-title{font-size:15.5px;font-weight:700;color:var(--ink);line-height:1.3}
+  .pw-sub{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+  .pw-label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
+  .pw-input{width:100%;font-family:var(--sans);font-size:15px;letter-spacing:.22em;color:var(--ink);background:var(--card-2);border:1px solid var(--line);border-radius:11px;padding:12px 13px;transition:border-color .15s,box-shadow .15s}
+  .pw-input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,79,230,.14);background:#fff}
+  .pw-modal.err .pw-input{border-color:var(--bad);box-shadow:0 0 0 3px rgba(224,72,59,.14)}
+  .pw-err{font-size:12px;font-weight:600;color:var(--bad);margin-top:8px}
+  .pw-err[hidden]{display:none}
+  .pw-actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}
   .mtm-body{flex:1 1 auto;min-height:0;background:#33373f;display:flex;align-items:center;justify-content:center;overflow:auto}
   .mtm-img{max-width:100%;max-height:100%;object-fit:contain;display:block}
   .mtm-frame{width:100%;height:100%;border:0;background:#fff}
@@ -750,6 +771,27 @@
 
 <div class="toast" id="toast"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="toastMsg"></span></div>
 
+<!-- ============ SENHA (ações protegidas) ============ -->
+<div class="pw-modal" id="pwModal" hidden>
+  <div class="pw-backdrop" data-pw-close></div>
+  <div class="pw-dialog" role="dialog" aria-modal="true" aria-labelledby="pwTitle">
+    <div class="pw-head">
+      <div class="pw-ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><rect x="4" y="10.5" width="16" height="10" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="M8 10.5V7.8a4 4 0 0 1 8 0v2.7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15.5" r="1.5" fill="currentColor"/></svg></div>
+      <div>
+        <div class="pw-title" id="pwTitle">Ação protegida por senha</div>
+        <div class="pw-sub" id="pwAction"></div>
+      </div>
+    </div>
+    <label class="pw-label" for="pwInput">Senha</label>
+    <input class="pw-input" id="pwInput" type="password" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="••••••">
+    <div class="pw-err" id="pwErr" hidden>Senha incorreta. Tente novamente.</div>
+    <div class="pw-actions">
+      <button class="btn btn-ghost btn-sm" id="pwCancel" data-pw-close>Cancelar</button>
+      <button class="btn btn-primary btn-sm" id="pwOk">Confirmar</button>
+    </div>
+  </div>
+</div>
+
 <!-- ============ VISUALIZADOR MTM ============ -->
 <div class="mtm-modal" id="mtmModal" hidden>
   <div class="mtm-backdrop" data-close></div>
@@ -824,7 +866,25 @@
       ]
     };
   }
-  function normalize(s){if(!s||typeof s!=="object")return defaults();var d=defaults();s.settings=Object.assign(clone(d.settings),s.settings||{});delete s.settings.priority;if(!Array.isArray(s.items))s.items=[];s.items=s.items.map(itemFrom);return s;}
+  /* ===== MAIÚSCULAS =====
+     Regra do painel: todo texto digitado no cadastro é gravado e exibido em MAIÚSCULO.
+     Campos de URL/anexo (logo, mtm, imagens) NÃO entram, porque link é sensível a caixa. */
+  function upper(v){return (typeof v==="string")?v.toLocaleUpperCase("pt-BR"):v;}
+  var CAMPOS_MAIUSCULOS=["posto","partName","partCode","supplier","dividerType","qtyPerBox","qtyBoxes","time"];
+  function upperItem(it){
+    if(!it||typeof it!=="object")return it;
+    CAMPOS_MAIUSCULOS.forEach(function(k){it[k]=upper(it[k]);});
+    if(it.origin&&typeof it.origin==="object")it.origin.name=upper(it.origin.name);
+    if(it.dest&&typeof it.dest==="object")it.dest.name=upper(it.dest.name);
+    return it;
+  }
+  function upperState(s){
+    if(!s||typeof s!=="object")return s;
+    if(s.settings){s.settings.panelTitle=upper(s.settings.panelTitle);s.settings.statusText=upper(s.settings.statusText);}
+    if(Array.isArray(s.items))s.items.forEach(upperItem);
+    return s;
+  }
+  function normalize(s){if(!s||typeof s!=="object")return upperState(defaults());var d=defaults();s.settings=Object.assign(clone(d.settings),s.settings||{});delete s.settings.priority;if(!Array.isArray(s.items))s.items=[];s.items=s.items.map(itemFrom);return upperState(s);}
 
   /* Mantém anexos LOCAIS quando a cópia da nuvem vier sem eles (ex.: um PDF grande que
      não coube no limite de ~1MB e por isso nunca subiu). Assim, uma edição feita em outra
@@ -1220,20 +1280,63 @@
       fechados.forEach(function(it){box.appendChild(edItemRow(it,0));});
     }
   }
-  /* Proteção diária para ações destrutivas. Formato da senha: DDMMAA. */
+  /* ===== Proteção por senha para ações destrutivas =====
+     A senha continua sendo a diária (DDMMAA), mas o formato NÃO é exibido em lugar
+     nenhum da tela: o usuário vê apenas "Ação protegida por senha". A digitação é
+     mascarada (input type=password), então ninguém lê a senha por cima do ombro. */
   function dailyDeletePassword(){
     var d=new Date(),p=function(n){return(n<10?"0":"")+n;};
     return p(d.getDate())+p(d.getMonth()+1)+String(d.getFullYear()).slice(-2);
   }
-  function authorizeDestructive(action){
-    var typed=window.prompt("Ação protegida: "+action+".\nDigite a senha diária (DDMMAA) para continuar:","");
-    if(typed===null)return false;
-    if(String(typed).trim()!==dailyDeletePassword()){
-      toast("Senha incorreta. A ação foi cancelada.");
-      return false;
-    }
-    return true;
+  /* Abre o modal e só executa onOk() se a senha estiver correta.
+     Uso: authorizeDestructive("remover este item", function(){ ...ação... }); */
+  var _pwOnOk=null;
+  function pwClose(){
+    var m=el("pwModal");if(!m)return;
+    m.hidden=true;m.classList.remove("err");
+    el("pwErr").hidden=true;el("pwInput").value="";
+    _pwOnOk=null;
   }
+  function pwConfirm(){
+    var inp=el("pwInput"),m=el("pwModal");
+    if(String(inp.value).trim()!==dailyDeletePassword()){
+      m.classList.add("err");el("pwErr").hidden=false;
+      inp.value="";inp.focus();
+      return;
+    }
+    var fn=_pwOnOk;pwClose();
+    if(typeof fn==="function")fn();
+  }
+  function authorizeDestructive(action,onOk){
+    var m=el("pwModal");
+    if(!m){ /* fallback: se o modal não existir, não deixa a ação passar sem senha */
+      var t=window.prompt("Ação protegida por senha.\nDigite a senha para continuar:","");
+      if(t!==null&&String(t).trim()===dailyDeletePassword()&&typeof onOk==="function")onOk();
+      else if(t!==null)toast("Senha incorreta. A ação foi cancelada.");
+      return;
+    }
+    _pwOnOk=onOk||null;
+    el("pwAction").textContent=action?("Confirme para "+action+"."):"";
+    m.classList.remove("err");el("pwErr").hidden=true;
+    el("pwInput").value="";
+    m.hidden=false;
+    setTimeout(function(){try{el("pwInput").focus();}catch(e){}},30);
+  }
+  (function(){
+    var m=el("pwModal");if(!m)return;
+    $all("[data-pw-close]").forEach(function(b){b.addEventListener("click",pwClose);});
+    el("pwOk").addEventListener("click",pwConfirm);
+    el("pwInput").addEventListener("keydown",function(ev){
+      if(ev.key==="Enter"){ev.preventDefault();pwConfirm();}
+      if(ev.key==="Escape"){ev.preventDefault();pwClose();}
+    });
+    el("pwInput").addEventListener("input",function(){
+      m.classList.remove("err");el("pwErr").hidden=true;
+    });
+    document.addEventListener("keydown",function(ev){
+      if(ev.key==="Escape"&&!m.hidden)pwClose();
+    });
+  })();
   /* monta o cartao de um item; seq>0 desenha o numero da sequencia */
   function edItemRow(it,seq){
       var open=it.status==="open";
@@ -1278,8 +1381,12 @@
       return row;
   }
   function selectItem(id){currentId=id;renderEditorList();populateForm();}
-  function addItem(){var it=blankItem();state.items.push(it);currentId=it.id;renderEditorList();populateForm();rebuildPostoOptions();queueSave();}
-  function removeItem(id){var i=state.items.map(function(x){return x.id;}).indexOf(id);if(i<0)return;if(!authorizeDestructive("remover este item cadastrado"))return;state.items.splice(i,1);if(currentId===id)currentId=state.items.length?state.items[Math.max(0,i-1)].id:null;renderEditorList();populateForm();rebuildPostoOptions();queueSave();toast("Item removido");}
+  function addItem(){var it=upperItem(blankItem());state.items.push(it);currentId=it.id;renderEditorList();populateForm();rebuildPostoOptions();queueSave();}
+  function removeItem(id){var i=state.items.map(function(x){return x.id;}).indexOf(id);if(i<0)return;authorizeDestructive("excluir este item cadastrado",function(){
+    var j=state.items.map(function(x){return x.id;}).indexOf(id);if(j<0)return;
+    state.items.splice(j,1);if(currentId===id)currentId=state.items.length?state.items[Math.max(0,j-1)].id:null;
+    renderEditorList();populateForm();rebuildPostoOptions();queueSave();toast("Item removido");
+  });}
   /* Troca a posição do item na sequência do transbordo (dir=-1 sobe, dir=1 desce).
      Só os itens ABERTOS entram na conta: os fechados ficam onde estão. */
   function moverNaSequencia(id,dir){
@@ -1305,6 +1412,35 @@
     renderMultiThumbs("part",it.partImages);renderMultiThumbs("divider",it.dividerImages);renderMultiThumbs("origin",it.origin.images);renderMultiThumbs("dest",it.dest.images);
     $all("[data-imgslot]").forEach(function(inp){var sl=inp.getAttribute("data-imgslot");var arr=getItemImages(it,sl);inp.value=(Array.isArray(arr)&&arr[0]&&!isData(arr[0]))?arr[0]:"";});
     updateMtmUI(it);
+    if(typeof aplicarMaiusculasNoForm==="function")aplicarMaiusculasNoForm();
+  }
+  /* Converte a digitação para MAIÚSCULO em fase de captura, ou seja, antes dos
+     handlers de cada campo — assim o estado já recebe o texto em caixa alta.
+     Ficam de fora: campos de URL (data-img / data-imgslot), arquivo e senha. */
+  function campoMaiusculo(inp){
+    if(!inp||inp.tagName!=="INPUT")return false;
+    var t=(inp.getAttribute("type")||"text").toLowerCase();
+    if(t!=="text"&&t!=="search")return false;
+    if(inp.hasAttribute("data-img")||inp.hasAttribute("data-imgslot"))return false;
+    if(inp.hasAttribute("data-sem-maiuscula"))return false;
+    return true;
+  }
+  document.addEventListener("input",function(ev){
+    var inp=ev.target;
+    if(!campoMaiusculo(inp))return;
+    var v=inp.value,u=upper(v);
+    if(u===v)return;
+    var a=inp.selectionStart,b=inp.selectionEnd;
+    inp.value=u;
+    try{inp.setSelectionRange(a,b);}catch(e){}
+  },true);
+  /* garante caixa alta também no que já está gravado, ao preencher o formulário */
+  function aplicarMaiusculasNoForm(){
+    $all("input").forEach(function(inp){
+      if(!campoMaiusculo(inp))return;
+      var u=upper(inp.value);
+      if(u!==inp.value)inp.value=u;
+    });
   }
   $all("[data-setting]").forEach(function(inp){var _h=function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";if(k==="logo")setLogo(v);queueSave();};inp.addEventListener("input",_h);inp.addEventListener("change",_h);});
   el("setPosto").addEventListener("change",function(){state.settings.postoFilter=el("setPosto").value;queueSave();});
@@ -1383,9 +1519,11 @@
   }
   function removeSlotImage(slot,idx){
     var it=currentItem();if(!it)return;
-    if(!authorizeDestructive("remover esta imagem"))return;
-    var arr=getItemImages(it,slot);arr.splice(idx,1);
-    it.updated=nowStr();renderMultiThumbs(slot,arr);renderEditorList();queueSave();
+    authorizeDestructive("remover esta imagem",function(){
+      if(currentItem()!==it)return;
+      var arr=getItemImages(it,slot);arr.splice(idx,1);
+      it.updated=nowStr();renderMultiThumbs(slot,arr);renderEditorList();queueSave();
+    });
   }
   function applyImage(t,item,url){
     if(t==="logo"){state.settings.logo=url;var lf=$('[data-setting="logo"]');if(lf)lf.value="";setLogo(url);return;}
@@ -1413,10 +1551,11 @@
   $all("[data-upload-add]").forEach(function(b){b.addEventListener("click",function(){pendingTarget=b.getAttribute("data-upload-add");pendingMode="add";el("filePhoto").value="";el("filePhoto").click();});});
   $all("[data-clear]").forEach(function(b){b.addEventListener("click",function(){
     var t=b.getAttribute("data-clear");
-    if(!authorizeDestructive(t==="logo"?"restaurar o logo padrão":"remover todas as imagens deste campo"))return;
-    if(t==="logo"){setTargetImage("logo","");}
-    else{var it=currentItem();if(!it)return;var arr=getItemImages(it,t);arr.splice(0,arr.length);it.updated=nowStr();renderMultiThumbs(t,[]);var si=$('[data-imgslot="'+t+'"]');if(si)si.value="";renderEditorList();}
-    queueSave();
+    authorizeDestructive(t==="logo"?"restaurar o logo padrão":"remover todas as imagens deste campo",function(){
+      if(t==="logo"){setTargetImage("logo","");}
+      else{var it=currentItem();if(!it)return;var arr=getItemImages(it,t);arr.splice(0,arr.length);it.updated=nowStr();renderMultiThumbs(t,[]);var si=$('[data-imgslot="'+t+'"]');if(si)si.value="";renderEditorList();}
+      queueSave();
+    });
   });});
   /* handler URL paste */
   $all("[data-imgslot]").forEach(function(inp){inp.addEventListener("change",function(){
@@ -1461,7 +1600,9 @@
     if(!currentItem()){ toast("Selecione ou crie uma peça na lista antes de anexar o MTM."); return; }
     el("fileMtm").value="";el("fileMtm").click();
   });
-  el("btnMtmClear").addEventListener("click",function(){var it=currentItem();if(!it)return;if(!authorizeDestructive("remover o documento MTM"))return;it.mtm="";it.mtmName="";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf)pf.value="";updateMtmUI(it);queueSave();toast("MTM removido");});
+  el("btnMtmClear").addEventListener("click",function(){var it=currentItem();if(!it)return;authorizeDestructive("remover o documento MTM",function(){
+    it.mtm="";it.mtmName="";it.updated=nowStr();var pf=$('[data-field="mtm"]');if(pf&&currentItem()===it)pf.value="";updateMtmUI(currentItem());queueSave();toast("MTM removido");
+  });});
   el("fileMtm").addEventListener("change",function(e){
     var file=e.target.files&&e.target.files[0];if(!file)return;
     var it=currentItem();
@@ -1485,9 +1626,12 @@
 
   /* import / export */
   el("btnExport").addEventListener("click",function(){var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="painel-transbordo.json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);toast("Configuração exportada");});
-  el("btnImport").addEventListener("click",function(){if(!authorizeDestructive("importar e substituir os dados atuais"))return;el("fileImport").value="";el("fileImport").click();});
+  el("btnImport").addEventListener("click",function(){authorizeDestructive("importar e substituir os dados atuais",function(){el("fileImport").value="";el("fileImport").click();});});
   el("fileImport").addEventListener("change",function(e){var file=e.target.files&&e.target.files[0];if(!file)return;var r=new FileReader();r.onload=function(){try{state=normalize(JSON.parse(r.result));currentId=state.items.length?state.items[0].id:null;renderEditorList();populateForm();save();toast("Configuração importada");}catch(err){toast("Arquivo inválido");}};r.readAsText(file);});
-  el("btnReset").addEventListener("click",function(){if(!authorizeDestructive("restaurar o exemplo e substituir os dados atuais"))return;if(!confirm("Restaurar os dados de exemplo? As alterações atuais serão substituídas."))return;state=defaults();currentId=state.items[0].id;renderEditorList();populateForm();save();toast("Exemplo restaurado");});
+  el("btnReset").addEventListener("click",function(){authorizeDestructive("restaurar o exemplo e substituir os dados atuais",function(){
+    if(!confirm("Restaurar os dados de exemplo? As alterações atuais serão substituídas."))return;
+    state=normalize(defaults());currentId=state.items[0].id;renderEditorList();populateForm();save();toast("Exemplo restaurado");
+  });});
   el("btnAdd").addEventListener("click",addItem);
 
   /* display: detail */

@@ -1493,10 +1493,23 @@
   }
   function updateTotalTime(){
     var out=el("d-total");if(!out)return;
-    var it=shownItem;if(!it){out.textContent="—";return;}
+    var it=shownItem;if(!it){out.textContent="";out.closest(".time-sub").style.display="none";return;}
     var per=tbSecs(it.time);
     var boxes=parseInt(String(it.qtyBoxes||"").replace(/[^0-9]/g,""),10);if(isNaN(boxes))boxes=0;
-    out.textContent=(per>0&&boxes>0)?tbClock(per*boxes):"—";
+    var visible=per>0&&boxes>0;
+    out.textContent=visible?tbClock(per*boxes):"";
+    out.closest(".time-sub").style.display=visible?"":"none";
+  }
+
+  /* Na TV, campos sem preenchimento não deixam rótulos ou traços vazios na tela. */
+  function hasTvValue(value){return value!==null&&value!==undefined&&String(value).trim()!=="";}
+  function setTvField(id,value,container){
+    var node=el(id);if(!node)return false;
+    var visible=hasTvValue(value);
+    node.textContent=visible?String(value).trim():"";
+    var host=container?(node.closest(container)||node):node;
+    host.style.display=visible?"":"none";
+    return visible;
   }
 
   function renderItem(it){
@@ -1506,15 +1519,21 @@
     var _mb=el("d-mtmBtn");if(_mb)_mb.hidden=!(it.mtm&&String(it.mtm).trim());
     renderMtmThumb(it);
     setChip("d-posto","",it.posto);
-    var _cc=el("d-code");if(_cc)_cc.textContent=(it.partCode&&String(it.partCode).trim())?it.partCode:"";
-    el("d-name").textContent=it.partName||"";el("d-name2").textContent=it.partName||"";
-    el("d-supplier").textContent=it.supplier||"—";
-    el("d-supplierRow").style.display=(it.supplier&&it.supplier.trim())?"":"none";
-    el("d-oName").textContent=it.origin.name||"—";
-    el("d-dName").textContent=it.dest.name||"—";el("d-divType").textContent=(it.dividerType&&it.dividerType.trim())?it.dividerType:"—";
-    el("d-time").textContent=it.time||"";
-    el("d-qty").textContent=(it.qtyPerBox&&String(it.qtyPerBox).trim())?it.qtyPerBox:"—";
-    var _bx=el("d-boxes");if(_bx&&document.activeElement!==_bx)_bx.value=(it.qtyBoxes&&String(it.qtyBoxes).trim())?it.qtyBoxes:"";
+    el("d-posto").style.display=hasTvValue(it.posto)?"":"none";
+    setTvField("d-code",it.partCode);
+    setTvField("d-name",it.partName);
+    setTvField("d-name2",it.partName,".pkg-info");
+    setTvField("d-supplier",it.supplier,"#d-supplierRow");
+    setTvField("d-oName",it.origin&&it.origin.name,".pkg-info");
+    setTvField("d-dName",it.dest&&it.dest.name,".pkg-info");
+    setTvField("d-divType",it.dividerType,".pkg-info");
+    setTvField("d-time",it.time,".time-sub");
+    setTvField("d-qty",it.qtyPerBox,".time-sub");
+    var _bx=el("d-boxes");if(_bx){
+      var _hasBoxes=hasTvValue(it.qtyBoxes);
+      if(document.activeElement!==_bx)_bx.value=_hasBoxes?it.qtyBoxes:"";
+      _bx.closest(".time-sub").style.display=_hasBoxes?"":"none";
+    }
     updateTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";
     setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");
@@ -1602,7 +1621,10 @@
       var th=document.createElement("span");th.className="li-thumb";var _lfi=(Array.isArray(it.partImages)&&it.partImages[0])||"";if(_lfi){var im=document.createElement("img");im.alt="";im.onerror=function(){th.innerHTML=PART_ICON.replace(/W/g,"22");};im.src=_lfi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"22");
       var bd=document.createElement("div");bd.className="li-body";
       var nm=document.createElement("div");nm.className="li-name";nm.textContent=it.partName||"(sem nome)";
-      var mt=document.createElement("div");mt.className="li-meta";var po=document.createElement("span");po.className="li-posto";po.textContent=it.posto||"—";var rf=document.createElement("span");rf.className="li-ref";rf.textContent=it.partCode||"";mt.appendChild(po);mt.appendChild(rf);
+      var mt=document.createElement("div");mt.className="li-meta";
+      if(hasTvValue(it.posto)){var po=document.createElement("span");po.className="li-posto";po.textContent=String(it.posto).trim();mt.appendChild(po);}
+      if(hasTvValue(it.partCode)){var rf=document.createElement("span");rf.className="li-ref";rf.textContent=String(it.partCode).trim();mt.appendChild(rf);}
+      if(!mt.children.length)mt.style.display="none";
       bd.appendChild(nm);bd.appendChild(mt);
       var tm=document.createElement("span");tm.className="li-time";tm.textContent=it.time||"";
       b.appendChild(th);b.appendChild(bd);b.appendChild(tm);

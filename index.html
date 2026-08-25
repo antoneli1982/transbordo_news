@@ -283,6 +283,15 @@
   .det-code::before{content:"·";margin:0 .35em;color:var(--muted-2);font-weight:600}
   .det-prod{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
   .det-info{min-width:0;flex:1 1 auto}
+  /* selo com o número de sequência do item (mesma posição definida no cadastro/transbordo) */
+  .det-seqrow{display:flex;align-items:center;gap:14px}
+  .det-seq{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:46px;height:46px;border-radius:13px;background:linear-gradient(155deg,var(--brand),var(--brand-700));color:#fff;box-shadow:0 12px 22px -12px rgba(43,79,230,.65)}
+  .det-seq .lab{font-size:7.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;opacity:.85;line-height:1}
+  .det-seq .num{font-size:19px;font-weight:800;line-height:1}
+  .det-seq:empty,.det-seq[hidden]{display:none}
+  body[data-lay="tv"] .det-seq{width:78px;height:78px;border-radius:18px;gap:3px}
+  body[data-lay="tv"] .det-seq .lab{font-size:11px}
+  body[data-lay="tv"] .det-seq .num{font-size:32px}
   .det-line{margin-top:8px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:500}
   body[data-lay="tv"] .det-line{font-size:18px;margin-top:12px}
   .det-line svg{color:var(--brand);flex:0 0 auto}
@@ -659,7 +668,10 @@
       <section class="tv-detail" id="tvDetail">
         <div class="det-prod">
           <div class="det-info">
-            <h1 class="det-name"><span id="d-name"></span><span class="det-code" id="d-code"></span></h1>
+            <div class="det-seqrow">
+              <div class="det-seq" id="d-seqBox" title="Posição na sequência do transbordo"><span class="lab">Seq.</span><span class="num" id="d-seq">0</span></div>
+              <h1 class="det-name"><span id="d-name"></span><span class="det-code" id="d-code"></span></h1>
+            </div>
             <div class="det-line" id="d-supplierRow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7h13l4 5v5a1 1 0 0 1-1 1h-1M3 7v10a1 1 0 0 0 1 1h1m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Fornecedor: <b id="d-supplier"></b></div>
           </div>
           <button class="mtm-card" id="d-mtmBtn" hidden title="Abrir MTM">
@@ -1869,12 +1881,12 @@
   /* rotation */
   var rotIdx=0,rotStart=0,rotRAF=null,rotPaused=false,rotPausedAt=0,rotEmpty=false;
   function interval(){return (state.settings.intervalSec||15)*1000;}
-  function showEmpty(on){rotEmpty=on;if(on){shownItem=null;applyPriorityUI(null);}var _dt=el("d-timer");if(_dt)_dt.style.visibility=on?"hidden":"visible";var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";e.textContent="Nenhum transbordo em andamento.";el("dMain").appendChild(e);}detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
+  function showEmpty(on){rotEmpty=on;if(on){shownItem=null;applyPriorityUI(null);}var _dt=el("d-timer");if(_dt)_dt.style.visibility=on?"hidden":"visible";var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";e.textContent="Nenhum transbordo em andamento.";el("dMain").appendChild(e);}detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";var _ds0=el("d-seq");if(_ds0)_ds0.textContent="";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
   function goTo(i){
     var items=getVisible();if(!items.length){showEmpty(true);return;}showEmpty(false);
     rotIdx=((i%items.length)+items.length)%items.length;
     var detail=el("tvDetail");detail.style.opacity="0";
-    window.setTimeout(function(){renderItem(items[rotIdx]);startCardSS(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;highlightList(rotIdx);detail.style.opacity="1";},170);
+    window.setTimeout(function(){renderItem(items[rotIdx]);startCardSS(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;var _ds=el("d-seq");if(_ds)_ds.textContent=String(rotIdx+1);highlightList(rotIdx);detail.style.opacity="1";},170);
     rotStart=performance.now();el("progFill").style.width="0%";updateTimer(interval());cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
   }
   function updateTimer(remMs){var n=el("d-timerN");if(!n)return;var s=Math.max(0,Math.ceil(remMs/1000));if(n.textContent!==String(s))n.textContent=String(s);}
@@ -1982,7 +1994,7 @@
       if(!items.length){showEmpty(true);return;}
       if(rotEmpty){showEmpty(false);goTo(0);return;}
       showEmpty(false);if(rotIdx>=items.length)rotIdx=0;
-      renderItem(items[rotIdx]);startCardSS(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;highlightList(rotIdx);
+      renderItem(items[rotIdx]);startCardSS(items[rotIdx]);el("d-idx").textContent=(rotIdx+1)+" / "+items.length;var _ds2=el("d-seq");if(_ds2)_ds2.textContent=String(rotIdx+1);highlightList(rotIdx);
     }else{renderEditorList();populateForm();}
   });
 

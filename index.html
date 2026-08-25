@@ -110,29 +110,33 @@
   .ed-flow{display:flex;flex-direction:column;gap:0}
   .ed-flow .ed-item{border-color:var(--brand-100)}
   .ed-arrow{display:flex;align-items:center;justify-content:center;height:16px;color:var(--brand);flex:0 0 auto}
-  .ei-seq{position:absolute;left:7px;top:7px;z-index:2;min-width:19px;height:19px;padding:0 4px;border-radius:10px;background:var(--brand);color:#fff;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(16,24,48,.35)}
+  .ei-seq{flex:0 0 auto;min-width:20px;height:20px;padding:0 5px;border-radius:10px;background:var(--brand);color:#fff;font-size:11px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
   .ed-empty-hint{font-size:11.5px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:11px 12px;text-align:center}
-  /* cartão em 2 linhas: (miniatura | nome | X) e, embaixo, o botao Transbordar/Em transbordo.
-     Assim o nome ocupa a largura toda e aparece inteiro, sem "..." */
-  .ed-item{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) 26px;column-gap:12px;row-gap:8px;align-items:center;text-align:left;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;transition:border-color .15s,box-shadow .15s;width:100%}
+  /* cartão: TEXTO à esquerda ocupando toda a largura útil, IMAGEM GRANDE à direita,
+     e embaixo o botão Transbordar/Em transbordo em linha própria. */
+  .ed-item{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 118px;column-gap:12px;row-gap:10px;align-items:start;text-align:left;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;transition:border-color .15s,box-shadow .15s;width:100%}
   .ed-item:hover{border-color:var(--brand-100)}
   .ed-item.sel{border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,79,230,.13)}
-  .ed-item .ei-thumb{width:48px;height:48px;border-radius:10px;overflow:hidden;flex:0 0 auto;background:radial-gradient(120% 90% at 50% 20%,#fdfdff,#e6ebf5);display:flex;align-items:center;justify-content:center;color:var(--muted-2)}
+  .ed-item .ei-thumb{grid-column:2;grid-row:1;align-self:stretch;width:118px;min-height:118px;border-radius:11px;overflow:hidden;background:radial-gradient(120% 90% at 50% 20%,#fdfdff,#e6ebf5);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted-2)}
   .ed-item .ei-thumb img{width:100%;height:100%;object-fit:cover}
-  .ed-item .ei-thumb{grid-column:1;grid-row:1}
-  .ed-item .ei-info{grid-column:2;grid-row:1;min-width:0}
-  .ed-item .ei-code{font-size:17px;font-weight:800;letter-spacing:-.01em;color:var(--brand-700);line-height:1.2}
-  .ed-item .ei-name{font-size:12px;font-weight:500;line-height:1.32;color:var(--muted);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;word-break:break-word;hyphens:auto;margin-top:2px}
-  .ed-item .ei-sub{font-size:11px;color:var(--muted);margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-  .ed-item .ei-boxes{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:var(--brand-700);background:var(--brand-50);padding:4px 6px 4px 10px;border-radius:8px;border:1px solid var(--brand-100)}
-  .ed-item .ei-boxes-label{letter-spacing:.02em}
-  .ed-item .ei-boxes input{width:52px;height:30px;border:1px solid var(--brand-100);background:#fff;border-radius:7px;padding:0 6px;font-size:15px;font-weight:800;color:var(--ink);text-align:center;font-family:var(--sans)}
+  .ed-item .ei-info{grid-column:1;grid-row:1;min-width:0}
+  .ed-item .ei-head{display:flex;align-items:center;gap:7px;min-width:0}
+  .ed-item .ei-code{font-size:17px;font-weight:800;letter-spacing:-.01em;color:var(--brand-700);line-height:1.2;min-width:0;overflow-wrap:anywhere}
+  .ed-item .ei-name{font-size:12px;font-weight:500;line-height:1.32;color:var(--muted);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;word-break:break-word;hyphens:auto;margin-top:3px}
+  .ed-item .ei-sub{font-size:11px;color:var(--muted);margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  /* dois campos numéricos lado a lado, com o rótulo em cima do campo */
+  .ed-item .ei-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+  .ed-item .ei-boxes,.ed-item .ei-team{display:flex;flex-direction:column;align-items:stretch;gap:3px;padding:6px 8px 7px;border-radius:9px;min-width:0}
+  .ed-item .ei-boxes{color:var(--brand-700);background:var(--brand-50);border:1px solid var(--brand-100)}
+  .ed-item .ei-team{color:#0E6B4B;background:#E8F7F0;border:1px solid #C9EBDC}
+  .ed-item .ei-boxes-label{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ed-item .ei-boxes input,.ed-item .ei-team input{width:100%;height:32px;background:#fff;border-radius:7px;padding:0 4px;font-size:16px;font-weight:800;color:var(--ink);text-align:center;font-family:var(--sans)}
+  .ed-item .ei-boxes input{border:1px solid var(--brand-100)}
+  .ed-item .ei-team input{border:1px solid #C9EBDC}
   .ed-item .ei-boxes input:focus{outline:2px solid var(--brand);outline-offset:0}
-  .ed-item .ei-team{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:#0E6B4B;background:#E8F7F0;padding:4px 6px 4px 10px;border-radius:8px;border:1px solid #C9EBDC}
-  .ed-item .ei-team input{width:46px;height:30px;border:1px solid #C9EBDC;background:#fff;border-radius:7px;padding:0 6px;font-size:15px;font-weight:800;color:var(--ink);text-align:center;font-family:var(--sans)}
   .ed-item .ei-team input:focus{outline:2px solid var(--ok);outline-offset:0}
-  .ed-item .ei-ded{display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:var(--muted);background:#F1F4FA;border:1px solid var(--line);padding:4px 9px;border-radius:8px}
-  .ed-item .ei-del{grid-column:3;grid-row:1;align-self:start;flex:0 0 auto;width:26px;height:26px;border:none;background:transparent;color:var(--muted-2);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .ed-item .ei-ded{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;color:var(--muted);background:#F1F4FA;border:1px solid var(--line);padding:3px 8px;border-radius:6px}
+  .ed-item .ei-del{position:absolute;top:7px;right:7px;z-index:3;width:24px;height:24px;border:none;background:rgba(255,255,255,.9);color:var(--muted);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(12,19,34,.22)}
   .ed-item .ei-del:hover{background:#FDEEEC;color:var(--bad)}
   .ed-item.closed .ei-thumb,.ed-item.closed .ei-name,.ed-item.closed .ei-code{opacity:.5}
   .ei-status{font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.03em}
@@ -1424,11 +1428,15 @@
       var row=document.createElement("div");row.className="ed-item"+(it.id===currentId?" sel":"")+(open?"":" closed")+((open&&it.priority)?" prio":"");
       var th=document.createElement("span");th.className="ei-thumb";
       var _fi=(Array.isArray(it.partImages)&&it.partImages[0])||"";
-      if(_fi){var im=document.createElement("img");im.alt="";im.onerror=function(){th.innerHTML=PART_ICON.replace(/W/g,"22");};im.src=_fi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"22");
+      if(_fi){var im=document.createElement("img");im.alt="";im.onerror=function(){th.innerHTML=PART_ICON.replace(/W/g,"40");};im.src=_fi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"40");
       var info=document.createElement("div");info.className="ei-info";
+      var head=document.createElement("div");head.className="ei-head";
+      if(seq>0){var sq=document.createElement("span");sq.className="ei-seq";sq.textContent=String(seq);sq.title="Posição na sequência do transbordo";head.appendChild(sq);}
       var cd=document.createElement("div");cd.className="ei-code";cd.textContent=(it.partCode&&String(it.partCode).trim())?String(it.partCode).trim():"S/ CÓDIGO";
+      head.appendChild(cd);
       var nm=document.createElement("div");nm.className="ei-name";nm.textContent=it.partName||"(sem nome)";
       var sub=document.createElement("div");sub.className="ei-sub";
+      var fields=document.createElement("div");fields.className="ei-fields";
       var st=document.createElement("span");st.className="ei-status "+(open?"open":"closed");st.textContent=open?"Em transbordo":"Fechado";
       var bx=document.createElement("span");bx.className="ei-boxes";
       var bxLabel=document.createElement("span");bxLabel.className="ei-boxes-label";bxLabel.textContent="Caixas";
@@ -1468,9 +1476,11 @@
       });
       tm.appendChild(tmLabel);tm.appendChild(tmInput);
 
-      sub.appendChild(st);sub.appendChild(bx);sub.appendChild(tm);sub.appendChild(ded);
+      sub.appendChild(st);
       if(open&&it.priority){var pt=document.createElement("span");pt.className="ei-prio-tag";pt.textContent="Prioridade";sub.appendChild(pt);}
-      info.appendChild(cd);info.appendChild(nm);info.appendChild(sub);
+      sub.appendChild(ded);
+      fields.appendChild(bx);fields.appendChild(tm);
+      info.appendChild(head);info.appendChild(nm);info.appendChild(sub);info.appendChild(fields);
       var tg=document.createElement("button");tg.className="ei-toggle "+(open?"close":"open");
       tg.innerHTML=open?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Em transbordo':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Transbordar';
       tg.addEventListener("click",function(e){e.stopPropagation();toggleOpen(it.id);});
@@ -1494,8 +1504,7 @@
         dn.addEventListener("click",function(e){e.stopPropagation();moverNaSequencia(it.id,1);});
         foot.appendChild(up);foot.appendChild(dn);
       }
-      row.appendChild(th);row.appendChild(info);row.appendChild(foot);row.appendChild(del);
-      if(seq>0){var sq=document.createElement("span");sq.className="ei-seq";sq.textContent=String(seq);sq.title="Posição na sequência do transbordo";row.appendChild(sq);}
+      row.appendChild(info);row.appendChild(th);row.appendChild(foot);row.appendChild(del);
       row.addEventListener("click",function(){selectItem(it.id);});
       return row;
   }

@@ -128,6 +128,10 @@
   .ed-item .ei-boxes-label{letter-spacing:.02em}
   .ed-item .ei-boxes input{width:52px;height:30px;border:1px solid var(--brand-100);background:#fff;border-radius:7px;padding:0 6px;font-size:15px;font-weight:800;color:var(--ink);text-align:center;font-family:var(--sans)}
   .ed-item .ei-boxes input:focus{outline:2px solid var(--brand);outline-offset:0}
+  .ed-item .ei-team{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:700;color:#0E6B4B;background:#E8F7F0;padding:4px 6px 4px 10px;border-radius:8px;border:1px solid #C9EBDC}
+  .ed-item .ei-team input{width:46px;height:30px;border:1px solid #C9EBDC;background:#fff;border-radius:7px;padding:0 6px;font-size:15px;font-weight:800;color:var(--ink);text-align:center;font-family:var(--sans)}
+  .ed-item .ei-team input:focus{outline:2px solid var(--ok);outline-offset:0}
+  .ed-item .ei-ded{display:inline-flex;align-items:center;font-size:11px;font-weight:700;color:var(--muted);background:#F1F4FA;border:1px solid var(--line);padding:4px 9px;border-radius:8px}
   .ed-item .ei-del{grid-column:3;grid-row:1;align-self:start;flex:0 0 auto;width:26px;height:26px;border:none;background:transparent;color:var(--muted-2);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .ed-item .ei-del:hover{background:#FDEEEC;color:var(--bad)}
   .ed-item.closed .ei-thumb,.ed-item.closed .ei-name,.ed-item.closed .ei-code{opacity:.5}
@@ -194,6 +198,12 @@
   .photo-ctl{flex:1;min-width:0}.photo-ctl .pbtns{display:flex;gap:8px;flex-wrap:wrap}
   .photo-ctl input{width:100%;margin-top:9px;font-size:12.5px}
   .photo-ctl .hint{font-size:11px;color:var(--muted);margin-top:7px;line-height:1.4}
+  .ded-box{background:var(--card-2);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .ded-box .hint{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.45}
+  .ded-line{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .ded-line+.ded-line{margin-top:6px}
+  .ded-line .ded-l{font-size:12px;font-weight:600;color:var(--muted)}
+  .ded-line .ded-v{font-size:15px;font-weight:800;color:var(--brand-700)}
   input[type=file]{display:none}
   .no-item{grid-column:1/-1;text-align:center;color:var(--muted);padding:60px 20px;font-size:14px}
 
@@ -370,6 +380,8 @@
   body[data-lay="tv"] .time-sub .ts-l{font-size:15px}
   .time-sub .ts-v{font-size:18px;font-weight:800;line-height:1;white-space:nowrap;flex:0 0 auto}
   body[data-lay="tv"] .time-sub .ts-v{font-size:30px}
+  .time-sub .ts-note{display:block;font-style:normal;font-size:11px;font-weight:600;color:rgba(255,255,255,.6);margin-top:2px}
+  body[data-lay="tv"] .time-sub .ts-note{font-size:13px}
   .time-qr{display:none}
   .time-qr .qbox{background:#fff;border-radius:12px;padding:9px;flex:0 0 auto;line-height:0}
   body[data-lay="flow"] .time-qr .qbox{width:92px;height:92px}
@@ -619,7 +631,15 @@
               <label>Observação</label>
               <textarea data-field="qtyPerBoxObs" id="obsQtyPerBox" rows="2" placeholder="Ex.: caixa com peças extras para reposição"></textarea>
             </div>
-            <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" placeholder="Ex.: 02:45"></div>
+            <div class="row2">
+              <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" placeholder="Ex.: 02:45"></div>
+              <div class="field"><label>Total de colaboradores</label><input type="text" data-field="workers" inputmode="numeric" placeholder="Ex.: 3"></div>
+            </div>
+            <div class="field ded-box">
+              <div class="ded-line"><span class="ded-l">Dedicação equivalente</span><span class="ded-v" id="edDedPct">100%</span></div>
+              <div class="ded-line"><span class="ded-l">Tempo total do processo</span><span class="ded-v" id="edDedTotal">—</span></div>
+              <div class="hint">O 1º colaborador entra com 100% de dedicação; cada colaborador a mais acrescenta 80%, considerando a perda por espaço de trabalho e diálogos.</div>
+            </div>
           </div>
 
           <!-- CONFIGURAÇÕES DO PAINEL -->
@@ -752,6 +772,7 @@
               <div class="tc-fit">
               <div class="time-sub"><span class="ts-l">Tempo médio por caixa</span><span class="ts-v" id="d-time"></span></div>
               <div class="time-sub"><span class="ts-l">Caixas para transbordar</span><span class="ts-v" id="d-boxes"></span></div>
+              <div class="time-sub"><span class="ts-l">Colaboradores <i class="ts-note" id="d-dedic"></i></span><span class="ts-v" id="d-workers"></span></div>
               <div class="time-sub tsx-hl"><span class="ts-l">Tempo total do processo</span><span class="ts-v" id="d-total">—</span></div>
               <div class="time-sub"><span class="ts-l">Peças por caixa</span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt">Aponte a câmera<br>para abrir a ficha</span></div>
@@ -879,11 +900,21 @@
   function fmtTime(ms){try{var d=new Date(ms),p=function(n){return (n<10?"0":"")+n;};return p(d.getHours())+":"+p(d.getMinutes());}catch(e){return "";}}
 
   function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImages:[],mtm:"",mtmName:"",
-    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyPerBoxObs:"",qtyBoxes:"",time:"00:00",status:"closed",openedAt:null,priority:false,updated:nowStr()};}
-  function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",images:[]},o.origin||{});b.dest=Object.assign({name:"",images:[]},o.dest||{});if(!Array.isArray(b.partImages))b.partImages=(b.partImage&&String(b.partImage).trim())?[b.partImage]:[];if(!Array.isArray(b.dividerImages))b.dividerImages=(b.dividerImage&&String(b.dividerImage).trim())?[b.dividerImage]:[];if(!Array.isArray(b.origin.images))b.origin.images=(b.origin.image&&String(b.origin.image).trim())?[b.origin.image]:[];if(!Array.isArray(b.dest.images))b.dest.images=(b.dest.image&&String(b.dest.image).trim())?[b.dest.image]:[];b.partImages=b.partImages.filter(function(v){return typeof v==="string"&&v;});b.dividerImages=b.dividerImages.filter(function(v){return typeof v==="string"&&v;});b.origin.images=b.origin.images.filter(function(v){return typeof v==="string"&&v;});b.dest.images=b.dest.images.filter(function(v){return typeof v==="string"&&v;});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;b.priority=(o.priority===true);return b;}
+    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyPerBoxObs:"",qtyBoxes:"",time:"00:00",workers:"1",status:"closed",openedAt:null,priority:false,updated:nowStr()};}
+  function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",images:[]},o.origin||{});b.dest=Object.assign({name:"",images:[]},o.dest||{});if(!Array.isArray(b.partImages))b.partImages=(b.partImage&&String(b.partImage).trim())?[b.partImage]:[];if(!Array.isArray(b.dividerImages))b.dividerImages=(b.dividerImage&&String(b.dividerImage).trim())?[b.dividerImage]:[];if(!Array.isArray(b.origin.images))b.origin.images=(b.origin.image&&String(b.origin.image).trim())?[b.origin.image]:[];if(!Array.isArray(b.dest.images))b.dest.images=(b.dest.image&&String(b.dest.image).trim())?[b.dest.image]:[];b.partImages=b.partImages.filter(function(v){return typeof v==="string"&&v;});b.dividerImages=b.dividerImages.filter(function(v){return typeof v==="string"&&v;});b.origin.images=b.origin.images.filter(function(v){return typeof v==="string"&&v;});b.dest.images=b.dest.images.filter(function(v){return typeof v==="string"&&v;});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;b.priority=(o.priority===true);b.workers=String(nWorkers(o.workers));return b;}
+
+  /* ===== COLABORADORES E DEDICAÇÃO =====
+     Regra do painel: o 1º colaborador rende 100% da dedicação; cada colaborador
+     adicional acrescenta 80%, porque parte do tempo se perde com espaço de
+     trabalho disputado e com diálogos entre a dupla/equipe.
+     Ex.: 1 = 100% | 2 = 180% | 3 = 260% | 4 = 340% */
+  var DEDIC_EXTRA=0.8;
+  function nWorkers(v){var n=parseInt(String(v==null?"":v).replace(/[^0-9]/g,""),10);if(isNaN(n)||n<1)n=1;if(n>99)n=99;return n;}
+  function fatorDedicacao(v){var n=nWorkers(v);return 1+DEDIC_EXTRA*(n-1);}
+  function pctDedicacao(v){return Math.round(fatorDedicacao(v)*100)+"%";}
 
   function defaults(){
-    var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImages:[],mtm:"",mtmName:"",dividerType:divType,dividerImages:[],origin:{name:oN,images:[]},dest:{name:dN,images:[]},qtyPerBox:qty,qtyBoxes:"",time:time,status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
+    var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImages:[],mtm:"",mtmName:"",dividerType:divType,dividerImages:[],origin:{name:oN,images:[]},dest:{name:dN,images:[]},qtyPerBox:qty,qtyBoxes:"",time:time,workers:"1",status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
     return {
       settings:{panelTitle:"Controle de Transbordo",statusText:"Em operação",logo:"",intervalSec:15,postoFilter:"Todos"},
       items:[
@@ -945,7 +976,7 @@
     return {id:o.id||uid(),posto:o.posto||"Posto 12",partName:o.productName||o.partName||"",partCode:o.partCode||o.ref||"",supplier:o.supplier||o.line||"",
       partImages:pI?[pI]:[],mtm:o.mtm||"",mtmName:o.mtmName||"",dividerType:o.dividerType||"",dividerImages:dI?[dI]:[],status:o.status==="closed"?"closed":"open",openedAt:(typeof o.openedAt==="number"?o.openedAt:null),origin:{name:(o.origin&&o.origin.name)||"",images:oI?[oI]:[]},
       dest:{name:(o.dest&&o.dest.name)||"",images:dsI?[dsI]:[]},
-      qtyPerBox:o.qtyPerBox||(o.origin&&o.origin.qty)||"",qtyBoxes:o.qtyBoxes||"",time:o.time||"00:00",updated:o.updated||nowStr()};
+      qtyPerBox:o.qtyPerBox||(o.origin&&o.origin.qty)||"",qtyBoxes:o.qtyBoxes||"",time:o.time||"00:00",workers:String(nWorkers(o.workers)),updated:o.updated||nowStr()};
   }
   function loadState(){
     var v4=lsGet(KEY); if(v4){try{return normalize(JSON.parse(v4));}catch(e){}}
@@ -1412,7 +1443,32 @@
         queueSave();
       });
       bx.appendChild(bxLabel);bx.appendChild(bxInput);
-      sub.appendChild(st);sub.appendChild(bx);
+
+      /* Total de colaboradores do item + dedicação equivalente da equipe */
+      var tm=document.createElement("span");tm.className="ei-team";
+      var tmLabel=document.createElement("span");tmLabel.className="ei-boxes-label";tmLabel.textContent="Colaboradores";
+      var tmInput=document.createElement("input");tmInput.type="text";tmInput.inputMode="numeric";tmInput.autocomplete="off";tmInput.placeholder="1";tmInput.value=String(nWorkers(it.workers));
+      var ded=document.createElement("span");ded.className="ei-ded";ded.title="Dedicação equivalente: o 1º colaborador rende 100% e cada colaborador a mais acrescenta 80%";
+      ded.textContent="Dedicação "+pctDedicacao(it.workers);
+      tmInput.addEventListener("click",function(e){e.stopPropagation();});
+      tmInput.addEventListener("focus",function(e){e.stopPropagation();});
+      tmInput.addEventListener("keydown",function(e){e.stopPropagation();if(e.key==="Enter"){e.preventDefault();tmInput.blur();}});
+      tmInput.addEventListener("input",function(){
+        var v=tmInput.value.replace(/[^0-9]/g,"");if(v!==tmInput.value)tmInput.value=v;
+        it.workers=v;it.updated=nowStr();
+        ded.textContent="Dedicação "+pctDedicacao(v);
+        if(currentItem()===it){var fi=$('[data-field="workers"]');if(fi)fi.value=v;updateEdDedicacao();}
+        queueSave();
+      });
+      tmInput.addEventListener("blur",function(){
+        var n=nWorkers(tmInput.value);tmInput.value=String(n);it.workers=String(n);
+        ded.textContent="Dedicação "+pctDedicacao(n);
+        if(currentItem()===it){var fi=$('[data-field="workers"]');if(fi)fi.value=String(n);updateEdDedicacao();}
+        queueSave();
+      });
+      tm.appendChild(tmLabel);tm.appendChild(tmInput);
+
+      sub.appendChild(st);sub.appendChild(bx);sub.appendChild(tm);sub.appendChild(ded);
       if(open&&it.priority){var pt=document.createElement("span");pt.className="ei-prio-tag";pt.textContent="Prioridade";sub.appendChild(pt);}
       info.appendChild(cd);info.appendChild(nm);info.appendChild(sub);
       var tg=document.createElement("button");tg.className="ei-toggle "+(open?"close":"open");
@@ -1475,8 +1531,20 @@
     $all("[data-imgslot]").forEach(function(inp){var sl=inp.getAttribute("data-imgslot");var arr=getItemImages(it,sl);inp.value=(Array.isArray(arr)&&arr[0]&&!isData(arr[0]))?arr[0]:"";});
     updateMtmUI(it);
     setObsOpen(!!(it.qtyPerBoxObs&&String(it.qtyPerBoxObs).trim()));
+    var wf=$('[data-field="workers"]');if(wf)wf.value=String(nWorkers(it.workers));
+    updateEdDedicacao();
     if(typeof aplicarMaiusculasNoForm==="function")aplicarMaiusculasNoForm();
     autoGrowAll();
+  }
+  /* Prévia, dentro do cadastro, da dedicação da equipe e do tempo total já com o ganho aplicado */
+  function updateEdDedicacao(){
+    var p=el("edDedPct"),t=el("edDedTotal");if(!p||!t)return;
+    var it=currentItem();
+    if(!it){p.textContent="100%";t.textContent="—";return;}
+    var n=nWorkers(it.workers);
+    p.textContent=pctDedicacao(n)+(n>1?(" · "+n+" colaboradores"):" · 1 colaborador");
+    var seg=tempoTotalSegundos(it);
+    t.textContent=seg>0?tbClock(seg):"—";
   }
   /* Observação (opcional) da quantidade de peças / caixa — botão liga/desliga a área de texto */
   function setObsOpen(open){
@@ -1530,7 +1598,9 @@
     });
   }
   $all("[data-setting]").forEach(function(inp){var _h=function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";if(k==="logo")setLogo(v);queueSave();};inp.addEventListener("input",_h);inp.addEventListener("change",_h);});
-  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="partName"||f==="partCode"||f==="time"||f==="qtyBoxes")renderEditorList();if(f==="mtm")updateMtmUI(it);queueSave();});});
+  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="workers"){var vw=inp.value.replace(/[^0-9]/g,"");if(vw!==inp.value)inp.value=vw;it.workers=vw;}if(f==="partName"||f==="partCode"||f==="time"||f==="qtyBoxes"||f==="workers")renderEditorList();if(f==="time"||f==="qtyBoxes"||f==="workers")updateEdDedicacao();if(f==="mtm")updateMtmUI(it);queueSave();});});
+  /* ao sair do campo, normaliza o total de colaboradores (mínimo 1) */
+  (function(){var wf=$('[data-field="workers"]');if(!wf)return;wf.addEventListener("blur",function(){var it=currentItem();if(!it)return;var n=nWorkers(wf.value);wf.value=String(n);it.workers=String(n);it.updated=nowStr();renderEditorList();updateEdDedicacao();queueSave();});})();
 
   /* notificação de tamanho */
   /* Avisa, ao anexar, se o conteúdo ficou grande demais para sincronizar com as TVs.
@@ -1744,14 +1814,25 @@
     var p2=function(n){return(n<10?"0":"")+n;};
     return h>0?(h+":"+p2(m)+":"+p2(s)):(p2(m)+":"+p2(s));
   }
+  /* Tempo total = (tempo por caixa × caixas) ÷ dedicação equivalente da equipe.
+     A dedicação NÃO é linear: 1 colaborador = 100%; cada colaborador a mais soma 80%. */
+  function tempoTotalSegundos(it){
+    if(!it)return 0;
+    var per=tbSecs(it.time);
+    var boxes=parseInt(String(it.qtyBoxes||"").replace(/[^0-9]/g,""),10);if(isNaN(boxes))boxes=0;
+    if(per<=0||boxes<=0)return 0;
+    return (per*boxes)/fatorDedicacao(it.workers);
+  }
   function updateTotalTime(){
     var out=el("d-total");if(!out)return;
     var it=shownItem;if(!it){out.textContent="";out.closest(".time-sub").style.display="none";return;}
-    var per=tbSecs(it.time);
-    var boxes=parseInt(String(it.qtyBoxes||"").replace(/[^0-9]/g,""),10);if(isNaN(boxes))boxes=0;
-    var visible=per>0&&boxes>0;
-    out.textContent=visible?tbClock(per*boxes):"";
+    var seg=tempoTotalSegundos(it);
+    var visible=seg>0;
+    out.textContent=visible?tbClock(seg):"";
     out.closest(".time-sub").style.display=visible?"":"none";
+    var lab=out.closest(".time-sub")?out.closest(".time-sub").querySelector(".ts-l"):null;
+    var n=nWorkers(it.workers);
+    if(lab)lab.textContent=(n>1)?("Tempo total do processo · "+n+" colaboradores"):"Tempo total do processo";
   }
 
   /* Na TV, campos sem preenchimento não deixam rótulos ou traços vazios na tela. */
@@ -1796,6 +1877,11 @@
     var arrow=el("flow-arrow");if(arrow)arrow.style.display=(hasOrigin&&hasDest)?"":"none";
     if(flow)flow.classList.toggle("tv-one-card",(hasOrigin?1:0)+(hasDest?1:0)<=1);
     setTvField("d-boxes",it.qtyBoxes,".time-sub");
+    (function(){
+      var n=nWorkers(it.workers);
+      setTvField("d-workers",String(n),".time-sub");
+      var nt=el("d-dedic");if(nt)nt.textContent="Dedicação equivalente "+pctDedicacao(n);
+    })();
     updateTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";
     setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");

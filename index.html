@@ -114,7 +114,8 @@
   .ed-item .ei-thumb img{width:100%;height:100%;object-fit:cover}
   .ed-item .ei-thumb{grid-column:1;grid-row:1}
   .ed-item .ei-info{grid-column:2;grid-row:1;min-width:0}
-  .ed-item .ei-name{font-size:13.5px;font-weight:700;line-height:1.25;white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;word-break:break-word;hyphens:auto}
+  .ed-item .ei-code{font-size:15px;font-weight:800;letter-spacing:-.01em;color:var(--brand-700);line-height:1.2}
+  .ed-item .ei-name{font-size:11.5px;font-weight:500;line-height:1.3;color:var(--muted);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;word-break:break-word;hyphens:auto;margin-top:1px}
   .ed-item .ei-sub{font-size:11px;color:var(--muted);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
   .ed-item .ei-boxes{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;color:var(--brand-700);background:var(--brand-50);padding:1px 4px 1px 8px;border-radius:5px;border:1px solid var(--brand-100)}
   .ed-item .ei-boxes-label{letter-spacing:.02em}
@@ -122,7 +123,7 @@
   .ed-item .ei-boxes input:focus{outline:2px solid var(--brand);outline-offset:0}
   .ed-item .ei-del{grid-column:3;grid-row:1;align-self:start;flex:0 0 auto;width:26px;height:26px;border:none;background:transparent;color:var(--muted-2);border-radius:7px;cursor:pointer;display:flex;align-items:center;justify-content:center}
   .ed-item .ei-del:hover{background:#FDEEEC;color:var(--bad)}
-  .ed-item.closed .ei-thumb,.ed-item.closed .ei-name{opacity:.5}
+  .ed-item.closed .ei-thumb,.ed-item.closed .ei-name,.ed-item.closed .ei-code{opacity:.5}
   .ei-status{font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;gap:4px;padding:1px 7px;border-radius:5px;text-transform:uppercase;letter-spacing:.03em}
   .ei-status::before{content:"";width:6px;height:6px;border-radius:50%;display:inline-block;flex:0 0 auto}
   .ei-status.open{color:#0f7a52;background:#E4F6EE}.ei-status.open::before{background:var(--ok)}
@@ -1333,6 +1334,7 @@
       var _fi=(Array.isArray(it.partImages)&&it.partImages[0])||"";
       if(_fi){var im=document.createElement("img");im.alt="";im.onerror=function(){th.innerHTML=PART_ICON.replace(/W/g,"20");};im.src=_fi;th.appendChild(im);}else th.innerHTML=PART_ICON.replace(/W/g,"20");
       var info=document.createElement("div");info.className="ei-info";
+      var cd=document.createElement("div");cd.className="ei-code";cd.textContent=(it.partCode&&String(it.partCode).trim())?String(it.partCode).trim():"S/ CÓDIGO";
       var nm=document.createElement("div");nm.className="ei-name";nm.textContent=it.partName||"(sem nome)";
       var sub=document.createElement("div");sub.className="ei-sub";
       var st=document.createElement("span");st.className="ei-status "+(open?"open":"closed");st.textContent=open?"Em transbordo":"Fechado";
@@ -1351,7 +1353,7 @@
       bx.appendChild(bxLabel);bx.appendChild(bxInput);
       sub.appendChild(st);sub.appendChild(bx);
       if(open&&it.priority){var pt=document.createElement("span");pt.className="ei-prio-tag";pt.textContent="Prioridade";sub.appendChild(pt);}
-      info.appendChild(nm);info.appendChild(sub);
+      info.appendChild(cd);info.appendChild(nm);info.appendChild(sub);
       var tg=document.createElement("button");tg.className="ei-toggle "+(open?"close":"open");
       tg.innerHTML=open?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Fechar':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Abrir';
       tg.addEventListener("click",function(e){e.stopPropagation();toggleOpen(it.id);});

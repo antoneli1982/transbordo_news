@@ -135,7 +135,6 @@
   .ed-item .ei-team input{border:1px solid #C9EBDC}
   .ed-item .ei-boxes input:focus{outline:2px solid var(--brand);outline-offset:0}
   .ed-item .ei-team input:focus{outline:2px solid var(--ok);outline-offset:0}
-  .ed-item .ei-ded{display:inline-flex;align-items:center;font-size:10.5px;font-weight:700;color:var(--muted);background:#F1F4FA;border:1px solid var(--line);padding:3px 8px;border-radius:6px}
   .ed-item .ei-del{position:absolute;top:7px;right:7px;z-index:3;width:24px;height:24px;border:none;background:rgba(255,255,255,.9);color:var(--muted);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(12,19,34,.22)}
   .ed-item .ei-del:hover{background:#FDEEEC;color:var(--bad)}
   .ed-item.closed .ei-thumb,.ed-item.closed .ei-name,.ed-item.closed .ei-code{opacity:.5}
@@ -384,8 +383,6 @@
   body[data-lay="tv"] .time-sub .ts-l{font-size:15px}
   .time-sub .ts-v{font-size:18px;font-weight:800;line-height:1;white-space:nowrap;flex:0 0 auto}
   body[data-lay="tv"] .time-sub .ts-v{font-size:30px}
-  .time-sub .ts-note{display:block;font-style:normal;font-size:11px;font-weight:600;color:rgba(255,255,255,.6);margin-top:2px}
-  body[data-lay="tv"] .time-sub .ts-note{font-size:13px}
   .time-qr{display:none}
   .time-qr .qbox{background:#fff;border-radius:12px;padding:9px;flex:0 0 auto;line-height:0}
   body[data-lay="flow"] .time-qr .qbox{width:92px;height:92px}
@@ -640,7 +637,6 @@
               <div class="field"><label>Total de colaboradores</label><input type="text" data-field="workers" inputmode="numeric" placeholder="Ex.: 3"></div>
             </div>
             <div class="field ded-box">
-              <div class="ded-line"><span class="ded-l">Dedicação equivalente</span><span class="ded-v" id="edDedPct">100%</span></div>
               <div class="ded-line"><span class="ded-l">Tempo total do processo</span><span class="ded-v" id="edDedTotal">—</span></div>
               <div class="hint">O 1º colaborador entra com 100% de dedicação; cada colaborador a mais acrescenta 80%, considerando a perda por espaço de trabalho e diálogos.</div>
             </div>
@@ -776,7 +772,7 @@
               <div class="tc-fit">
               <div class="time-sub"><span class="ts-l">Tempo médio por caixa</span><span class="ts-v" id="d-time"></span></div>
               <div class="time-sub"><span class="ts-l">Caixas para transbordar</span><span class="ts-v" id="d-boxes"></span></div>
-              <div class="time-sub"><span class="ts-l">Colaboradores <i class="ts-note" id="d-dedic"></i></span><span class="ts-v" id="d-workers"></span></div>
+              <div class="time-sub"><span class="ts-l">Colaboradores</span><span class="ts-v" id="d-workers"></span></div>
               <div class="time-sub tsx-hl"><span class="ts-l">Tempo total do processo</span><span class="ts-v" id="d-total">—</span></div>
               <div class="time-sub"><span class="ts-l">Peças por caixa</span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt">Aponte a câmera<br>para abrir a ficha</span></div>
@@ -1452,25 +1448,21 @@
       });
       bx.appendChild(bxLabel);bx.appendChild(bxInput);
 
-      /* Total de colaboradores do item + dedicação equivalente da equipe */
+      /* Total de colaboradores do item (o efeito da dedicação entra no tempo total) */
       var tm=document.createElement("span");tm.className="ei-team";
       var tmLabel=document.createElement("span");tmLabel.className="ei-boxes-label";tmLabel.textContent="Colaboradores";
       var tmInput=document.createElement("input");tmInput.type="text";tmInput.inputMode="numeric";tmInput.autocomplete="off";tmInput.placeholder="1";tmInput.value=String(nWorkers(it.workers));
-      var ded=document.createElement("span");ded.className="ei-ded";ded.title="Dedicação equivalente: o 1º colaborador rende 100% e cada colaborador a mais acrescenta 80%";
-      ded.textContent="Dedicação "+pctDedicacao(it.workers);
       tmInput.addEventListener("click",function(e){e.stopPropagation();});
       tmInput.addEventListener("focus",function(e){e.stopPropagation();});
       tmInput.addEventListener("keydown",function(e){e.stopPropagation();if(e.key==="Enter"){e.preventDefault();tmInput.blur();}});
       tmInput.addEventListener("input",function(){
         var v=tmInput.value.replace(/[^0-9]/g,"");if(v!==tmInput.value)tmInput.value=v;
         it.workers=v;it.updated=nowStr();
-        ded.textContent="Dedicação "+pctDedicacao(v);
         if(currentItem()===it){var fi=$('[data-field="workers"]');if(fi)fi.value=v;updateEdDedicacao();}
         queueSave();
       });
       tmInput.addEventListener("blur",function(){
         var n=nWorkers(tmInput.value);tmInput.value=String(n);it.workers=String(n);
-        ded.textContent="Dedicação "+pctDedicacao(n);
         if(currentItem()===it){var fi=$('[data-field="workers"]');if(fi)fi.value=String(n);updateEdDedicacao();}
         queueSave();
       });
@@ -1478,7 +1470,6 @@
 
       sub.appendChild(st);
       if(open&&it.priority){var pt=document.createElement("span");pt.className="ei-prio-tag";pt.textContent="Prioridade";sub.appendChild(pt);}
-      sub.appendChild(ded);
       fields.appendChild(bx);fields.appendChild(tm);
       info.appendChild(head);info.appendChild(nm);info.appendChild(sub);info.appendChild(fields);
       var tg=document.createElement("button");tg.className="ei-toggle "+(open?"close":"open");
@@ -1545,13 +1536,11 @@
     if(typeof aplicarMaiusculasNoForm==="function")aplicarMaiusculasNoForm();
     autoGrowAll();
   }
-  /* Prévia, dentro do cadastro, da dedicação da equipe e do tempo total já com o ganho aplicado */
+  /* Prévia, dentro do cadastro, do tempo total já com o ganho da equipe aplicado */
   function updateEdDedicacao(){
-    var p=el("edDedPct"),t=el("edDedTotal");if(!p||!t)return;
+    var t=el("edDedTotal");if(!t)return;
     var it=currentItem();
-    if(!it){p.textContent="100%";t.textContent="—";return;}
-    var n=nWorkers(it.workers);
-    p.textContent=pctDedicacao(n)+(n>1?(" · "+n+" colaboradores"):" · 1 colaborador");
+    if(!it){t.textContent="—";return;}
     var seg=tempoTotalSegundos(it);
     t.textContent=seg>0?tbClock(seg):"—";
   }
@@ -1886,11 +1875,7 @@
     var arrow=el("flow-arrow");if(arrow)arrow.style.display=(hasOrigin&&hasDest)?"":"none";
     if(flow)flow.classList.toggle("tv-one-card",(hasOrigin?1:0)+(hasDest?1:0)<=1);
     setTvField("d-boxes",it.qtyBoxes,".time-sub");
-    (function(){
-      var n=nWorkers(it.workers);
-      setTvField("d-workers",String(n),".time-sub");
-      var nt=el("d-dedic");if(nt)nt.textContent="Dedicação equivalente "+pctDedicacao(n);
-    })();
+    setTvField("d-workers",String(nWorkers(it.workers)),".time-sub");
     updateTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";
     setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");

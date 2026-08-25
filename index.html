@@ -92,6 +92,13 @@
   .ed-list-head{padding:16px 18px 10px;display:flex;align-items:center;justify-content:space-between}
   .ed-list-head .t{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
   .ed-list-head .c{font-size:12px;font-weight:700;color:var(--brand-700);background:var(--brand-50);padding:3px 9px;border-radius:20px}
+  .ed-search{position:relative;display:flex;align-items:center;margin:0 12px 10px}
+  .ed-search svg:first-child{position:absolute;left:11px;color:var(--muted-2);pointer-events:none;flex:0 0 auto}
+  .ed-search input{width:100%;font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 32px;transition:border-color .15s,box-shadow .15s}
+  .ed-search input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,79,230,.14)}
+  .ed-search input::placeholder{color:var(--muted-2)}
+  .ed-search #edSearchClear{position:absolute;right:6px;appearance:none;border:none;background:#EDF0F5;color:var(--muted);width:20px;height:20px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .ed-search #edSearchClear:hover{background:#dfe4ee;color:var(--ink-2)}
   .ed-items{flex:1 1 auto;overflow-y:auto;padding:4px 12px 12px;display:flex;flex-direction:column;gap:7px}
   /* ==== camada TRANSBORDO (itens abertos) + setas da sequencia ==== */
   .ed-group{display:flex;align-items:center;gap:8px;padding:9px 2px 1px;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
@@ -105,7 +112,7 @@
   .ed-arrow{display:flex;align-items:center;justify-content:center;height:16px;color:var(--brand);flex:0 0 auto}
   .ei-seq{position:absolute;left:7px;top:7px;z-index:2;min-width:19px;height:19px;padding:0 4px;border-radius:10px;background:var(--brand);color:#fff;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(16,24,48,.35)}
   .ed-empty-hint{font-size:11.5px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:11px 12px;text-align:center}
-  /* cartão em 2 linhas: (miniatura | nome | X) e, embaixo, o botao Abrir/Fechar.
+  /* cartão em 2 linhas: (miniatura | nome | X) e, embaixo, o botao Transbordar/Não transbordar.
      Assim o nome ocupa a largura toda e aparece inteiro, sem "..." */
   .ed-item{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) 26px;column-gap:12px;row-gap:8px;align-items:center;text-align:left;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;transition:border-color .15s,box-shadow .15s;width:100%}
   .ed-item:hover{border-color:var(--brand-100)}
@@ -496,6 +503,11 @@
   <div class="ed-body">
     <div class="ed-list">
       <div class="ed-list-head"><span class="t">Itens cadastrados</span><span class="c" id="edCount">0</span></div>
+      <div class="ed-search">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        <input type="text" id="edSearch" placeholder="Buscar por código ou nome" autocomplete="off" data-sem-maiuscula>
+        <button type="button" id="edSearchClear" hidden aria-label="Limpar busca"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+      </div>
       <div class="ed-items" id="edItems"></div>
       <button class="btn btn-ghost ed-add" id="btnAdd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Adicionar item</button>
     </div>
@@ -1240,8 +1252,16 @@
     d.innerHTML='<svg width="15" height="19" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v16m0 0-5.5-5.5M12 19l5.5-5.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     return d;
   }
+  /* remove acentos p/ busca não sensível a acentuação */
+  function normBusca(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+  function itemBate(it,termo){
+    if(!termo)return true;
+    var t=normBusca(termo);
+    return normBusca(it.partName).indexOf(t)>=0||normBusca(it.partCode).indexOf(t)>=0;
+  }
   function renderEditorList(){
     var box=el("edItems");box.innerHTML="";
+    var termo=(el("edSearch")&&el("edSearch").value)||"";
     var abertos=state.items.filter(function(i){return i.status==="open";});
     var fechados=state.items.filter(function(i){return i.status!=="open";});
     var openN=abertos.length;
@@ -1251,22 +1271,37 @@
     box.appendChild(edGroupHead("Transbordo",openN?(openN+(openN===1?" item":" itens")):"vazio","flow"));
     if(!openN){
       var hint=document.createElement("div");hint.className="ed-empty-hint";
-      hint.textContent='Nenhum item em transbordo. Clique em "Abrir" para colocar um item na sequência.';
+      hint.textContent='Nenhum item em transbordo. Clique em "Transbordar" para colocar um item na sequência.';
       box.appendChild(hint);
     }else{
       edItemRow._total=openN;
       var flow=document.createElement("div");flow.className="ed-flow";
+      var lastIdx=-1,shownAbertos=0;
       abertos.forEach(function(it,i){
-        if(i)flow.appendChild(edArrow());
+        if(!itemBate(it,termo))return;
+        if(shownAbertos>0&&lastIdx===i-1)flow.appendChild(edArrow());
         flow.appendChild(edItemRow(it,i+1));
+        lastIdx=i;shownAbertos++;
       });
+      if(!shownAbertos){
+        var noHit=document.createElement("div");noHit.className="ed-empty-hint";
+        noHit.textContent="Nenhum item em transbordo encontrado para a busca.";
+        flow.appendChild(noHit);
+      }
       box.appendChild(flow);
     }
 
     /* --- demais itens cadastrados (fechados) --- */
     if(fechados.length){
       box.appendChild(edGroupHead("Fechados",String(fechados.length)));
-      fechados.forEach(function(it){box.appendChild(edItemRow(it,0));});
+      var fechadosFiltrados=fechados.filter(function(it){return itemBate(it,termo);});
+      if(!fechadosFiltrados.length&&termo){
+        var noHit2=document.createElement("div");noHit2.className="ed-empty-hint";
+        noHit2.textContent="Nenhum item fechado encontrado para a busca.";
+        box.appendChild(noHit2);
+      }else{
+        fechadosFiltrados.forEach(function(it){box.appendChild(edItemRow(it,0));});
+      }
     }
   }
   /* ===== Proteção por senha para ações destrutivas =====
@@ -1355,7 +1390,7 @@
       if(open&&it.priority){var pt=document.createElement("span");pt.className="ei-prio-tag";pt.textContent="Prioridade";sub.appendChild(pt);}
       info.appendChild(cd);info.appendChild(nm);info.appendChild(sub);
       var tg=document.createElement("button");tg.className="ei-toggle "+(open?"close":"open");
-      tg.innerHTML=open?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Fechar':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Abrir';
+      tg.innerHTML=open?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Não transbordar':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Transbordar';
       tg.addEventListener("click",function(e){e.stopPropagation();toggleOpen(it.id);});
       var del=document.createElement("button");del.className="ei-del";del.title="Remover";del.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
       del.addEventListener("click",function(e){e.stopPropagation();removeItem(it.id);});
@@ -1657,6 +1692,11 @@
     state=normalize(defaults());currentId=state.items[0].id;renderEditorList();populateForm();save();toast("Exemplo restaurado");
   });});
   el("btnAdd").addEventListener("click",addItem);
+  (function(){
+    var si=el("edSearch"),cb=el("edSearchClear");if(!si)return;
+    si.addEventListener("input",function(){if(cb)cb.hidden=!si.value;renderEditorList();});
+    if(cb)cb.addEventListener("click",function(){si.value="";cb.hidden=true;renderEditorList();si.focus();});
+  })();
 
   /* display: detail */
   var lastQr=null, shownItem=null, mtmWasPlaying=false, mtmBlobUrl=null;

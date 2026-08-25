@@ -173,6 +173,7 @@
   .field label{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
   .field input,.field select,.field textarea{width:100%;font-family:var(--sans);font-size:14px;color:var(--ink);background:var(--card-2);border:1px solid var(--line);border-radius:11px;padding:11px 13px;transition:border-color .15s,box-shadow .15s}
   .field textarea{resize:vertical;min-height:64px;line-height:1.4}
+  .field textarea.autogrow{resize:none;overflow:hidden;min-height:44px;max-height:none;line-height:1.35}
   .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(43,79,230,.14);background:#fff}
   /* Todos os campos de texto do cadastro trabalham em MAIÚSCULO.
      Campos de URL (data-img / data-imgslot) ficam de fora: link é sensível a maiúsculas. */
@@ -530,8 +531,8 @@
           <div class="group span">
             <h2>Peça</h2>
             <div class="row2">
-              <div class="field"><label>Nome da peça</label><input type="text" data-field="partName"></div>
-              <div class="field"><label>Código da peça</label><input type="text" data-field="partCode"></div>
+              <div class="field"><label>Nome da peça</label><textarea class="autogrow" data-field="partName" rows="1"></textarea></div>
+              <div class="field"><label>Código da peça</label><textarea class="autogrow" data-field="partCode" rows="1"></textarea></div>
             </div>
             <div class="field"><label>Fornecedor</label><input type="text" data-field="supplier"></div>
             <div class="field">
@@ -859,6 +860,19 @@
   function $all(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
   function clone(o){return JSON.parse(JSON.stringify(o));}
   function uid(){return "it"+Date.now().toString(36)+Math.floor(Math.random()*1e4).toString(36);}
+  /* Campos de texto que crescem em altura conforme o conteúdo, para nunca cortar o texto (ex.: nome/código da peça) */
+  function autoGrow(ta){
+    if(!ta)return;
+    ta.style.height="auto";
+    ta.style.height=ta.scrollHeight+"px";
+  }
+  function autoGrowAll(){$all("textarea.autogrow").forEach(autoGrow);}
+  document.addEventListener("input",function(ev){
+    var t=ev.target;
+    if(t&&t.tagName==="TEXTAREA"&&t.classList.contains("autogrow"))autoGrow(t);
+  },true);
+  window.addEventListener("resize",function(){autoGrowAll();});
+  window.addEventListener("load",function(){autoGrowAll();});
   function getPath(o,p){var a=p.split("."),v=o;for(var i=0;i<a.length;i++){if(v==null)return undefined;v=v[a[i]];}return v;}
   function setPath(o,p,val){var a=p.split("."),t=o;for(var i=0;i<a.length-1;i++){if(typeof t[a[i]]!=="object"||t[a[i]]==null)t[a[i]]={};t=t[a[i]];}t[a[a.length-1]]=val;}
   function nowStr(){var d=new Date(),p=function(n){return (n<10?"0":"")+n;};return "Atualizado "+p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes());}
@@ -1462,6 +1476,7 @@
     updateMtmUI(it);
     setObsOpen(!!(it.qtyPerBoxObs&&String(it.qtyPerBoxObs).trim()));
     if(typeof aplicarMaiusculasNoForm==="function")aplicarMaiusculasNoForm();
+    autoGrowAll();
   }
   /* Observação (opcional) da quantidade de peças / caixa — botão liga/desliga a área de texto */
   function setObsOpen(open){

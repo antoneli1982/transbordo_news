@@ -342,19 +342,6 @@
   .time-sub+.time-sub{margin-top:8px}
   .tc-fit>.time-sub:first-child{margin-top:0}
   .time-sub.tsx-hl{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.34)}
-  .time-sub.tsx-edit{flex-direction:column;align-items:stretch;gap:9px}
-  .time-sub.tsx-edit .ts-l{text-align:center}
-  .ts-edit{display:flex;align-items:center;justify-content:center;gap:10px}
-  body[data-lay="tv"] .ts-edit{gap:12px}
-  .ts-btn{appearance:none;border:1px solid rgba(255,255,255,.32);background:rgba(255,255,255,.14);color:#fff;cursor:pointer;width:30px;height:30px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;transition:background .15s,transform .1s;flex:0 0 auto;padding:0}
-  .ts-btn:hover{background:rgba(255,255,255,.26)}
-  .ts-btn:active{transform:scale(.9)}
-  .ts-btn svg{width:16px;height:16px}
-  body[data-lay="tv"] .ts-btn{width:40px;height:40px;border-radius:11px}
-  body[data-lay="tv"] .ts-btn svg{width:22px;height:22px}
-  .ts-input{appearance:none;border:1px solid transparent;background:rgba(255,255,255,.1);color:#fff;font-weight:800;text-align:center;width:2.6em;padding:3px 4px;border-radius:8px;font-family:var(--sans);font-variant-numeric:tabular-nums;outline:none}
-  .ts-input:focus{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.45)}
-  .ts-input::placeholder{color:rgba(255,255,255,.45)}
   .time-sub .ts-l{font-size:12px;color:rgba(255,255,255,.8);font-weight:600;line-height:1.3;min-width:0}
   body[data-lay="tv"] .time-sub .ts-l{font-size:15px}
   .time-sub .ts-v{font-size:18px;font-weight:800;line-height:1;white-space:nowrap;flex:0 0 auto}
@@ -719,14 +706,7 @@
             <div class="time-card">
               <div class="tc-fit">
               <div class="time-sub"><span class="ts-l">Tempo médio por caixa</span><span class="ts-v" id="d-time"></span></div>
-              <div class="time-sub tsx-hl tsx-edit">
-                <span class="ts-l">Caixas para transbordar</span>
-                <span class="ts-edit">
-                  <button class="ts-btn" id="btnBoxDown" type="button" aria-label="Menos uma caixa"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-                  <input class="ts-v ts-input" id="d-boxes" type="text" inputmode="numeric" autocomplete="off" placeholder="0">
-                  <button class="ts-btn" id="btnBoxUp" type="button" aria-label="Mais uma caixa"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-                </span>
-              </div>
+              <div class="time-sub"><span class="ts-l">Caixas para transbordar</span><span class="ts-v" id="d-boxes"></span></div>
               <div class="time-sub tsx-hl"><span class="ts-l">Tempo total do processo</span><span class="ts-v" id="d-total">—</span></div>
               <div class="time-sub"><span class="ts-l">Peças por caixa</span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt">Aponte a câmera<br>para abrir a ficha</span></div>
@@ -1704,11 +1684,7 @@
     var flow=el("card-origin")&&el("card-origin").parentElement;
     var arrow=el("flow-arrow");if(arrow)arrow.style.display=(hasOrigin&&hasDest)?"":"none";
     if(flow)flow.classList.toggle("tv-one-card",(hasOrigin?1:0)+(hasDest?1:0)<=1);
-    var _bx=el("d-boxes");if(_bx){
-      var _hasBoxes=hasTvValue(it.qtyBoxes);
-      if(document.activeElement!==_bx)_bx.value=_hasBoxes?it.qtyBoxes:"";
-      _bx.closest(".time-sub").style.display=_hasBoxes?"":"none";
-    }
+    setTvField("d-boxes",it.qtyBoxes,".time-sub");
     updateTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";
     setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");
@@ -1845,25 +1821,6 @@
   }
   var _btd=el("btnTimerDown");if(_btd)_btd.addEventListener("click",function(){stepInterval(-1);});
   var _btu=el("btnTimerUp");if(_btu)_btu.addEventListener("click",function(){stepInterval(1);});
-  /* editar "Caixas para transbordar" direto na TV (card azul) */
-  function holdRotation(){rotStart=performance.now();if(!rotPaused){el("progFill").style.width="0%";updateTimer(interval());}}
-  function adjustBoxes(delta){
-    if(document.body.dataset.view!=="display")return;
-    var it=shownItem;if(!it)return;
-    var cur=parseInt(String(it.qtyBoxes||"").replace(/[^0-9]/g,""),10);if(isNaN(cur))cur=0;
-    cur=Math.max(0,cur+delta);it.qtyBoxes=String(cur);it.updated=nowStr();
-    var bx=el("d-boxes");if(bx)bx.value=String(cur);
-    var fi=$('[data-field="qtyBoxes"]');if(fi&&currentItem()===it)fi.value=String(cur);
-    updateTotalTime();fitTimeCard();holdRotation();queueSave();
-  }
-  var _bxd=el("btnBoxDown");if(_bxd)_bxd.addEventListener("click",function(){adjustBoxes(-1);});
-  var _bxu=el("btnBoxUp");if(_bxu)_bxu.addEventListener("click",function(){adjustBoxes(1);});
-  var _bxi=el("d-boxes");
-  if(_bxi){
-    _bxi.addEventListener("input",function(){var it=shownItem;if(!it||document.body.dataset.view!=="display")return;var v=_bxi.value.replace(/[^0-9]/g,"");if(v!==_bxi.value)_bxi.value=v;it.qtyBoxes=v;it.updated=nowStr();var fi=$('[data-field="qtyBoxes"]');if(fi&&currentItem()===it)fi.value=v;updateTotalTime();fitTimeCard();holdRotation();queueSave();});
-    _bxi.addEventListener("focus",holdRotation);
-    _bxi.addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();_bxi.blur();}});
-  }
 
   /* view / TV */
   function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}

@@ -386,6 +386,7 @@
   .time-qr{display:none}
   /* Observação da quantidade de peças/caixa — só aparece na TV quando o cadastro tem texto */
   .time-obs{margin-top:10px;background:rgba(255,214,110,.16);border:1px solid rgba(255,214,110,.5);border-radius:11px;padding:10px 13px;display:flex;align-items:flex-start;gap:9px}
+  .time-obs[hidden]{display:none!important}
   .time-obs .to-ico{width:18px;height:18px;flex:0 0 auto;color:#FFD66E;margin-top:1px}
   body[data-lay="tv"] .time-obs{margin-top:12px;padding:13px 16px;gap:11px}
   body[data-lay="tv"] .time-obs .to-ico{width:24px;height:24px;margin-top:2px}
@@ -1882,7 +1883,9 @@
     (function(){
       var wrap=el("d-obsWrap"),val=el("d-obs");if(!wrap||!val)return;
       var txt=(it.qtyPerBoxObs==null)?"":String(it.qtyPerBoxObs).trim();
-      val.textContent=txt;wrap.hidden=!txt;
+      val.textContent=txt;
+      wrap.hidden=!txt;
+      wrap.style.display=txt?"":"none";
     })();
     var hasPart=setTvCard("card-part",hasTvValue(it.partName)||getSlotImages(it,"part").length>0);
     var hasDivider=setTvCard("card-divider",hasTvValue(it.dividerType)||getSlotImages(it,"divider").length>0);

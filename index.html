@@ -112,7 +112,7 @@
   .ed-arrow{display:flex;align-items:center;justify-content:center;height:16px;color:var(--brand);flex:0 0 auto}
   .ei-seq{position:absolute;left:7px;top:7px;z-index:2;min-width:19px;height:19px;padding:0 4px;border-radius:10px;background:var(--brand);color:#fff;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(16,24,48,.35)}
   .ed-empty-hint{font-size:11.5px;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:12px;padding:11px 12px;text-align:center}
-  /* cartão em 2 linhas: (miniatura | nome | X) e, embaixo, o botao Transbordar/Não transbordar.
+  /* cartão em 2 linhas: (miniatura | nome | X) e, embaixo, o botao Transbordar/Em transbordo.
      Assim o nome ocupa a largura toda e aparece inteiro, sem "..." */
   .ed-item{position:relative;display:grid;grid-template-columns:48px minmax(0,1fr) 26px;column-gap:12px;row-gap:8px;align-items:center;text-align:left;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 14px;transition:border-color .15s,box-shadow .15s;width:100%}
   .ed-item:hover{border-color:var(--brand-100)}
@@ -153,7 +153,7 @@
   .ei-toggle{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:9px;padding:5px 10px;font-size:11.5px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;color:var(--ink-2);transition:background .15s,transform .12s,filter .15s}
   .ei-toggle:active{transform:scale(.95)}
   .ei-toggle.open{color:#fff;background:var(--bad);border-color:var(--bad)}.ei-toggle.open:hover{filter:brightness(1.06)}
-  .ei-toggle.close{color:var(--bad);background:#fff;border-color:#F3D6D2}.ei-toggle.close:hover{background:#FDEEEC}
+  .ei-toggle.close{color:#fff;background:var(--ok);border-color:var(--ok)}.ei-toggle.close:hover{filter:brightness(1.06)}
   .ed-add{margin:0 12px 12px;flex:0 0 auto}
 
   .ed-scroll{overflow-y:auto;min-height:0}
@@ -1390,7 +1390,7 @@
       if(open&&it.priority){var pt=document.createElement("span");pt.className="ei-prio-tag";pt.textContent="Prioridade";sub.appendChild(pt);}
       info.appendChild(cd);info.appendChild(nm);info.appendChild(sub);
       var tg=document.createElement("button");tg.className="ei-toggle "+(open?"close":"open");
-      tg.innerHTML=open?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Não transbordar':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Transbordar';
+      tg.innerHTML=open?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Em transbordo':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Transbordar';
       tg.addEventListener("click",function(e){e.stopPropagation();toggleOpen(it.id);});
       var del=document.createElement("button");del.className="ei-del";del.title="Remover";del.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
       del.addEventListener("click",function(e){e.stopPropagation();removeItem(it.id);});

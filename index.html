@@ -164,14 +164,33 @@
   .ed-add{margin:0 12px 12px;flex:0 0 auto}
 
   .ed-scroll{overflow-y:auto;min-height:0}
-  .ed-wrap{max-width:1520px;margin:0 auto;padding:20px 24px 90px;display:grid;grid-template-columns:1fr;gap:16px;align-items:start}
-  /* telas largas: os blocos do item ficam lado a lado; "Configurações do painel" segue inteiro */
-  @media (min-width:1280px){
-    .ed-wrap{grid-template-columns:1fr 1fr;column-gap:18px}
-    #itemForm .group.span{grid-column:auto}
-    .ed-wrap>.group.span,.ed-wrap>.no-item{grid-column:1/-1}
-  }
+  /* Cadastro em coluna única, na ordem do processo: PEÇA > EMBALAGEM DE ORIGEM > EMBALAGEM DE DESTINO. */
+  .ed-wrap{max-width:1180px;margin:0 auto;padding:22px 24px 90px;display:flex;flex-direction:column;gap:14px;align-items:stretch}
   @media (max-width:760px){.ed-wrap{padding:18px 16px 90px}}
+
+  /* rótulo de seção entre os blocos */
+  .sec-title{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:12px 3px -2px;font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--brand-700)}
+  .sec-title:first-child{margin-top:0}
+  .sec-title span{font-size:11.5px;font-weight:600;letter-spacing:0;text-transform:none;color:var(--muted)}
+
+  /* cartão de etapa: cabeçalho numerado + dados à esquerda e imagens à direita */
+  .step-head{display:flex;align-items:center;gap:11px;margin-bottom:15px}
+  .group .step-head h2{margin:0;color:var(--ink-2)}
+  .group .step-head h2::before{display:none}
+  .step-num{flex:0 0 auto;width:27px;height:27px;border-radius:9px;background:var(--brand);color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums;box-shadow:0 6px 14px -8px rgba(43,79,230,.9)}
+  .step-num.alt{background:var(--card-2);color:var(--muted);border:1px solid var(--line);box-shadow:none;font-size:11px}
+  .step-grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+  @media (max-width:1080px){.step-grid{grid-template-columns:1fr;gap:14px}}
+  .step-data>.field:last-child,.step-media>.field:last-child{margin-bottom:0}
+  .step-media .asset-upload .multi-thumbs-row{grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+  .step-media .asset-upload .multi-thumb{height:clamp(180px,16vw,240px)}
+  @media (max-width:620px){.step-media .asset-upload .multi-thumb{height:230px}}
+
+  /* bloco secundário dentro de um cartão (ex.: documento MTM dentro de PEÇA) */
+  .field.sub-block{background:var(--card-2);border:1px solid var(--line);border-radius:13px;padding:12px 13px}
+  .field.sub-block>label{margin-bottom:9px}
+  .field.sub-block input,.field.sub-block textarea{background:#fff}
+  .lb-note{font-weight:500;color:var(--muted)}
   .group{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;box-shadow:var(--sh1)}
   .group.span{grid-column:1/-1}
   .group h2{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:9px;margin-bottom:15px}
@@ -188,6 +207,9 @@
   .field input[type="text"]:not([data-img])::placeholder,.field textarea::placeholder{text-transform:none}
   .row2{display:grid;grid-template-columns:1fr 1fr;gap:11px}
   @media (max-width:480px){.row2{grid-template-columns:1fr}}
+  .row3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}
+  @media (max-width:860px){.row3{grid-template-columns:1fr 1fr}}
+  @media (max-width:480px){.row3{grid-template-columns:1fr}}
   .qty-row{display:flex;gap:8px;align-items:stretch}
   .qty-row input{flex:1 1 auto;min-width:0}
   .obs-btn{appearance:none;flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:0 13px;border:1px solid var(--line);background:#fff;border-radius:11px;color:var(--ink-2);font-size:12.5px;font-weight:600;font-family:var(--sans);cursor:pointer;transition:background .15s,border-color .15s,color .15s;white-space:nowrap}
@@ -551,83 +573,123 @@
         <div id="noItem" class="no-item" hidden>Nenhum item. Clique em “Adicionar item” para começar o cadastro.</div>
 
         <div id="itemForm" style="display:contents">
-          <!-- PEÇA -->
-          <div class="group span">
-            <h2>Peça</h2>
-            <div class="row2">
-              <div class="field"><label>Nome da peça</label><textarea class="autogrow" data-field="partName" rows="1"></textarea></div>
-              <div class="field"><label>Código da peça</label><textarea class="autogrow" data-field="partCode" rows="1"></textarea></div>
-            </div>
-            <div class="field"><label>Fornecedor</label><input type="text" data-field="supplier"></div>
-            <div class="field">
-              <label>Imagem da peça</label>
-              <div class="photo-pick asset-upload">
-                <div class="multi-thumbs-row" id="mt-part"></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="part">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="part"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="part">Remover</button></div><input type="text" data-imgslot="part" data-img placeholder="…ou cole URL da imagem (acrescenta)"><div class="hint">Use <b>+ Foto</b> para adicionar mais imagens — na TV cada uma exibe com temporizador.</div></div>
-              </div>
-            </div>
-          </div>
+          <p class="sec-title">Fluxo do processo<span>Cadastre na ordem: peça → embalagem de origem → embalagem de destino</span></p>
 
-          <!-- MTM -->
-          <div class="group span">
-            <h2>MTM</h2>
-            <div class="field">
-              <label>Documento MTM — abre ao tocar na TV</label>
-              <div class="photo-pick">
-                <div class="thumb mtm-thumb" id="th-mtm"><span class="ph"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v12.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-17a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13h6M9 16.5h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span></div>
-                <div class="photo-ctl">
-                  <div class="pbtns"><button class="btn btn-ghost btn-sm" id="btnMtmUpload">Enviar MTM</button><button class="btn btn-ghost btn-sm" id="btnMtmClear">Remover</button></div>
-                  <input type="text" data-field="mtm" data-img placeholder="…ou cole o URL do MTM (PDF ou imagem)">
-                  <div class="hint" id="mtmHint">Aceita PDF ou imagem. Na TV aparece o botão “Abrir MTM”.</div>
+          <!-- ETAPA 1 — PEÇA -->
+          <div class="group span step">
+            <div class="step-head"><span class="step-num">1</span><h2>Peça</h2></div>
+            <div class="step-grid">
+              <div class="step-data">
+                <div class="row2">
+                  <div class="field"><label>Nome da peça</label><textarea class="autogrow" data-field="partName" rows="1"></textarea></div>
+                  <div class="field"><label>Código da peça</label><textarea class="autogrow" data-field="partCode" rows="1"></textarea></div>
+                </div>
+                <div class="field"><label>Fornecedor</label><input type="text" data-field="supplier"></div>
+                <div class="field sub-block">
+                  <label>Documento MTM <span class="lb-note">— abre ao tocar na TV</span></label>
+                  <div class="photo-pick">
+                    <div class="thumb mtm-thumb" id="th-mtm"><span class="ph"><svg width="26" height="26" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v12.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-17a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 13h6M9 16.5h6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></span></div>
+                    <div class="photo-ctl">
+                      <div class="pbtns"><button class="btn btn-ghost btn-sm" id="btnMtmUpload">Enviar MTM</button><button class="btn btn-ghost btn-sm" id="btnMtmClear">Remover</button></div>
+                      <input type="text" data-field="mtm" data-img placeholder="…ou cole o URL do MTM (PDF ou imagem)">
+                      <div class="hint" id="mtmHint">Aceita PDF ou imagem. Na TV aparece o botão “Abrir MTM”.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="step-media">
+                <div class="field">
+                  <label>Imagens da peça</label>
+                  <div class="photo-pick asset-upload">
+                    <div class="multi-thumbs-row" id="mt-part"></div>
+                    <div class="photo-ctl">
+                      <div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="part">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="part"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="part">Remover</button></div>
+                      <input type="text" data-imgslot="part" data-img placeholder="…ou cole URL da imagem (acrescenta)">
+                      <div class="hint">Use <b>+ Foto</b> para adicionar mais imagens — na TV cada uma exibe com temporizador.</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- ETAPA 2 — EMBALAGEM DE ORIGEM -->
+          <div class="group span step">
+            <div class="step-head"><span class="step-num">2</span><h2>Embalagem de origem</h2></div>
+            <div class="step-grid">
+              <div class="step-data">
+                <div class="field"><label>Nome da embalagem de origem</label><input type="text" data-field="origin.name"></div>
+              </div>
+              <div class="step-media">
+                <div class="field">
+                  <label>Imagens da embalagem de origem</label>
+                  <div class="photo-pick asset-upload">
+                    <div class="multi-thumbs-row" id="mt-origin"></div>
+                    <div class="photo-ctl">
+                      <div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="origin">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="origin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="origin">Remover</button></div>
+                      <input type="text" data-imgslot="origin" data-img placeholder="…ou cole URL da imagem (acrescenta)">
+                      <div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador na TV.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ETAPA 3 — EMBALAGEM DE DESTINO -->
+          <div class="group span step">
+            <div class="step-head"><span class="step-num">3</span><h2>Embalagem de destino</h2></div>
+            <div class="step-grid">
+              <div class="step-data">
+                <div class="field"><label>Nome da embalagem de destino</label><input type="text" data-field="dest.name"></div>
+              </div>
+              <div class="step-media">
+                <div class="field">
+                  <label>Imagens da embalagem de destino</label>
+                  <div class="photo-pick asset-upload">
+                    <div class="multi-thumbs-row" id="mt-dest"></div>
+                    <div class="photo-ctl">
+                      <div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="dest">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="dest"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="dest">Remover</button></div>
+                      <input type="text" data-imgslot="dest" data-img placeholder="…ou cole URL da imagem (acrescenta)">
+                      <div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador na TV.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p class="sec-title">Complementos</p>
+
           <!-- DIVISÓRIA -->
-          <div class="group span">
-            <h2>Divisória</h2>
-            <div class="field"><label>Tipo de divisória</label><input type="text" data-field="dividerType" placeholder="Ex.: Berço termoformado (PET)"></div>
-            <div class="field">
-              <label>Imagem da divisória</label>
-              <div class="photo-pick asset-upload">
-                <div class="multi-thumbs-row" id="mt-divider"></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="divider">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="divider"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="divider">Remover</button></div><input type="text" data-imgslot="divider" data-img placeholder="…ou cole URL da imagem (acrescenta)"><div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador automático na TV.</div></div>
+          <div class="group span step">
+            <div class="step-head"><span class="step-num alt">+</span><h2>Divisória</h2></div>
+            <div class="step-grid">
+              <div class="step-data">
+                <div class="field"><label>Tipo de divisória</label><input type="text" data-field="dividerType" placeholder="Ex.: Berço termoformado (PET)"></div>
+              </div>
+              <div class="step-media">
+                <div class="field">
+                  <label>Imagens da divisória</label>
+                  <div class="photo-pick asset-upload">
+                    <div class="multi-thumbs-row" id="mt-divider"></div>
+                    <div class="photo-ctl">
+                      <div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="divider">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="divider"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="divider">Remover</button></div>
+                      <input type="text" data-imgslot="divider" data-img placeholder="…ou cole URL da imagem (acrescenta)">
+                      <div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador automático na TV.</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- ORIGEM -->
-          <div class="group span">
-            <h2>Embalagem de origem</h2>
-            <div class="field"><label>Nome da embalagem de origem</label><input type="text" data-field="origin.name"></div>
-            <div class="field">
-              <label>Imagem da embalagem de origem</label>
-              <div class="photo-pick asset-upload">
-                <div class="multi-thumbs-row" id="mt-origin"></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="origin">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="origin"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="origin">Remover</button></div><input type="text" data-imgslot="origin" data-img placeholder="…ou cole URL da imagem (acrescenta)"><div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador na TV.</div></div>
-              </div>
-            </div>
-          </div>
-
-          <!-- DESTINO -->
-          <div class="group span">
-            <h2>Embalagem de destino</h2>
-            <div class="field"><label>Nome da embalagem de destino</label><input type="text" data-field="dest.name"></div>
-            <div class="field">
-              <label>Imagem da embalagem de destino</label>
-              <div class="photo-pick asset-upload">
-                <div class="multi-thumbs-row" id="mt-dest"></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="dest">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="dest"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="dest">Remover</button></div><input type="text" data-imgslot="dest" data-img placeholder="…ou cole URL da imagem (acrescenta)"><div class="hint">Use <b>+ Foto</b> para múltiplas imagens — temporizador na TV.</div></div>
-              </div>
-            </div>
-          </div>
+          <p class="sec-title">Dados da operação<span>O número de caixas e de colaboradores é lançado na lista de itens, ao lado</span></p>
 
           <!-- TRANSBORDO -->
-          <div class="group span">
-            <h2>Transbordo</h2>
-            <div class="row2">
-              <div class="field"><label>Caixas para transbordar</label><input type="text" data-field="qtyBoxes" placeholder="Ex.: 8"></div>
+          <div class="group span step">
+            <div class="step-head"><span class="step-num alt">⚙</span><h2>Transbordo</h2></div>
+            <div class="row3">
               <div class="field">
                 <label>Quantidade de peças / caixa</label>
                 <div class="qty-row">
@@ -638,35 +700,35 @@
                   </button>
                 </div>
               </div>
+              <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" placeholder="Ex.: 02:45"></div>
+              <div class="field"><label>Total de colaboradores</label><input type="text" data-field="workers" inputmode="numeric" placeholder="Ex.: 3"></div>
             </div>
             <div class="field" id="obsWrap" hidden>
               <label>Observação</label>
               <textarea data-field="qtyPerBoxObs" id="obsQtyPerBox" rows="2" placeholder="Ex.: caixa com peças extras para reposição"></textarea>
             </div>
-            <div class="row2">
-              <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" placeholder="Ex.: 02:45"></div>
-              <div class="field"><label>Total de colaboradores</label><input type="text" data-field="workers" inputmode="numeric" placeholder="Ex.: 3"></div>
-            </div>
             <div class="field ded-box">
               <div class="ded-line"><span class="ded-l">Tempo total do processo</span><span class="ded-v" id="edDedTotal">—</span></div>
-              <div class="hint">O 1º colaborador entra com 100% de dedicação; cada colaborador a mais acrescenta 80%, considerando a perda por espaço de trabalho e diálogos.</div>
+              <div class="hint">Calculado com as caixas lançadas na lista de itens. O 1º colaborador entra com 100% de dedicação; cada colaborador a mais acrescenta 80%, considerando a perda por espaço de trabalho e diálogos.</div>
             </div>
           </div>
+        </div>
 
-          <!-- CONFIGURAÇÕES DO PAINEL -->
-          <div class="group span">
-            <h2>Configurações do painel</h2>
-            <div class="row2">
-              <div class="field"><label>Título do painel</label><input type="text" data-setting="panelTitle"></div>
-              <div class="field"><label>Texto de status</label><input type="text" data-setting="statusText"></div>
-            </div>
+        <p class="sec-title">Painel</p>
+
+        <!-- CONFIGURAÇÕES DO PAINEL -->
+        <div class="group span step">
+          <div class="step-head"><span class="step-num alt">TV</span><h2>Configurações do painel</h2></div>
+          <div class="row3">
+            <div class="field"><label>Título do painel</label><input type="text" data-setting="panelTitle"></div>
+            <div class="field"><label>Texto de status</label><input type="text" data-setting="statusText"></div>
             <div class="field"><label>Temporizador (troca de tela)</label><select id="setTimer" data-setting="intervalSec"><option value="10">10 segundos</option><option value="15">15 segundos</option><option value="30">30 segundos</option><option value="45">45 segundos</option><option value="60">60 segundos</option><option value="120">120 segundos</option></select></div>
-            <div class="field">
-              <label>Logo (substitui o lettering padrão)</label>
-              <div class="photo-pick">
-                <div class="thumb" id="th-logo" style="background:#fff"><span class="ph"></span></div>
-                <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="logo">Enviar logo</button><button class="btn btn-ghost btn-sm" data-clear="logo">Usar padrão</button></div><input type="text" data-setting="logo" data-img placeholder="…ou cole o URL do logo"></div>
-              </div>
+          </div>
+          <div class="field">
+            <label>Logo (substitui o lettering padrão)</label>
+            <div class="photo-pick">
+              <div class="thumb" id="th-logo" style="background:#fff"><span class="ph"></span></div>
+              <div class="photo-ctl"><div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="logo">Enviar logo</button><button class="btn btn-ghost btn-sm" data-clear="logo">Usar padrão</button></div><input type="text" data-setting="logo" data-img placeholder="…ou cole o URL do logo"></div>
             </div>
           </div>
         </div>
@@ -1458,7 +1520,8 @@
       bxInput.addEventListener("input",function(){
         var v=bxInput.value.replace(/[^0-9]/g,"");if(v!==bxInput.value)bxInput.value=v;
         it.qtyBoxes=v;it.updated=nowStr();
-        if(currentItem()===it){var fi=$('[data-field="qtyBoxes"]');if(fi)fi.value=v;}
+        /* o campo de caixas vive só aqui na lista; o form apenas reflete o tempo total */
+        if(currentItem()===it)updateEdDedicacao();
         queueSave();
       });
       bx.appendChild(bxLabel);bx.appendChild(bxInput);

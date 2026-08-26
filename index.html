@@ -83,15 +83,42 @@
   .saved{font-size:12px;font-weight:600;color:var(--ok);display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s}
   .saved.show{opacity:1}
 
-  .ed-body{flex:1 1 auto;display:grid;grid-template-columns:460px 1fr;min-height:0;position:relative;z-index:2}
-  @media (min-width:1600px){.ed-body{grid-template-columns:520px 1fr}}
-  @media (max-width:1150px){.ed-body{grid-template-columns:380px 1fr}}
-  @media (max-width:860px){.ed-body{grid-template-columns:1fr;grid-template-rows:auto 1fr}}
-  .ed-list{border-right:1px solid var(--line);background:rgba(255,255,255,.55);display:flex;flex-direction:column;min-height:0}
-  @media (max-width:860px){.ed-list{border-right:none;border-bottom:1px solid var(--line);max-height:38vh}}
-  .ed-list-head{padding:16px 18px 10px;display:flex;align-items:center;justify-content:space-between}
-  .ed-list-head .t{font-size:12px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-  .ed-list-head .c{font-size:12px;font-weight:700;color:var(--brand-700);background:var(--brand-50);padding:3px 9px;border-radius:20px}
+  /* ===== NAVEGAÇÃO EM 3 PÁGINAS: cadastro • embalagens cadastradas • modo TV ===== */
+  .ed-nav{display:flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:4px}
+  .ed-tab{appearance:none;border:none;background:transparent;font-family:var(--sans);font-size:13px;font-weight:700;color:var(--muted);padding:9px 14px;border-radius:10px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;transition:background .15s,color .15s}
+  .ed-tab svg{flex:0 0 auto}
+  .ed-tab:hover{background:var(--brand-50);color:var(--brand-700)}
+  .ed-tab.on{background:linear-gradient(180deg,var(--brand),var(--brand-600));color:#fff;box-shadow:0 9px 20px -13px rgba(43,79,230,.95)}
+  .ed-tab .tc{font-size:11px;font-weight:800;padding:2px 7px;border-radius:20px;background:var(--brand-50);color:var(--brand-700)}
+  .ed-tab.on .tc{background:rgba(255,255,255,.24);color:#fff}
+  @media (max-width:980px){.ed-nav{order:3;width:100%;overflow-x:auto}.ed-tab{flex:1 1 auto;justify-content:center;padding:9px 9px;font-size:12px}.ed-tab .lb-full{display:none}}
+
+  .ed-body{flex:1 1 auto;min-height:0;position:relative;z-index:2}
+  .pg{position:absolute;inset:0;overflow-y:auto;display:none}
+  body[data-page="cadastro"] #pgCadastro{display:block}
+  body[data-page="lista"] #pgLista{display:block}
+
+  /* barra fixa da página de cadastro: mostra qual item está sendo editado */
+  .pg-bar{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 24px;background:rgba(246,248,253,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .pg-bar-l{display:flex;align-items:baseline;gap:9px;min-width:0;flex:1 1 auto}
+  .pg-kicker{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex:0 0 auto}
+  .pg-item{font-size:16px;font-weight:800;color:var(--brand-700);overflow-wrap:anywhere}
+  .pg-item-name{font-size:12.5px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pg-bar-r{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .pg-bar-r .btn:disabled{opacity:.4;cursor:default}
+  @media (max-width:760px){.pg-bar{padding:10px 16px}}
+
+  /* página das embalagens cadastradas */
+  .pg-head{max-width:1240px;margin:0 auto;padding:20px 24px 4px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .pg-title{font-size:15px;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:9px;flex:0 0 auto}
+  .pg-title .c{font-size:12px;font-weight:800;color:var(--brand-700);background:var(--brand-50);padding:3px 10px;border-radius:20px}
+  .pg-head .ed-search{flex:1 1 240px;max-width:400px;margin:0}
+  @media (max-width:760px){.pg-head{padding:16px 16px 4px}}
+  .lista-cols{max-width:1240px;margin:0 auto;padding:12px 24px 70px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+  @media (max-width:1040px){.lista-cols{grid-template-columns:1fr}}
+  @media (max-width:760px){.lista-cols{padding:12px 16px 70px}}
+  .lista-col{min-width:0}
+  .ed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:8px}
   .ed-search{position:relative;display:flex;align-items:center;margin:0 12px 10px}
   .ed-search svg:first-child{position:absolute;left:11px;color:var(--muted-2);pointer-events:none;flex:0 0 auto}
   .ed-search input{width:100%;font-family:var(--sans);font-size:13px;color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:10px;padding:9px 32px;transition:border-color .15s,box-shadow .15s}
@@ -99,7 +126,7 @@
   .ed-search input::placeholder{color:var(--muted-2)}
   .ed-search #edSearchClear{position:absolute;right:6px;appearance:none;border:none;background:#EDF0F5;color:var(--muted);width:20px;height:20px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
   .ed-search #edSearchClear:hover{background:#dfe4ee;color:var(--ink-2)}
-  .ed-items{flex:1 1 auto;overflow-y:auto;padding:4px 12px 12px;display:flex;flex-direction:column;gap:7px}
+  .ed-items{display:flex;flex-direction:column;gap:7px}
   /* ==== camada TRANSBORDO (itens abertos) + setas da sequencia ==== */
   .ed-group{display:flex;align-items:center;gap:8px;padding:9px 2px 1px;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
   .ed-group .gl{flex:1 1 auto;height:1px;background:var(--line)}
@@ -537,7 +564,7 @@
   body[data-lay="tv"] .img-dot{width:7px;height:7px}
 </style>
 </head>
-<body data-view="editor" data-lay="flow">
+<body data-view="editor" data-lay="flow" data-page="lista">
 <div class="bg-fx"></div>
 
 <!-- ============ EDITOR ============ -->
@@ -547,30 +574,55 @@
       <span class="logo-slot" data-logo><img class="logo logo-img" alt="logo"></span>
       <span class="sub">Cadastro de<br>Transbordo</span>
     </div>
+    <nav class="ed-nav" id="edNav">
+      <button type="button" class="ed-tab" data-page="cadastro"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16M4 12h16M4 18.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Cadastro <span class="lb-full">de embalagem</span></button>
+      <button type="button" class="ed-tab" data-page="lista"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="4" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="12.5" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="12.5" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/></svg>Embalagens <span class="lb-full">cadastradas</span><span class="tc" id="navCount">0</span></button>
+      <button type="button" class="ed-tab" data-page="tv" id="btnTv"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="4.5" width="19" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 20.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Modo TV</button>
+    </nav>
     <div class="ed-actions">
       <span class="saved" id="saved"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Salvo</span>
       <button class="btn btn-ghost btn-sm" id="btnImport">Importar</button>
       <button class="btn btn-ghost btn-sm" id="btnExport">Salvar JSON</button>
       <button class="btn btn-ghost btn-sm" id="btnReset">Restaurar exemplo</button>
-      <button class="btn btn-primary" id="btnTv"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="4.5" width="19" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 20.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Modo TV</button>
     </div>
   </div>
 
   <div class="ed-body">
-    <div class="ed-list">
-      <div class="ed-list-head"><span class="t">Itens cadastrados</span><span class="c" id="edCount">0</span></div>
-      <div class="ed-search">
-        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        <input type="text" id="edSearch" placeholder="Buscar por código ou nome" autocomplete="off" data-sem-maiuscula>
-        <button type="button" id="edSearchClear" hidden aria-label="Limpar busca"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+
+    <!-- ====== PÁGINA 2 — EMBALAGENS CADASTRADAS ====== -->
+    <div class="pg" id="pgLista">
+      <div class="pg-head">
+        <div class="pg-title">Embalagens cadastradas<span class="c" id="edCount">0</span></div>
+        <div class="ed-search">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          <input type="text" id="edSearch" placeholder="Buscar por código ou nome" autocomplete="off" data-sem-maiuscula>
+          <button type="button" id="edSearchClear" hidden aria-label="Limpar busca"><svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+        </div>
+        <button class="btn btn-primary btn-sm" id="btnAdd"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Nova embalagem</button>
       </div>
-      <div class="ed-items" id="edItems"></div>
-      <button class="btn btn-ghost ed-add" id="btnAdd"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Adicionar item</button>
+      <div class="lista-cols">
+        <section class="lista-col"><div class="ed-items" id="edItems"></div></section>
+        <section class="lista-col"><div class="ed-items" id="edClosed"></div></section>
+      </div>
     </div>
 
-    <div class="ed-scroll">
+    <!-- ====== PÁGINA 1 — CADASTRO DE EMBALAGEM ====== -->
+    <div class="pg" id="pgCadastro">
+      <div class="pg-bar">
+        <div class="pg-bar-l">
+          <span class="pg-kicker">Editando</span>
+          <span class="pg-item" id="edNowCode">—</span>
+          <span class="pg-item-name" id="edNowName"></span>
+        </div>
+        <div class="pg-bar-r">
+          <button class="btn btn-ghost btn-sm" id="btnPrevItem" title="Item anterior"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Anterior</button>
+          <button class="btn btn-ghost btn-sm" id="btnNextItem" title="Próximo item">Próximo<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button class="btn btn-ghost btn-sm" id="btnGoLista"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Ver cadastradas</button>
+          <button class="btn btn-primary btn-sm" id="btnAdd2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Nova embalagem</button>
+        </div>
+      </div>
       <div class="ed-wrap">
-        <div id="noItem" class="no-item" hidden>Nenhum item. Clique em “Adicionar item” para começar o cadastro.</div>
+        <div id="noItem" class="no-item" hidden>Nenhuma embalagem selecionada.<br><button class="btn btn-primary btn-sm" id="btnAddEmpty" style="margin-top:14px">Cadastrar nova embalagem</button></div>
 
         <div id="itemForm" style="display:contents">
           <p class="sec-title">Fluxo do processo<span>Cadastre na ordem: peça → embalagem de origem → embalagem de destino</span></p>
@@ -689,7 +741,7 @@
           <!-- TRANSBORDO -->
           <div class="group span step">
             <div class="step-head"><span class="step-num alt">⚙</span><h2>Transbordo</h2></div>
-            <div class="row3">
+            <div class="row2">
               <div class="field">
                 <label>Quantidade de peças / caixa</label>
                 <div class="qty-row">
@@ -701,7 +753,6 @@
                 </div>
               </div>
               <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" placeholder="Ex.: 02:45"></div>
-              <div class="field"><label>Total de colaboradores</label><input type="text" data-field="workers" inputmode="numeric" placeholder="Ex.: 3"></div>
             </div>
             <div class="field" id="obsWrap" hidden>
               <label>Observação</label>
@@ -709,7 +760,7 @@
             </div>
             <div class="field ded-box">
               <div class="ded-line"><span class="ded-l">Tempo total do processo</span><span class="ded-v" id="edDedTotal">—</span></div>
-              <div class="hint">Calculado com as caixas lançadas na lista de itens. O 1º colaborador entra com 100% de dedicação; cada colaborador a mais acrescenta 80%, considerando a perda por espaço de trabalho e diálogos.</div>
+              <div class="hint">Calculado com as caixas e os colaboradores lançados na lista de itens. O 1º colaborador entra com 100% de dedicação; cada colaborador a mais acrescenta 80%, considerando a perda por espaço de trabalho e diálogos.</div>
             </div>
           </div>
         </div>
@@ -748,7 +799,7 @@
 
     <header class="d-header">
       <div class="d-brand"><span class="logo-slot" data-logo><img class="logo logo-img" alt="logo"></span><span class="d-app" id="d-app">Controle de Transbordo</span></div>
-      <div class="d-hright"><span class="d-count"><b id="d-count">0</b> itens em transbordo</span><span class="priority-alert" id="d-priority" role="status" aria-label="Item prioritário" hidden>Prioridade</span><span class="d-status"><i></i><span id="d-status">Em operação</span></span><button class="edit-fab" id="editFab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 6 4 12l6 6M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Modo cadastro de dados</button></div>
+      <div class="d-hright"><span class="d-count"><b id="d-count">0</b> itens em transbordo</span><span class="priority-alert" id="d-priority" role="status" aria-label="Item prioritário" hidden>Prioridade</span><span class="d-status"><i></i><span id="d-status">Em operação</span></span><button class="edit-fab" id="editFab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 6 4 12l6 6M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Sair do modo TV</button></div>
     </header>
 
     <div class="d-main" id="dMain">
@@ -1395,11 +1446,13 @@
   }
   function renderEditorList(){
     var box=el("edItems");box.innerHTML="";
+    var boxC=el("edClosed");if(boxC)boxC.innerHTML="";
     var termo=(el("edSearch")&&el("edSearch").value)||"";
     var abertos=state.items.filter(function(i){return i.status==="open";});
     var fechados=state.items.filter(function(i){return i.status!=="open";});
     var openN=abertos.length;
     el("edCount").textContent=openN+" / "+state.items.length;
+    var nc=el("navCount");if(nc)nc.textContent=String(state.items.length);
 
     /* --- camada TRANSBORDO: itens abertos no topo, na ordem em que passam na TV --- */
     box.appendChild(edGroupHead("Transbordo",openN?(openN+(openN===1?" item":" itens")):"vazio","flow"));
@@ -1425,16 +1478,23 @@
       box.appendChild(flow);
     }
 
-    /* --- demais itens cadastrados (fechados) --- */
-    if(fechados.length){
-      box.appendChild(edGroupHead("Fechados",String(fechados.length)));
+    /* --- demais embalagens cadastradas (fechadas), na coluna da direita --- */
+    var host=boxC||box;
+    host.appendChild(edGroupHead("Fechadas",fechados.length?String(fechados.length):"nenhuma"));
+    if(!fechados.length){
+      var vazio=document.createElement("div");vazio.className="ed-empty-hint";
+      vazio.textContent="Nenhuma embalagem fechada. As que saírem do transbordo aparecem aqui.";
+      host.appendChild(vazio);
+    }else{
       var fechadosFiltrados=fechados.filter(function(it){return itemBate(it,termo);});
-      if(!fechadosFiltrados.length&&termo){
+      if(!fechadosFiltrados.length){
         var noHit2=document.createElement("div");noHit2.className="ed-empty-hint";
-        noHit2.textContent="Nenhum item fechado encontrado para a busca.";
-        box.appendChild(noHit2);
+        noHit2.textContent="Nenhuma embalagem fechada encontrada para a busca.";
+        host.appendChild(noHit2);
       }else{
-        fechadosFiltrados.forEach(function(it){box.appendChild(edItemRow(it,0));});
+        var grid=document.createElement("div");grid.className="ed-grid";
+        fechadosFiltrados.forEach(function(it){grid.appendChild(edItemRow(it,0));});
+        host.appendChild(grid);
       }
     }
   }
@@ -1536,12 +1596,13 @@
       tmInput.addEventListener("input",function(){
         var v=tmInput.value.replace(/[^0-9]/g,"");if(v!==tmInput.value)tmInput.value=v;
         it.workers=v;it.updated=nowStr();
-        if(currentItem()===it){var fi=$('[data-field="workers"]');if(fi)fi.value=v;updateEdDedicacao();}
+        /* colaboradores vivem só aqui na lista; o form apenas reflete o tempo total */
+        if(currentItem()===it)updateEdDedicacao();
         queueSave();
       });
       tmInput.addEventListener("blur",function(){
         var n=nWorkers(tmInput.value);tmInput.value=String(n);it.workers=String(n);
-        if(currentItem()===it){var fi=$('[data-field="workers"]');if(fi)fi.value=String(n);updateEdDedicacao();}
+        if(currentItem()===it)updateEdDedicacao();
         queueSave();
       });
       tm.appendChild(tmLabel);tm.appendChild(tmInput);
@@ -1574,11 +1635,34 @@
         foot.appendChild(up);foot.appendChild(dn);
       }
       row.appendChild(info);row.appendChild(th);row.appendChild(foot);row.appendChild(del);
-      row.addEventListener("click",function(){selectItem(it.id);});
+      row.addEventListener("click",function(){selectItem(it.id);setPage("cadastro");});
       return row;
   }
   function selectItem(id){currentId=id;renderEditorList();populateForm();}
-  function addItem(){var it=upperItem(blankItem());state.items.push(it);currentId=it.id;renderEditorList();populateForm();queueSave();}
+  function addItem(){var it=upperItem(blankItem());state.items.push(it);currentId=it.id;renderEditorList();populateForm();queueSave();setPage("cadastro");}
+  /* ===== 3 páginas: cadastro de embalagem • embalagens cadastradas • modo TV ===== */
+  function markTabs(pg){$all(".ed-tab").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-page")===pg);});}
+  function setPage(pg){
+    if(pg==="tv"){markTabs("tv");enterDisplay();return;}
+    document.body.dataset.view="editor";document.body.dataset.page=pg;markTabs(pg);
+    if(pg==="lista")renderEditorList();else{populateForm();}
+    var sc=el(pg==="lista"?"pgLista":"pgCadastro");if(sc)sc.scrollTop=0;
+  }
+  /* cabeçalho da página de cadastro: qual embalagem está aberta + setas anterior/próximo */
+  function updateEdHeader(){
+    var it=currentItem(),c=el("edNowCode"),n=el("edNowName");
+    if(c)c.textContent=it?(((it.partCode&&String(it.partCode).trim())||"S/ CÓDIGO")):"Nenhuma embalagem selecionada";
+    if(n)n.textContent=it?(it.partName||""):"";
+    var i=it?state.items.indexOf(it):-1;
+    var pv=el("btnPrevItem"),nx=el("btnNextItem");
+    if(pv)pv.disabled=(i<=0);
+    if(nx)nx.disabled=(i<0||i>=state.items.length-1);
+  }
+  function stepItem(d){
+    var it=currentItem(),i=it?state.items.indexOf(it):-1,j=i+d;
+    if(j<0||j>=state.items.length)return;
+    selectItem(state.items[j].id);
+  }
   function removeItem(id){var i=state.items.map(function(x){return x.id;}).indexOf(id);if(i<0)return;authorizeDestructive("excluir este item cadastrado",function(){
     var j=state.items.map(function(x){return x.id;}).indexOf(id);if(j<0)return;
     state.items.splice(j,1);if(currentId===id)currentId=state.items.length?state.items[Math.max(0,j-1)].id:null;
@@ -1603,6 +1687,7 @@
     (function(){var si=el("setTimer");if(!si)return;var P=[10,15,30,45,60,120],c=parseInt(state.settings.intervalSec,10)||15;if(P.indexOf(c)<0){c=P.reduce(function(a,b){return Math.abs(b-c)<Math.abs(a-c)?b:a;});state.settings.intervalSec=c;}si.value=String(c);})();
     setLogo(state.settings.logo);
     var it=currentItem();el("noItem").hidden=!!it;el("itemForm").style.display=it?"contents":"none";
+    updateEdHeader();
     if(!it){renderMultiThumbs("part",[]);renderMultiThumbs("divider",[]);renderMultiThumbs("origin",[]);renderMultiThumbs("dest",[]);updateMtmUI(null);setObsOpen(false);return;}
     $all("[data-field]").forEach(function(inp){var v=getPath(it,inp.getAttribute("data-field"));if(inp.hasAttribute("data-img")&&isData(v))v="";inp.value=(v==null)?"":v;});
     renderMultiThumbs("part",it.partImages);renderMultiThumbs("divider",it.dividerImages);renderMultiThumbs("origin",it.origin.images);renderMultiThumbs("dest",it.dest.images);
@@ -1674,7 +1759,7 @@
     });
   }
   $all("[data-setting]").forEach(function(inp){var _h=function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";if(k==="logo")setLogo(v);queueSave();};inp.addEventListener("input",_h);inp.addEventListener("change",_h);});
-  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="workers"){var vw=inp.value.replace(/[^0-9]/g,"");if(vw!==inp.value)inp.value=vw;it.workers=vw;}if(f==="partName"||f==="partCode"||f==="time"||f==="qtyBoxes"||f==="workers")renderEditorList();if(f==="time"||f==="qtyBoxes"||f==="workers")updateEdDedicacao();if(f==="mtm")updateMtmUI(it);queueSave();});});
+  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="workers"){var vw=inp.value.replace(/[^0-9]/g,"");if(vw!==inp.value)inp.value=vw;it.workers=vw;}if(f==="partName"||f==="partCode"||f==="time"||f==="qtyBoxes"||f==="workers"){renderEditorList();updateEdHeader();}if(f==="time"||f==="qtyBoxes"||f==="workers")updateEdDedicacao();if(f==="mtm")updateMtmUI(it);queueSave();});});
   /* ao sair do campo, normaliza o total de colaboradores (mínimo 1) */
   (function(){var wf=$('[data-field="workers"]');if(!wf)return;wf.addEventListener("blur",function(){var it=currentItem();if(!it)return;var n=nWorkers(wf.value);wf.value=String(n);it.workers=String(n);it.updated=nowStr();renderEditorList();updateEdDedicacao();queueSave();});})();
 
@@ -1865,6 +1950,15 @@
     state=normalize(defaults());currentId=state.items[0].id;renderEditorList();populateForm();save();toast("Exemplo restaurado");
   });});
   el("btnAdd").addEventListener("click",addItem);
+  (function(){
+    var b2=el("btnAdd2");if(b2)b2.addEventListener("click",addItem);
+    var b3=el("btnAddEmpty");if(b3)b3.addEventListener("click",addItem);
+    var gl=el("btnGoLista");if(gl)gl.addEventListener("click",function(){setPage("lista");});
+    var pv=el("btnPrevItem");if(pv)pv.addEventListener("click",function(){stepItem(-1);});
+    var nx=el("btnNextItem");if(nx)nx.addEventListener("click",function(){stepItem(1);});
+    $all(".ed-tab").forEach(function(b){b.addEventListener("click",function(){setPage(b.getAttribute("data-page"));});});
+    markTabs(document.body.dataset.page||"lista");
+  })();
   (function(){
     var si=el("edSearch"),cb=el("edSearchClear");if(!si)return;
     si.addEventListener("input",function(){if(cb)cb.hidden=!si.value;renderEditorList();});
@@ -2118,8 +2212,8 @@
   }
   function applyScale(){var stage=el("stage");if(document.body.dataset.view==="display"&&document.body.dataset.lay==="tv"){var s=Math.min(window.innerWidth/1280,window.innerHeight/720);stage.style.transform="translate(-50%,-50%) scale("+s+")";}else{stage.style.transform="";}fitTimeCard();}
   function enterDisplay(){document.body.dataset.view="display";el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setLogo(state.settings.logo);reqFs();setTimeout(computeLay,60);startRotation();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);}
-  function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();document.body.dataset.lay="flow";renderEditorList();populateForm();}
-  el("btnTv").addEventListener("click",enterDisplay);el("editFab").addEventListener("click",exitDisplay);
+  function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();document.body.dataset.lay="flow";if(!document.body.dataset.page)document.body.dataset.page="lista";markTabs(document.body.dataset.page);renderEditorList();populateForm();}
+  el("editFab").addEventListener("click",exitDisplay);
   document.addEventListener("fullscreenchange",computeLay);document.addEventListener("webkitfullscreenchange",computeLay);window.addEventListener("resize",computeLay);window.addEventListener("load",fitTimeCard);
   document.addEventListener("keydown",function(e){if(!el("mtmModal").hidden){if(e.key==="Escape"){e.preventDefault();closeMtm();}return;}if(document.body.dataset.view!=="display")return;if(e.key==="Escape"&&!isFs())exitDisplay();else if(e.key==="ArrowRight")next();else if(e.key==="ArrowLeft")prev();else if(e.key===" "){e.preventDefault();togglePause();}});
 

@@ -117,7 +117,11 @@
   .lista-cols{max-width:1240px;margin:0 auto;padding:12px 24px 70px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
   @media (max-width:1040px){.lista-cols{grid-template-columns:1fr}}
   @media (max-width:760px){.lista-cols{padding:12px 16px 70px}}
-  .lista-col{min-width:0}
+  /* cada coluna é um painel próprio, para separar bem FECHADAS de EM TRANSBORDO */
+  .lista-col{min-width:0;border:1px solid var(--line);border-radius:18px;padding:12px;box-shadow:var(--sh1)}
+  .lista-col.col-closed{background:linear-gradient(180deg,#EEF1F6,rgba(255,255,255,.7) 150px)}
+  .lista-col.col-flow{border-color:var(--brand-100);background:linear-gradient(180deg,var(--brand-50),rgba(255,255,255,.75) 170px);box-shadow:0 1px 2px rgba(12,19,34,.05),0 18px 40px -26px rgba(43,79,230,.55)}
+  @media (max-width:1040px){.lista-col{padding:10px}}
   /* embalagens fechadas: um cartão por linha */
   .ed-grid{display:flex;flex-direction:column;gap:7px}
   .ed-search{position:relative;display:flex;align-items:center;margin:0 12px 10px}
@@ -129,12 +133,13 @@
   .ed-search #edSearchClear:hover{background:#dfe4ee;color:var(--ink-2)}
   .ed-items{display:flex;flex-direction:column;gap:7px}
   /* ==== camada TRANSBORDO (itens abertos) + setas da sequencia ==== */
-  .ed-group{display:flex;align-items:center;gap:8px;padding:9px 2px 1px;font-size:10.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-  .ed-group .gl{flex:1 1 auto;height:1px;background:var(--line)}
-  .ed-group .gc{font-size:10px;font-weight:800;color:var(--muted);background:#EDF0F5;padding:2px 7px;border-radius:20px}
-  .ed-group.flow{color:var(--brand-700)}
-  .ed-group.flow .gl{background:var(--brand-100)}
-  .ed-group.flow .gc{color:var(--brand-700);background:var(--brand-50)}
+  .ed-group{display:flex;align-items:center;gap:9px;padding:11px 13px;margin-bottom:11px;border-radius:13px;border:1px solid #DDE3EC;background:#E4E9F1;font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+  .ed-group::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--muted-2);flex:0 0 auto}
+  .ed-group .gl{flex:1 1 auto;height:0}
+  .ed-group .gc{font-size:10.5px;font-weight:800;color:var(--ink-2);background:#fff;border:1px solid #D6DDE8;padding:3px 9px;border-radius:20px;letter-spacing:.02em}
+  .ed-group.flow{color:#fff;border-color:var(--brand-600);background:linear-gradient(180deg,var(--brand),var(--brand-600));box-shadow:0 10px 22px -14px rgba(43,79,230,.95)}
+  .ed-group.flow::before{background:#fff;box-shadow:0 0 0 4px rgba(255,255,255,.28)}
+  .ed-group.flow .gc{color:#fff;background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.34)}
   .ed-flow{display:flex;flex-direction:column;gap:0}
   .ed-flow .ed-item{border-color:var(--brand-100)}
   .ed-arrow{display:flex;align-items:center;justify-content:center;height:16px;color:var(--brand);flex:0 0 auto}
@@ -602,8 +607,8 @@
         <button class="btn btn-primary btn-sm" id="btnAdd"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Nova embalagem</button>
       </div>
       <div class="lista-cols">
-        <section class="lista-col"><div class="ed-items" id="edClosed"></div></section>
-        <section class="lista-col"><div class="ed-items" id="edItems"></div></section>
+        <section class="lista-col col-closed"><div class="ed-items" id="edClosed"></div></section>
+        <section class="lista-col col-flow"><div class="ed-items" id="edItems"></div></section>
       </div>
     </div>
 
@@ -1456,7 +1461,7 @@
     var nc=el("navCount");if(nc)nc.textContent=String(state.items.length);
 
     /* --- camada TRANSBORDO: itens abertos no topo, na ordem em que passam na TV --- */
-    box.appendChild(edGroupHead("Transbordo",openN?(openN+(openN===1?" item":" itens")):"vazio","flow"));
+    box.appendChild(edGroupHead("Em transbordo",openN?(openN+(openN===1?" item":" itens")):"vazio","flow"));
     if(!openN){
       var hint=document.createElement("div");hint.className="ed-empty-hint";
       hint.textContent='Nenhum item em transbordo. Clique em "Transbordar" para colocar um item na sequência.';
@@ -1481,7 +1486,7 @@
 
     /* --- demais embalagens cadastradas (fechadas), na coluna da direita --- */
     var host=boxC||box;
-    host.appendChild(edGroupHead("Fechadas",fechados.length?String(fechados.length):"nenhuma"));
+    host.appendChild(edGroupHead("Fechadas",fechados.length?(fechados.length+(fechados.length===1?" item":" itens")):"nenhuma"));
     if(!fechados.length){
       var vazio=document.createElement("div");vazio.className="ed-empty-hint";
       vazio.textContent="Nenhuma embalagem fechada. As que saírem do transbordo aparecem aqui.";

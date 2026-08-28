@@ -1769,15 +1769,9 @@
   /* ao sair do campo, normaliza o total de colaboradores (mínimo 1) */
   (function(){var wf=$('[data-field="workers"]');if(!wf)return;wf.addEventListener("blur",function(){var it=currentItem();if(!it)return;var n=nWorkers(wf.value);wf.value=String(n);it.workers=String(n);it.updated=nowStr();renderEditorList();updateEdDedicacao();queueSave();});})();
 
-  /* notificação de tamanho */
-  /* Avisa, ao anexar, se o conteúdo ficou grande demais para sincronizar com as TVs.
-     Limite prático do registro na nuvem (Firestore) é ~1MB; deixamos folga em 950KB. */
+  /* notificação do carregamento */
   function notifySaveSize(okMsg){
-    try{
-      var len=JSON.stringify(state).length;
-      if(len>950000){ toast("Conteúdo pesado: salvo neste PC, mas NÃO vai p/ as TVs. Para PDF pesado, cole um LINK (URL) no campo do MTM."); }
-      else if(okMsg){ toast(okMsg); }
-    }catch(e){ if(okMsg) toast(okMsg); }
+    if(okMsg)toast(okMsg);
   }
   /* Envia um arquivo/blob pro Firebase Storage e devolve o LINK público (downloadURL).
      Assim o estado guarda só o link (leve) e o PDF/imagem sincroniza em qualquer tamanho.
@@ -1803,15 +1797,80 @@
       }catch(e){ fail(e); }
     });
   }
-  function fileToDataURL(file,maxDim,cb){var reader=new FileReader();reader.onload=function(){var res=reader.result;if(!maxDim||/image\/svg/.test(file.type)){cb(res);return;}var img=new Image();img.onload=function(){try{
-    var MAXLEN=1000000; // até 1MB por imagem (sincroniza via Firestore em pedaços se necessário)
-    function encode(dim,q){var sc=Math.min(1,dim/Math.max(img.width,img.height));var w=Math.max(1,Math.round(img.width*sc)),h=Math.max(1,Math.round(img.height*sc));var c=document.createElement("canvas");c.width=w;c.height=h;var ctx=c.getContext("2d");ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";ctx.drawImage(img,0,0,w,h);return c.toDataURL("image/jpeg",q);}
-    var dim=Math.min(maxDim,Math.max(img.width,img.height)),q=0.92;
-    var out=encode(dim,q);
-    while(out.length>MAXLEN&&q>0.62){q-=0.07;out=encode(dim,q);}        // 1º baixa só a compressão
-    while(out.length>MAXLEN&&dim>1000){dim=Math.round(dim*0.85);out=encode(dim,Math.max(q,0.78));} // depois a dimensão, sem perder visibilidade
-    cb(out);
-  }catch(e){cb(res);}};img.onerror=function(){cb(res);};img.src=res;};reader.readAsDataURL(file);}
+  /* IMAGE OPTIMIZER START */
+  var IMAGE_TARGET_BYTES=900000;
+  var IMAGE_MIN_DIMENSION=960;
+  function imageUploadMaxDimension(location){
+    var limits={logo:1920,part:1920,origin:1920,dest:1920,divider:1920,mtm:1920};
+    return limits[location]||1920;
+  }
+  function dataURLByteLength(source){
+    var encoded=(String(source||"").split(",")[1]||"").replace(/\s/g,"");
+    if(!encoded)return 0;
+    var padding=encoded.slice(-2)==="=="?2:(encoded.slice(-1)==="="?1:0);
+    return Math.max(0,Math.floor(encoded.length*3/4)-padding);
+  }
+  function imageResultDetails(before,after,width,height,optimized){
+    return {beforeBytes:before,afterBytes:after,width:width||0,height:height||0,optimized:optimized===true};
+  }
+  function fileToDataURL(file,maxDim,cb){
+    var reader=new FileReader();
+    reader.onload=function(){
+      var original=reader.result;
+      var originalBytes=(file&&file.size)||dataURLByteLength(original);
+      var type=String((file&&file.type)||"").toLowerCase();
+      var name=String((file&&file.name)||"").toLowerCase();
+      var untouched=/image\/svg/.test(type)||/\.svg$/.test(name)||/image\/gif/.test(type)||/\.gif$/.test(name);
+      if(untouched){cb(original,imageResultDetails(originalBytes,originalBytes,0,0,false));return;}
+      var img=new Image();
+      img.onload=function(){
+        try{
+          var longest=Math.max(img.width,img.height);
+          var limit=Math.max(IMAGE_MIN_DIMENSION,parseInt(maxDim,10)||1920);
+          if(longest<=limit&&originalBytes<=IMAGE_TARGET_BYTES){
+            cb(original,imageResultDetails(originalBytes,originalBytes,img.width,img.height,false));
+            return;
+          }
+          function encode(dim,quality){
+            var scale=Math.min(1,dim/longest);
+            var width=Math.max(1,Math.round(img.width*scale));
+            var height=Math.max(1,Math.round(img.height*scale));
+            var canvas=document.createElement("canvas");
+            canvas.width=width;canvas.height=height;
+            var context=canvas.getContext("2d");
+            context.imageSmoothingEnabled=true;
+            context.imageSmoothingQuality="high";
+            context.drawImage(img,0,0,width,height);
+            var output=canvas.toDataURL("image/webp",quality);
+            if(/^data:image\/webp/i.test(output))return {source:output,width:width,height:height};
+            var fallback=/image\/(png|webp)/.test(type)?"image/png":"image/jpeg";
+            return {source:canvas.toDataURL(fallback,quality),width:width,height:height};
+          }
+          var dimension=Math.min(limit,longest);
+          var qualities=[0.93,0.90,0.87,0.84];
+          var encoded=null;
+          for(var qIndex=0;qIndex<qualities.length;qIndex++){
+            encoded=encode(dimension,qualities[qIndex]);
+            if(dataURLByteLength(encoded.source)<=IMAGE_TARGET_BYTES)break;
+          }
+          while(dataURLByteLength(encoded.source)>IMAGE_TARGET_BYTES&&dimension>IMAGE_MIN_DIMENSION){
+            dimension=Math.max(IMAGE_MIN_DIMENSION,Math.round(dimension*0.88));
+            encoded=encode(dimension,0.86);
+          }
+          var finalBytes=dataURLByteLength(encoded.source);
+          var optimized=finalBytes<originalBytes||encoded.width<img.width||encoded.height<img.height;
+          cb(encoded.source,imageResultDetails(originalBytes,finalBytes,encoded.width,encoded.height,optimized));
+        }catch(error){
+          cb(original,imageResultDetails(originalBytes,originalBytes,img.width,img.height,false));
+        }
+      };
+      img.onerror=function(){cb(original,imageResultDetails(originalBytes,originalBytes,0,0,false));};
+      img.src=original;
+    };
+    reader.onerror=function(){cb("",imageResultDetails(0,0,0,0,false));};
+    reader.readAsDataURL(file);
+  }
+  /* IMAGE OPTIMIZER END */
   /* ===== MULTI-IMAGEM: helpers e handlers ===== */
   function getItemImages(it,slot){
     if(!it)return[];
@@ -1890,14 +1949,14 @@
   el("filePhoto").addEventListener("change",function(e){
     var file=e.target.files&&e.target.files[0];if(!file||!pendingTarget)return;
     var target=pendingTarget, mode=pendingMode;
-    var max=(target==="logo")?0:1440;
+    var max=imageUploadMaxDimension(target);
     var itAtStart=(target==="logo")?null:currentItem();
     if(target!=="logo"&&!itAtStart)return;
-    fileToDataURL(file,max,function(url){
+    fileToDataURL(file,max,function(url,details){
       if(mode==="add"){applyImageAdd(target,itAtStart,url);}else{applyImage(target,itAtStart,url);}
       queueSave();
       if(url.length>ATT_MAX) toast("Imagem enorme (acima de ~4MB) — ficou SÓ neste PC.");
-      else notifySaveSize("Imagem carregada");
+      else notifySaveSize(details&&details.optimized?"Imagem otimizada e carregada":"Imagem carregada");
     });
   });
 
@@ -1938,7 +1997,7 @@
       else toast("MTM anexado — vai aparecer nas TVs.");
     };
     if(/^image\//.test(file.type)){
-      fileToDataURL(file,1800,function(u){done(u);});                 // imagem é comprimida (cabe num doc)
+      fileToDataURL(file,imageUploadMaxDimension("mtm"),function(u){done(u);});
     }else{
       var r=new FileReader();
       r.onload=function(){done(r.result);};

@@ -1121,6 +1121,7 @@
 
   var state=loadState();
   var currentId=state.items.length?state.items[0].id:null;
+  var cadastroUnlocked=false; /* pede a senha diária (DDMMAA) só na 1ª entrada no Cadastro nesta sessão */
   /* carrega os dados completos (fotos/PDF) do IndexedDB — o localStorage pode estar incompleto por causa da cota */
   (function hydrateFromIDB(){
     idbGet(KEY).then(function(j){
@@ -1650,6 +1651,16 @@
   function markTabs(pg){$all(".ed-tab").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-page")===pg);});}
   function setPage(pg){
     if(pg==="tv"){markTabs("tv");enterDisplay();return;}
+    if(pg==="cadastro"&&!cadastroUnlocked){
+      authorizeDestructive("acessar o cadastro de embalagem",function(){
+        cadastroUnlocked=true;
+        goToPage(pg);
+      });
+      return;
+    }
+    goToPage(pg);
+  }
+  function goToPage(pg){
     document.body.dataset.view="editor";document.body.dataset.page=pg;markTabs(pg);
     if(pg==="lista")renderEditorList();else{populateForm();}
     var sc=el(pg==="lista"?"pgLista":"pgCadastro");if(sc)sc.scrollTop=0;

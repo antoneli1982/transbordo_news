@@ -81,6 +81,24 @@
   .ed-top .brand .sub{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding-left:12px;border-left:1px solid var(--line);line-height:1.15}
   .ed-actions{margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
   .saved{font-size:12px;font-weight:600;color:var(--ok);display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .3s}
+  /* ===== calculadora rápida, junto do botão Importar ===== */
+  .calc-wrap{position:relative}
+  .calc-pop{position:absolute;top:calc(100% + 8px);right:0;z-index:60;width:216px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 22px 44px -18px rgba(12,19,34,.32);padding:10px}
+  .calc-head{display:flex;align-items:center;justify-content:space-between;font-size:11px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+  .calc-close{border:none;background:none;color:var(--muted);font-size:16px;line-height:1;cursor:pointer;padding:2px 5px;border-radius:6px}
+  .calc-close:hover{background:#EDF0F5;color:var(--ink-2)}
+  .calc-display{background:#F3F5F9;border:1px solid var(--line);border-radius:9px;padding:9px 10px;text-align:right;font-size:19px;font-weight:800;color:var(--ink);font-family:var(--sans);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px}
+  .calc-grid{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:36px;gap:6px}
+  .calc-key{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .12s,transform .1s}
+  .calc-key:active{transform:scale(.93)}
+  .calc-key:hover{background:#F3F5F9}
+  .calc-key.f{color:var(--bad);border-color:#F3D6D2;background:#FDEEEC}
+  .calc-key.f:hover{background:#FBDDD9}
+  .calc-key.op{color:var(--brand-700);background:var(--brand-50);border-color:var(--brand-100)}
+  .calc-key.op:hover{background:#dfe6ff}
+  .calc-key.eq{grid-row:span 2;background:linear-gradient(180deg,var(--brand),var(--brand-600));color:#fff;border-color:var(--brand-600)}
+  .calc-key.eq:hover{filter:brightness(1.06)}
+  .calc-key.wide{grid-column:span 2}
   .saved.show{opacity:1}
 
   /* ===== NAVEGAÇÃO EM 3 PÁGINAS: cadastro • embalagens cadastradas • modo TV ===== */
@@ -157,17 +175,30 @@
   .ed-item .ei-code{font-size:17px;font-weight:800;letter-spacing:-.01em;color:var(--brand-700);line-height:1.2;min-width:0;overflow-wrap:anywhere}
   .ed-item .ei-name{font-size:12px;font-weight:500;line-height:1.32;color:var(--muted);white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;word-break:break-word;hyphens:auto;margin-top:3px}
   .ed-item .ei-sub{font-size:11px;color:var(--muted);margin-top:8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-  /* dois campos numéricos lado a lado, com o rótulo em cima do campo */
+  /* dois campos numéricos lado a lado, com o rótulo em cima do campo,
+     e abaixo o conversor (origem ÷ destino) ocupando a linha inteira */
   .ed-item .ei-fields{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
   .ed-item .ei-boxes,.ed-item .ei-team{display:flex;flex-direction:column;align-items:stretch;gap:3px;padding:6px 8px 7px;border-radius:9px;min-width:0}
   .ed-item .ei-boxes{color:var(--brand-700);background:var(--brand-50);border:1px solid var(--brand-100)}
   .ed-item .ei-team{color:#0E6B4B;background:#E8F7F0;border:1px solid #C9EBDC}
-  .ed-item .ei-boxes-label{font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .ed-item .ei-boxes-label{font-size:9.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;line-height:1.18;white-space:normal;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
   .ed-item .ei-boxes input,.ed-item .ei-team input{width:100%;height:32px;background:#fff;border-radius:7px;padding:0 4px;font-size:16px;font-weight:800;color:var(--ink);text-align:center;font-family:var(--sans)}
   .ed-item .ei-boxes input{border:1px solid var(--brand-100)}
   .ed-item .ei-team input{border:1px solid #C9EBDC}
   .ed-item .ei-boxes input:focus{outline:2px solid var(--brand);outline-offset:0}
   .ed-item .ei-team input:focus{outline:2px solid var(--ok);outline-offset:0}
+  /* conversor: caixas de origem ÷ peças por caixa de destino = sugestão de caixas a transbordar */
+  .ed-item .ei-convert{grid-column:1 / -1;display:flex;flex-wrap:wrap;align-items:center;gap:6px;padding:6px 8px;border-radius:9px;color:var(--brand-700);background:var(--brand-50);border:1px solid var(--brand-100);font-size:11px}
+  .ei-conv-label{font-size:9.5px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:var(--brand-700);white-space:nowrap;flex:0 0 auto}
+  .ei-convert input{width:64px;height:26px;background:#fff;border:1px solid var(--brand-100);border-radius:6px;padding:0 6px;font-size:13px;font-weight:800;color:var(--ink);text-align:center;font-family:var(--sans);flex:0 0 auto}
+  .ei-convert input:focus{outline:2px solid var(--brand);outline-offset:0}
+  .ei-conv-dest{color:var(--muted);white-space:nowrap;font-weight:600;flex:0 0 auto}
+  .ei-conv-dest.warn{color:var(--bad)}
+  .ei-conv-result{font-weight:800;color:var(--brand-700);white-space:nowrap;flex:1 1 auto;text-align:right;min-width:44px}
+  .ei-conv-apply{flex:0 0 auto;border:1px solid var(--brand-100);background:#fff;color:var(--brand-700);font-size:10.5px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;border-radius:6px;padding:5px 9px;cursor:pointer;transition:background .15s,color .15s}
+  .ei-conv-apply:hover:not(:disabled){background:var(--brand);color:#fff}
+  .ei-conv-apply:disabled{opacity:.4;cursor:default}
+  @media (max-width:520px){.ei-conv-result{text-align:left;width:100%;order:5}}
   .ed-item .ei-del{position:absolute;top:7px;right:7px;z-index:3;width:24px;height:24px;border:none;background:rgba(255,255,255,.9);color:var(--muted);border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 5px rgba(12,19,34,.22)}
   .ed-item .ei-del:hover{background:#FDEEEC;color:var(--bad)}
   .ed-item.closed .ei-thumb,.ed-item.closed .ei-name,.ed-item.closed .ei-code{opacity:.5}
@@ -275,7 +306,7 @@
 
   /* ============ DISPLAY ============ */
   #display{overflow:hidden}
-  .edit-fab{position:relative;z-index:3;appearance:none;border:2px solid rgba(43,79,230,.25);background:#fff;color:var(--brand-700);font-weight:700;font-size:13px;cursor:pointer;padding:9px 13px;border-radius:11px;box-shadow:0 14px 34px -16px rgba(0,0,0,.65);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;opacity:1;transition:background .2s,transform .14s,box-shadow .2s}
+  .edit-fab{position:relative;z-index:3;appearance:none;border:2px solid rgba(43,79,230,.25);background:#fff;color:var(--brand-700);font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:.02em;cursor:pointer;padding:9px 13px;border-radius:11px;box-shadow:0 14px 34px -16px rgba(0,0,0,.65);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;opacity:1;transition:background .2s,transform .14s,box-shadow .2s}
   .edit-fab:hover{background:var(--brand-50);box-shadow:0 18px 38px -16px rgba(0,0,0,.72)}.edit-fab:active{transform:scale(.96)}
 
   body[data-lay="flow"] #display{overflow-y:auto;overflow-x:hidden}
@@ -285,25 +316,50 @@
   .stage{position:relative}
   .stage .grain{position:absolute;inset:0;pointer-events:none;opacity:.035;mix-blend-mode:multiply;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>")}
 
-  .d-header{display:flex;align-items:center;justify-content:space-between;gap:16px}
-  body[data-lay="tv"] .d-header{flex:0 0 auto;margin-bottom:16px}
+  .d-header{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;row-gap:10px}
+  body[data-lay="tv"] .d-header{flex:0 0 auto;margin-bottom:16px;flex-wrap:nowrap}
   body[data-lay="flow"] .d-header{flex-wrap:wrap}
-  .d-brand{display:flex;align-items:center;gap:13px;min-width:0}
+  /* d-brand pode quebrar em duas linhas (título embaixo do logo, localidade embaixo do título)
+     em vez de espremer o texto e partir palavras no meio */
+  .d-brand{display:flex;align-items:center;gap:13px;min-width:0;flex-wrap:wrap;row-gap:6px}
   .d-brand .logo{height:26px}
   body[data-lay="tv"] .d-brand .logo{height:32px}
-  .d-app{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;padding-left:13px;border-left:1px solid var(--line);line-height:1.2}
+  .d-app{font-size:13px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;padding-left:13px;border-left:1px solid var(--line);line-height:1.2;min-width:0}
   body[data-lay="tv"] .d-app{font-size:16px}
-  .d-hright{display:flex;align-items:center;gap:14px;flex:0 0 auto}
+  /* ===== bloco bilíngue PT/EN: bandeira + texto PT em cima, bandeira + texto EN embaixo (menor, discreto) ===== */
+  .bi{display:inline-flex;flex-direction:column;gap:1px;vertical-align:middle;text-align:left}
+  .bi-pt,.bi-en{display:flex;align-items:center;gap:4px;line-height:1.2;white-space:nowrap}
+  .bi-en{font-size:.72em;opacity:.62;font-weight:600}
+  .bi .flag,.flag{flex:0 0 auto;border-radius:2px;box-shadow:0 0 0 1px rgba(0,0,0,.14);display:inline-block}
+  .bi-en:empty,.bi-en span:empty{display:none}
+  /* linhas "EN" de dados cadastrados (nome da peça, fornecedor, embalagens, observação...):
+     traduzidas ao vivo por API; somem sozinhas se o texto ainda não tiver tradução */
+  .bi-data-en{display:flex;align-items:center;gap:4px}
+  .det-name-en:has(span:empty),.pkg-name-en:has(span:empty),.time-obs .to-val-en:has(span:empty){display:none}
+  /* localidade + relógio ao lado do título do painel (Controle de Transbordo).
+     white-space:nowrap evita que "São Carlos" e a data/hora quebrem no meio da palavra;
+     se não couber, o bloco inteiro pula pra próxima linha (o pai já tem flex-wrap). */
+  .d-loc{display:flex;align-items:baseline;gap:7px;margin-left:13px;padding-left:13px;border-left:1px solid var(--line);font-family:var(--sans);white-space:nowrap;flex:0 0 auto}
+  .d-loc-city{font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-2);white-space:nowrap}
+  .d-loc-sep{color:var(--muted-2);font-size:12px;white-space:nowrap}
+  .d-loc-clock{font-size:13px;font-weight:800;color:var(--brand-700);font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap;text-transform:uppercase}
+  .d-loc-clock-en{font-variant-numeric:tabular-nums;color:var(--brand-700);white-space:nowrap;text-transform:uppercase}
+  body[data-lay="tv"] .d-loc-city{font-size:15px}
+  body[data-lay="tv"] .d-loc-sep{font-size:15px}
+  body[data-lay="tv"] .d-loc-clock{font-size:16px}
+  @media (max-width:900px){.d-loc-city{display:none}.d-loc-sep{display:none}}
+  @media (max-width:560px){.d-loc{margin-left:0;padding-left:0;border-left:none}.d-app{padding-left:0;border-left:none}}
+  .d-hright{display:flex;align-items:center;gap:14px;flex:0 0 auto;flex-wrap:wrap;row-gap:8px}
   body[data-lay="flow"] .d-hright{width:100%;flex-wrap:wrap;gap:8px}
   body[data-lay="flow"] .edit-fab{margin-left:auto}
-  .d-count{font-size:12px;font-weight:600;color:var(--ink-2)}
+  .d-count{font-size:12px;font-weight:600;color:var(--ink-2);white-space:nowrap;text-transform:uppercase;letter-spacing:.01em}
   body[data-lay="tv"] .d-count{font-size:15px}.d-count b{color:var(--brand-700)}
-  .d-status{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-2);background:#fff;border:1px solid var(--line);padding:6px 11px;border-radius:30px}
+  .d-status{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-2);background:#fff;border:1px solid var(--line);padding:6px 11px;border-radius:30px;white-space:nowrap;text-transform:uppercase;letter-spacing:.01em}
   body[data-lay="tv"] .d-status{font-size:14px;padding:8px 14px}
   .d-status i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
   @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(21,163,110,.45)}70%{box-shadow:0 0 0 7px rgba(21,163,110,0)}100%{box-shadow:0 0 0 0 rgba(21,163,110,0)}}
   /* selo que aparece na TV só quando o item exibido está marcado como PRIORIDADE */
-  .priority-alert{display:inline-flex;align-items:center;gap:7px;border:2px solid #ffb3ac;background:linear-gradient(180deg,#F13C2D,#C91F16);color:#fff;font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:10px;box-shadow:0 0 0 0 rgba(224,72,59,.7);animation:priorityBlink 1s steps(2,end) infinite;cursor:default;user-select:none}
+  .priority-alert{display:inline-flex;align-items:center;gap:7px;border:2px solid #ffb3ac;background:linear-gradient(180deg,#F13C2D,#C91F16);color:#fff;font-family:var(--sans);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:7px 13px;border-radius:10px;box-shadow:0 0 0 0 rgba(224,72,59,.7);animation:priorityBlink 1s steps(2,end) infinite;cursor:default;user-select:none;white-space:nowrap}
   .priority-alert[hidden]{display:none}
   body[data-lay="tv"] .priority-alert{font-size:15px;padding:9px 16px;border-radius:11px}
   @keyframes priorityBlink{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(224,72,59,.75),0 8px 20px -10px rgba(201,31,22,.9)}50%{opacity:.38;box-shadow:0 0 0 9px rgba(224,72,59,0)}}
@@ -347,6 +403,8 @@
   .chip.run{color:#fff;background:var(--ok);border-color:var(--ok);font-weight:700}
   .det-name{font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1.08}
   body[data-lay="tv"] .det-name{font-size:42px}
+  .det-name-en{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:var(--muted);opacity:.75;margin-top:2px}
+  body[data-lay="tv"] .det-name-en{font-size:16px}
   .det-code{color:var(--brand);font-weight:800}
   .det-code:empty{display:none}
   .det-code::before{content:"·";margin:0 .35em;color:var(--muted-2);font-weight:600}
@@ -407,6 +465,8 @@
   body[data-lay="tv"] .pkg-kicker{font-size:11px;margin-bottom:2px}
   .pkg-name{font-size:13px;font-weight:700;line-height:1.15;color:#fff;text-shadow:0 1px 10px rgba(0,0,0,.55)}
   body[data-lay="tv"] .pkg-name{font-size:17px}
+  .pkg-name-en{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:rgba(255,255,255,.68);text-shadow:0 1px 10px rgba(0,0,0,.55);margin-top:1px}
+  body[data-lay="tv"] .pkg-name-en{font-size:14px}
   .flow-arrow{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center}
   body[data-lay="flow"] .flow-arrow{margin:-4px 0}
   .arrow-badge{width:50px;height:50px;background:linear-gradient(180deg,var(--brand),var(--brand-600));color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 14px 26px -10px rgba(43,79,230,.75),inset 0 1px 0 rgba(255,255,255,.3);clip-path:polygon(0 0,calc(100% - 13px) 0,100% 13px,100% 100%,13px 100%,0 calc(100% - 13px))}
@@ -450,6 +510,8 @@
   body[data-lay="tv"] .time-obs .to-lab{font-size:12.5px}
   .time-obs .to-val{font-size:13px;font-weight:700;line-height:1.35;color:#fff;overflow-wrap:anywhere;white-space:pre-wrap}
   body[data-lay="tv"] .time-obs .to-val{font-size:19px;line-height:1.3}
+  .time-obs .to-val-en{display:flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:rgba(255,255,255,.65);margin-top:2px}
+  body[data-lay="tv"] .time-obs .to-val-en{font-size:15px}
   .time-qr .qbox{background:#fff;border-radius:12px;padding:9px;flex:0 0 auto;line-height:0}
   body[data-lay="flow"] .time-qr .qbox{width:92px;height:92px}
   body[data-lay="tv"] .time-qr .qbox{width:116px;height:116px;padding:10px}
@@ -587,6 +649,33 @@
     </nav>
     <div class="ed-actions">
       <span class="saved" id="saved"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Salvo</span>
+      <div class="calc-wrap">
+        <button type="button" class="btn btn-ghost btn-sm" id="btnCalc" title="Calculadora" aria-haspopup="true" aria-expanded="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="4" y="2.5" width="16" height="19" rx="2.4" stroke="currentColor" stroke-width="1.8"/><path d="M7.5 6.5h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="7.8" cy="11" r=".9" fill="currentColor"/><circle cx="12" cy="11" r=".9" fill="currentColor"/><circle cx="16.2" cy="11" r=".9" fill="currentColor"/><circle cx="7.8" cy="14.6" r=".9" fill="currentColor"/><circle cx="12" cy="14.6" r=".9" fill="currentColor"/><circle cx="16.2" cy="14.6" r=".9" fill="currentColor"/><circle cx="7.8" cy="18.2" r=".9" fill="currentColor"/><circle cx="12" cy="18.2" r=".9" fill="currentColor"/><circle cx="16.2" cy="18.2" r=".9" fill="currentColor"/></svg>Calculadora</button>
+        <div class="calc-pop" id="calcPop" hidden>
+          <div class="calc-head"><span>Calculadora</span><button type="button" class="calc-close" id="calcClose" aria-label="Fechar calculadora">×</button></div>
+          <div class="calc-display" id="calcDisplay">0</div>
+          <div class="calc-grid">
+            <button type="button" class="calc-key f" data-calc-clear>C</button>
+            <button type="button" class="calc-key f" data-calc-back>⌫</button>
+            <button type="button" class="calc-key op" data-calc-op="÷">÷</button>
+            <button type="button" class="calc-key op" data-calc-op="×">×</button>
+            <button type="button" class="calc-key" data-calc-digit="7">7</button>
+            <button type="button" class="calc-key" data-calc-digit="8">8</button>
+            <button type="button" class="calc-key" data-calc-digit="9">9</button>
+            <button type="button" class="calc-key op" data-calc-op="-">−</button>
+            <button type="button" class="calc-key" data-calc-digit="4">4</button>
+            <button type="button" class="calc-key" data-calc-digit="5">5</button>
+            <button type="button" class="calc-key" data-calc-digit="6">6</button>
+            <button type="button" class="calc-key op" data-calc-op="+">+</button>
+            <button type="button" class="calc-key" data-calc-digit="1">1</button>
+            <button type="button" class="calc-key" data-calc-digit="2">2</button>
+            <button type="button" class="calc-key" data-calc-digit="3">3</button>
+            <button type="button" class="calc-key eq" data-calc-eq>=</button>
+            <button type="button" class="calc-key wide" data-calc-digit="0">0</button>
+            <button type="button" class="calc-key" data-calc-dot>,</button>
+          </div>
+        </div>
+      </div>
       <button class="btn btn-ghost btn-sm" id="btnImport">Importar</button>
       <button class="btn btn-ghost btn-sm" id="btnExport">Salvar JSON</button>
       <button class="btn btn-ghost btn-sm" id="btnReset">Restaurar exemplo</button>
@@ -804,14 +893,14 @@
     <div class="grain"></div>
 
     <header class="d-header">
-      <div class="d-brand"><span class="logo-slot" data-logo><img class="logo logo-img" alt="logo"></span><span class="d-app" id="d-app">Controle de Transbordo</span></div>
-      <div class="d-hright"><span class="d-count"><b id="d-count">0</b> itens em transbordo</span><span class="priority-alert" id="d-priority" role="status" aria-label="Item prioritário" hidden>Prioridade</span><span class="d-status"><i></i><span id="d-status">Em operação</span></span><button class="edit-fab" id="editFab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 6 4 12l6 6M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Sair do modo TV</button></div>
+      <div class="d-brand"><span class="logo-slot" data-logo><img class="logo logo-img" alt="logo"></span><span class="d-app bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span id="d-app">Controle de Transbordo</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span id="d-app-en"></span></span></span><span class="d-loc"><span class="d-loc-city">São Carlos</span><span class="d-loc-sep">·</span><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span class="d-loc-clock" id="d-clock"></span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span class="d-loc-clock-en" id="d-clock-en"></span></span></span></span></div>
+      <div class="d-hright"><span class="d-count"><b id="d-count">0</b> <span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span>ITENS EM TRANSBORDO</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span>ITEMS IN TRANSSHIPMENT</span></span></span></span><span class="priority-alert" id="d-priority" role="status" aria-label="Item prioritário" hidden><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span>PRIORIDADE</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span>PRIORITY</span></span></span></span><span class="d-status"><i></i><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span id="d-status">Em operação</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span id="d-status-en"></span></span></span></span><button class="edit-fab" id="editFab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 6 4 12l6 6M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span>SAIR DO MODO TV</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span>EXIT TV MODE</span></span></span></button></div>
     </header>
 
     <div class="d-main" id="dMain">
       <!-- LIST -->
       <section class="tv-list">
-        <div class="tv-list-head"><span class="t">Em transbordo</span></div>
+        <div class="tv-list-head"><span class="t bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Em transbordo</span></span><span class="bi-en"><i class="flag flag-us"></i><span>In transshipment</span></span></span></div>
         <div class="tv-list-body" id="tvListBody"></div>
       </section>
 
@@ -820,15 +909,18 @@
         <div class="det-prod">
           <div class="det-info">
             <div class="det-seqrow">
-              <div class="det-seq" id="d-seqBox" title="Posição na sequência do transbordo"><span class="lab">Seq.</span><span class="num" id="d-seq">0</span></div>
-              <h1 class="det-name"><span id="d-name"></span><span class="det-code" id="d-code"></span></h1>
+              <div class="det-seq" id="d-seqBox" title="Posição na sequência do transbordo / Sequence position"><span class="lab">Seq.</span><span class="num" id="d-seq">0</span></div>
+              <div class="det-name-wrap">
+                <h1 class="det-name"><span id="d-name"></span><span class="det-code" id="d-code"></span></h1>
+                <div class="det-name-en bi-data-en"><i class="flag flag-us"></i><span id="d-name-en"></span></div>
+              </div>
             </div>
-            <div class="det-line" id="d-supplierRow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7h13l4 5v5a1 1 0 0 1-1 1h-1M3 7v10a1 1 0 0 0 1 1h1m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Fornecedor: <b id="d-supplier"></b></div>
+            <div class="det-line" id="d-supplierRow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7h13l4 5v5a1 1 0 0 1-1 1h-1M3 7v10a1 1 0 0 0 1 1h1m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Fornecedor: <b id="d-supplier"></b></span></span><span class="bi-en"><i class="flag flag-us"></i><span>Supplier: <b id="d-supplier-en"></b></span></span></span></div>
           </div>
-          <button class="mtm-card" id="d-mtmBtn" hidden title="Abrir MTM">
+          <button class="mtm-card" id="d-mtmBtn" hidden title="Abrir MTM / Open MTM">
             <span class="mtm-card-top"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M7 3h7l5 5v12.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5v-17a.5.5 0 0 1 .5-.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v5h5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>MTM</span>
             <div class="mtm-card-view" id="d-mtmThumb"></div>
-            <span class="mtm-card-cta">Abrir</span>
+            <span class="mtm-card-cta bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Abrir</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Open</span></span></span>
           </button>
         </div>
 
@@ -837,23 +929,23 @@
             <div class="det-top2">
               <article class="pkg" id="card-part">
                 <div class="pkg-figure" id="fig-part">
-                  <span class="pkg-tag p">Peça</span>
+                  <span class="pkg-tag p bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Peça</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Part</span></span></span>
                   <img id="d-partImg" class="pkg-photo" hidden alt="">
                   <div class="part-ph" id="d-partPh"><svg width="46" height="46" viewBox="0 0 24 24" fill="none"><path d="M12 2.6 21 7.5v9L12 21.4 3 16.5v-9L12 2.6Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/><path d="M3.3 7.6 12 12.4l8.7-4.8M12 12.4v9" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg><span>Imagem da peça</span></div>
                   <div class="slot-timer" id="st-part" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-part"/></svg><span class="stn" id="stn-part">0</span></div>
                   <div class="img-dots" id="dots-part" hidden></div>
                 </div>
-                <div class="pkg-info"><div class="pkg-kicker">Peça</div><div class="pkg-name" id="d-name2"></div></div>
+                <div class="pkg-info"><div class="pkg-kicker bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Peça</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Part</span></span></div><div class="pkg-name" id="d-name2"></div><div class="pkg-name-en bi-data-en"><i class="flag flag-us"></i><span id="d-name2-en"></span></div></div>
               </article>
               <article class="pkg" id="card-divider">
                 <div class="pkg-figure" id="fig-divider">
-                  <span class="pkg-tag v">Divisória</span>
+                  <span class="pkg-tag v bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Divisória</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Divider</span></span></span>
                   <img id="d-divImg" class="pkg-photo" hidden alt="">
                   <div class="part-ph" id="d-divPh"><svg width="46" height="46" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M9 4v16M15 4v16M3 12h18" stroke="currentColor" stroke-width="1.3"/></svg><span>Imagem da divisória</span></div>
                   <div class="slot-timer" id="st-divider" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-divider"/></svg><span class="stn" id="stn-divider">0</span></div>
                   <div class="img-dots" id="dots-divider" hidden></div>
                 </div>
-                <div class="pkg-info"><div class="pkg-kicker">Divisória</div><div class="pkg-name" id="d-divType"></div></div>
+                <div class="pkg-info"><div class="pkg-kicker bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Divisória</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Divider</span></span></div><div class="pkg-name" id="d-divType"></div><div class="pkg-name-en bi-data-en"><i class="flag flag-us"></i><span id="d-divType-en"></span></div></div>
               </article>
             </div>
 
@@ -862,7 +954,7 @@
               <div class="flow-line"></div>
               <article class="pkg" id="card-origin">
                 <div class="pkg-figure" id="fig-origin">
-                  <span class="pkg-tag o">Origem</span>
+                  <span class="pkg-tag o bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Origem</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Origin</span></span></span>
                   <img id="d-oImg" class="pkg-photo" hidden alt="">
                   <svg class="pkg-svg" viewBox="0 0 240 200">
                     <ellipse cx="135" cy="168" rx="92" ry="15" fill="rgba(11,16,32,.15)"/>
@@ -875,12 +967,12 @@
                   <div class="slot-timer" id="st-origin" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-origin"/></svg><span class="stn" id="stn-origin">0</span></div>
                   <div class="img-dots" id="dots-origin" hidden></div>
                 </div>
-                <div class="pkg-info"><div class="pkg-kicker">Embalagem de origem</div><div class="pkg-name" id="d-oName"></div></div>
+                <div class="pkg-info"><div class="pkg-kicker bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Embalagem de origem</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Origin packaging</span></span></div><div class="pkg-name" id="d-oName"></div><div class="pkg-name-en bi-data-en"><i class="flag flag-us"></i><span id="d-oName-en"></span></div></div>
               </article>
-              <div class="flow-arrow" id="flow-arrow"><div class="arrow-badge"><svg class="arrow-ico" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="arrow-meta"><span class="t">Transbordo</span></div></div>
+              <div class="flow-arrow" id="flow-arrow"><div class="arrow-badge"><svg class="arrow-ico" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="arrow-meta"><span class="t bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Transbordo</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Transfer</span></span></span></div></div>
               <article class="pkg" id="card-dest">
                 <div class="pkg-figure" id="fig-dest">
-                  <span class="pkg-tag d">Destino</span>
+                  <span class="pkg-tag d bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Destino</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Destination</span></span></span>
                   <img id="d-dImg" class="pkg-photo" hidden alt="">
                   <svg class="pkg-svg" viewBox="0 0 240 200">
                     <ellipse cx="135" cy="168" rx="92" ry="15" fill="rgba(11,16,32,.18)"/>
@@ -892,7 +984,7 @@
                   <div class="slot-timer" id="st-dest" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-dest"/></svg><span class="stn" id="stn-dest">0</span></div>
                   <div class="img-dots" id="dots-dest" hidden></div>
                 </div>
-                <div class="pkg-info"><div class="pkg-kicker">Embalagem de destino</div><div class="pkg-name" id="d-dName"></div></div>
+                <div class="pkg-info"><div class="pkg-kicker bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Embalagem de destino</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Destination packaging</span></span></div><div class="pkg-name" id="d-dName"></div><div class="pkg-name-en bi-data-en"><i class="flag flag-us"></i><span id="d-dName-en"></span></div></div>
               </article>
             </div>
           </div>
@@ -900,16 +992,16 @@
           <aside class="d-right">
             <div class="time-card">
               <div class="tc-fit">
-              <div class="time-sub"><span class="ts-l">Tempo médio por caixa</span><span class="ts-v" id="d-time"></span></div>
-              <div class="time-sub"><span class="ts-l">Caixas para transbordar</span><span class="ts-v" id="d-boxes"></span></div>
-              <div class="time-sub"><span class="ts-l">Colaboradores</span><span class="ts-v" id="d-workers"></span></div>
-              <div class="time-sub tsx-hl"><span class="ts-l">Tempo total do processo</span><span class="ts-v" id="d-total">—</span></div>
-              <div class="time-sub"><span class="ts-l">Peças por caixa</span><span class="ts-v" id="d-qty"></span></div>
+              <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Tempo médio por caixa</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Average time per box</span></span></span><span class="ts-v" id="d-time"></span></div>
+              <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Caixas para transbordar</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Boxes to transship</span></span></span><span class="ts-v" id="d-boxes"></span></div>
+              <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Colaboradores</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Team members</span></span></span><span class="ts-v" id="d-workers"></span></div>
+              <div class="time-sub tsx-hl"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Tempo total do processo</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Total process time</span></span></span><span class="ts-v" id="d-total">—</span></div>
+              <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Peças por caixa</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Pieces per box</span></span></span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-obs" id="d-obsWrap" hidden>
                 <svg class="to-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 21.4 19.4a1 1 0 0 1-.87 1.5H3.47a1 1 0 0 1-.87-1.5L12 3.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.4v4.4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.15" fill="currentColor"/></svg>
-                <div class="to-txt"><span class="to-lab">Observação</span><span class="to-val" id="d-obs"></span></div>
+                <div class="to-txt"><span class="to-lab bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Observação</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Note</span></span></span><span class="to-val" id="d-obs"></span><span class="to-val-en bi-data-en"><i class="flag flag-us"></i><span id="d-obs-en"></span></span></div>
               </div>
-              <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt">Aponte a câmera<br>para abrir a ficha</span></div>
+              <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Aponte a câmera para abrir a ficha</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Point your camera to open the sheet</span></span></span></div>
               </div>
             </div>
           </aside>
@@ -930,12 +1022,12 @@
       </div>
       <div class="prog"><div class="prog-fill" id="progFill"></div></div>
       <span class="d-idx" id="d-idx">0 / 0</span>
-      <span class="d-meta"><b id="d-updated"></b></span>
+      <span class="d-meta bi"><span class="bi-pt"><i class="flag flag-br"></i><b id="d-updated"></b></span><span class="bi-en"><i class="flag flag-us"></i><b id="d-updated-en"></b></span></span>
     </footer>
 
     <!-- identificação do documento — edite os textos abaixo se mudar a revisão -->
     <div class="d-docinfo" id="dDocInfo">
-      <span>KSU Classe 10.4</span><i>|</i><span>F-05BR-SCA-234</span><i>|</i><span>Data de emissão 20/08/2026</span><i>|</i><span>REV.0</span>
+      <span>KSU Classe 10.4</span><i>|</i><span>F-05BR-SCA-234</span><i>|</i><span>Data de emissão / Issue date 20/08/2026</span><i>|</i><span>REV.0</span>
     </div>
   </div>
 </div>
@@ -983,6 +1075,65 @@
   "use strict";
   var LOGO_DEFAULT="data:image/jpeg;base64,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";
   var PART_ICON='<svg width="W" height="W" viewBox="0 0 24 24" fill="none"><path d="M12 2.6 21 7.5v9L12 21.4 3 16.5v-9L12 2.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3.3 7.6 12 12.4l8.7-4.8M12 12.4v9" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
+
+  /* ===== TV bilíngue: bandeiras (SVG embutido, sem depender de fonte de emoji) ===== */
+  var FLAG_BR='<svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg>';
+  var FLAG_US='<svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg>';
+  /* dicionário fixo dos rótulos da TV (não precisa de internet) */
+  var I18N_EN={
+    "Controle de Transbordo":"Transshipment Control","Cadastro de Transbordo":"Transshipment Registration",
+    "ITENS EM TRANSBORDO":"ITEMS IN TRANSSHIPMENT","PRIORIDADE":"PRIORITY","SAIR DO MODO TV":"EXIT TV MODE",
+    "Em transbordo":"In transshipment","Seq.":"Seq.","Fornecedor:":"Supplier:","Abrir":"Open",
+    "Peça":"Part","Divisória":"Divider","Origem":"Origin","Destino":"Destination","Transbordo":"Transfer",
+    "Embalagem de origem":"Origin packaging","Embalagem de destino":"Destination packaging",
+    "Tempo médio por caixa":"Average time per box","Caixas para transbordar":"Boxes to transship",
+    "Colaboradores":"Team members","Tempo total do processo":"Total process time","Peças por caixa":"Pieces per box",
+    "Observação":"Note","Aponte a câmera para abrir a ficha":"Point your camera to open the sheet",
+    "Data de emissão":"Issue date","Atualizado":"Updated","Em operação":"In operation"
+  };
+  var DIAS_SEMANA_EN=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  /* bloco bilíngue: PT em cima (com bandeira BR), EN embaixo, menor e discreto (com bandeira US) */
+  function biHTML(pt,en){
+    return '<span class="bi"><span class="bi-pt">'+FLAG_BR+'<span>'+pt+'</span></span><span class="bi-en">'+FLAG_US+'<span>'+(en||"")+'</span></span></span>';
+  }
+  function traduzFixo(pt){return I18N_EN[pt]||pt;}
+  /* injeta o SVG das bandeiras nos placeholders <i class="flag-br">/<i class="flag-us"> do HTML */
+  function paintFlags(){
+    $all(".flag-br").forEach(function(n){n.innerHTML=FLAG_BR;});
+    $all(".flag-us").forEach(function(n){n.innerHTML=FLAG_US;});
+  }
+
+  /* ===== tradução automática dos dados cadastrados (nome da peça, fornecedor, embalagens...) =====
+     Usa a API pública MyMemory (precisa de internet no painel). Resultado fica em cache local
+     pra não pedir de novo a mesma frase toda hora. Se não tiver internet, a linha em inglês
+     simplesmente fica vazia — o painel continua funcionando normalmente em português. */
+  var TRANSLATE_CACHE_KEY="transbordoTranslateCacheV1";
+  var translateCache=(function(){try{return JSON.parse(lsGet(TRANSLATE_CACHE_KEY)||"{}");}catch(e){return {};}})();
+  var translateInFlight={};
+  function saveTranslateCache(){try{lsSet(TRANSLATE_CACHE_KEY,JSON.stringify(translateCache));}catch(e){}}
+  function fetchTranslation(text,cb){
+    var url="https://api.mymemory.translated.net/get?q="+encodeURIComponent(text)+"&langpair=pt|en";
+    fetch(url).then(function(r){return r.json();}).then(function(data){
+      var t=data&&data.responseData&&data.responseData.translatedText;
+      cb((t&&String(t).trim())?String(t).trim():null);
+    }).catch(function(){cb(null);});
+  }
+  /* aplica a tradução (cache ou pedindo pra API) num elemento id+"-en" a partir do texto em id.
+     O elemento -en é sempre um "leaf" vazio; a bandeira US, quando existe, já está fixa ao lado no HTML. */
+  function biData(elId,ptText){
+    var enNode=el(elId+"-en");if(!enNode)return;
+    var txt=(ptText==null)?"":String(ptText).trim();
+    if(!txt){enNode.textContent="";return;}
+    if(translateCache[txt]){enNode.textContent=translateCache[txt];return;}
+    enNode.textContent="…";
+    if(translateInFlight[txt])return;
+    translateInFlight[txt]=true;
+    fetchTranslation(txt,function(result){
+      delete translateInFlight[txt];
+      if(result){translateCache[txt]=result;saveTranslateCache();}
+      var node=el(elId+"-en");if(node)node.textContent=result||"";
+    });
+  }
   var KEY="sese_transbordo_v4", OLD3="sese_transbordo_v3", OLD2="sese_transbordo_v2", mem={};
   function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){mem[k]=v;}}
   function lsGet(k){try{var v=localStorage.getItem(k);return v==null?(k in mem?mem[k]:null):v;}catch(e){return (k in mem)?mem[k]:null;}}
@@ -1001,10 +1152,17 @@
     idbSet(KEY,json).then(function(){return idbSet(KEY_AT,String(ts));}).catch(function(e){console.warn("IDB save:",e);});
     try{localStorage.setItem(KEY,json);}catch(e){}           // melhor esforço (pode estourar cota; IDB é o principal)
   }
+  /* atualiza título/status do cabeçalho (PT) + dispara a tradução automática (EN) */
+  function updateHeaderTexts(){
+    var t=state.settings.panelTitle||"",s=state.settings.statusText||"";
+    var dApp=el("d-app");if(dApp)dApp.textContent=t;
+    biData("d-app",t);
+    var dStatus=el("d-status");if(dStatus)dStatus.textContent=s;
+    biData("d-status",s);
+  }
   function reRenderAll(){
     try{setLogo(state.settings.logo);}catch(e){}
-    var dApp=el("d-app");if(dApp)dApp.textContent=state.settings.panelTitle||"";
-    var dStatus=el("d-status");if(dStatus)dStatus.textContent=state.settings.statusText||"";
+    updateHeaderTexts();
     try{var _si=shownItem?state.items.filter(function(x){return x.id===shownItem.id;})[0]:null;applyPriorityUI(_si);}catch(e){}
     try{renderEditorList();}catch(e){}
     try{populateForm();}catch(e){}
@@ -1034,7 +1192,7 @@
   function fmtTime(ms){try{var d=new Date(ms),p=function(n){return (n<10?"0":"")+n;};return p(d.getHours())+":"+p(d.getMinutes());}catch(e){return "";}}
 
   function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImages:[],mtm:"",mtmName:"",
-    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyPerBoxObs:"",qtyBoxes:"",time:"00:00",workers:"1",status:"closed",openedAt:null,priority:false,updated:nowStr()};}
+    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyPerBoxObs:"",qtyBoxes:"",originQty:"",time:"00:00",workers:"1",status:"closed",openedAt:null,priority:false,updated:nowStr()};}
   function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",images:[]},o.origin||{});b.dest=Object.assign({name:"",images:[]},o.dest||{});if(!Array.isArray(b.partImages))b.partImages=(b.partImage&&String(b.partImage).trim())?[b.partImage]:[];if(!Array.isArray(b.dividerImages))b.dividerImages=(b.dividerImage&&String(b.dividerImage).trim())?[b.dividerImage]:[];if(!Array.isArray(b.origin.images))b.origin.images=(b.origin.image&&String(b.origin.image).trim())?[b.origin.image]:[];if(!Array.isArray(b.dest.images))b.dest.images=(b.dest.image&&String(b.dest.image).trim())?[b.dest.image]:[];b.partImages=b.partImages.filter(function(v){return typeof v==="string"&&v;});b.dividerImages=b.dividerImages.filter(function(v){return typeof v==="string"&&v;});b.origin.images=b.origin.images.filter(function(v){return typeof v==="string"&&v;});b.dest.images=b.dest.images.filter(function(v){return typeof v==="string"&&v;});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;b.priority=(o.priority===true);b.workers=String(nWorkers(o.workers));return b;}
 
   /* ===== COLABORADORES E DEDICAÇÃO =====
@@ -1046,6 +1204,24 @@
   function nWorkers(v){var n=parseInt(String(v==null?"":v).replace(/[^0-9]/g,""),10);if(isNaN(n)||n<1)n=1;if(n>99)n=99;return n;}
   function fatorDedicacao(v){var n=nWorkers(v);return 1+DEDIC_EXTRA*(n-1);}
   function pctDedicacao(v){return Math.round(fatorDedicacao(v)*100)+"%";}
+
+  /* ===== Números no formato brasileiro (vírgula decimal) =====
+     Usado no conversor "caixas a transbordar" (o resultado pode ser fracionado)
+     e na calculadora geral do topo. */
+  function parseBR(v){
+    if(v==null)return NaN;
+    var s=String(v).trim();if(!s)return NaN;
+    s=s.replace(/\./g,"").replace(",",".");
+    var n=parseFloat(s);
+    return n;
+  }
+  function formatBR(n,maxDec){
+    if(!isFinite(n))return "";
+    maxDec=(maxDec==null)?2:maxDec;
+    var s=n.toFixed(maxDec);
+    if(s.indexOf(".")>-1){s=s.replace(/0+$/,"");s=s.replace(/\.$/,"");}
+    return s.replace(".",",");
+  }
 
   function defaults(){
     var mk=function(posto,name,code,sup,divType,oN,dN,qty,time,st){return {id:uid(),posto:posto,partName:name,partCode:code,supplier:sup,partImages:[],mtm:"",mtmName:"",dividerType:divType,dividerImages:[],origin:{name:oN,images:[]},dest:{name:dN,images:[]},qtyPerBox:qty,qtyBoxes:"",time:time,workers:"1",status:(st==="closed"?"closed":"open"),openedAt:(st==="closed"?null:Date.now()),updated:nowStr()};};
@@ -1579,19 +1755,71 @@
       var fields=document.createElement("div");fields.className="ei-fields";
       var st=document.createElement("span");st.className="ei-status "+(open?"open":"closed");st.textContent=open?"Em transbordo":"Fechado";
       var bx=document.createElement("span");bx.className="ei-boxes";
-      var bxLabel=document.createElement("span");bxLabel.className="ei-boxes-label";bxLabel.textContent="Caixas";
-      var bxInput=document.createElement("input");bxInput.type="text";bxInput.inputMode="numeric";bxInput.autocomplete="off";bxInput.placeholder="0";bxInput.value=it.qtyBoxes||"";
+      var bxLabel=document.createElement("span");bxLabel.className="ei-boxes-label";bxLabel.textContent="Caixas a transbordar";
+      var bxInput=document.createElement("input");bxInput.type="text";bxInput.inputMode="decimal";bxInput.autocomplete="off";bxInput.placeholder="0";bxInput.value=it.qtyBoxes||"";
       bxInput.addEventListener("click",function(e){e.stopPropagation();});
       bxInput.addEventListener("focus",function(e){e.stopPropagation();});
       bxInput.addEventListener("keydown",function(e){e.stopPropagation();if(e.key==="Enter"){e.preventDefault();bxInput.blur();}});
       bxInput.addEventListener("input",function(){
-        var v=bxInput.value.replace(/[^0-9]/g,"");if(v!==bxInput.value)bxInput.value=v;
+        /* aceita fração (vírgula), pois o resultado do conversor de origem/destino pode ser quebrado */
+        var v=bxInput.value.replace(/[^0-9,]/g,"");
+        var partes=v.split(",");if(partes.length>2)v=partes[0]+","+partes.slice(1).join("");
+        if(v!==bxInput.value)bxInput.value=v;
         it.qtyBoxes=v;it.updated=nowStr();
         /* o campo de caixas vive só aqui na lista; o form apenas reflete o tempo total */
         if(currentItem()===it)updateEdDedicacao();
         queueSave();
       });
       bx.appendChild(bxLabel);bx.appendChild(bxInput);
+
+      /* ===== Conversor: quantidade da embalagem de origem ÷ peças por caixa (destino) =====
+         Cálculo automático apenas SUGERE o valor de "Caixas a transbordar" (o resultado pode
+         ser fracionado); o campo de caixas continua livre para digitação manual. */
+      var conv=document.createElement("span");conv.className="ei-convert";
+      var convLabel=document.createElement("span");convLabel.className="ei-conv-label";convLabel.textContent="Qtd. embalagem origem";
+      var convInput=document.createElement("input");convInput.type="text";convInput.inputMode="decimal";convInput.autocomplete="off";convInput.placeholder="0";convInput.value=it.originQty||"";
+      var convDest=document.createElement("span");convDest.className="ei-conv-dest";
+      var convResult=document.createElement("span");convResult.className="ei-conv-result";
+      var convApply=document.createElement("button");convApply.type="button";convApply.className="ei-conv-apply";convApply.textContent="Usar";
+
+      function convRefresh(){
+        var destQty=parseBR(it.qtyPerBox);
+        var destOk=isFinite(destQty)&&destQty>0;
+        convDest.textContent=destOk?("÷ "+formatBR(destQty)+" pçs/cx destino"):"÷ defina peças/cx no cadastro";
+        convDest.classList.toggle("warn",!destOk);
+        var origQty=parseBR(it.originQty);
+        var origOk=isFinite(origQty)&&origQty>0;
+        if(origOk&&destOk){
+          var res=origQty/destQty;
+          convResult.textContent="= "+formatBR(res,2)+" cx";
+          convApply.disabled=false;
+        }else{
+          convResult.textContent="= —";
+          convApply.disabled=true;
+        }
+      }
+      convInput.addEventListener("click",function(e){e.stopPropagation();});
+      convInput.addEventListener("focus",function(e){e.stopPropagation();});
+      convInput.addEventListener("keydown",function(e){e.stopPropagation();if(e.key==="Enter"){e.preventDefault();convInput.blur();}});
+      convInput.addEventListener("input",function(){
+        var v=convInput.value.replace(/[^0-9,]/g,"");
+        var partes=v.split(",");if(partes.length>2)v=partes[0]+","+partes.slice(1).join("");
+        if(v!==convInput.value)convInput.value=v;
+        it.originQty=v;it.updated=nowStr();
+        convRefresh();
+        queueSave();
+      });
+      convApply.addEventListener("click",function(e){
+        e.stopPropagation();
+        var destQty=parseBR(it.qtyPerBox),origQty=parseBR(it.originQty);
+        if(!isFinite(destQty)||destQty<=0||!isFinite(origQty)||origQty<=0)return;
+        var val=formatBR(origQty/destQty,2);
+        bxInput.value=val;it.qtyBoxes=val;it.updated=nowStr();
+        if(currentItem()===it)updateEdDedicacao();
+        queueSave();
+      });
+      convRefresh();
+      conv.appendChild(convLabel);conv.appendChild(convInput);conv.appendChild(convDest);conv.appendChild(convResult);conv.appendChild(convApply);
 
       /* Total de colaboradores do item (o efeito da dedicação entra no tempo total) */
       var tm=document.createElement("span");tm.className="ei-team";
@@ -1616,7 +1844,7 @@
 
       sub.appendChild(st);
       if(open&&it.priority){var pt=document.createElement("span");pt.className="ei-prio-tag";pt.textContent="Prioridade";sub.appendChild(pt);}
-      fields.appendChild(bx);fields.appendChild(tm);
+      fields.appendChild(bx);fields.appendChild(tm);fields.appendChild(conv);
       info.appendChild(head);info.appendChild(nm);info.appendChild(sub);info.appendChild(fields);
       var tg=document.createElement("button");tg.className="ei-toggle "+(open?"close":"open");
       tg.innerHTML=open?'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Em transbordo':'<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>Transbordar';
@@ -1775,7 +2003,7 @@
       if(u!==inp.value)inp.value=u;
     });
   }
-  $all("[data-setting]").forEach(function(inp){var _h=function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";if(k==="logo")setLogo(v);queueSave();};inp.addEventListener("input",_h);inp.addEventListener("change",_h);});
+  $all("[data-setting]").forEach(function(inp){var _h=function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;updateHeaderTexts();if(k==="logo")setLogo(v);queueSave();};inp.addEventListener("input",_h);inp.addEventListener("change",_h);});
   $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="workers"){var vw=inp.value.replace(/[^0-9]/g,"");if(vw!==inp.value)inp.value=vw;it.workers=vw;}if(f==="partName"||f==="partCode"||f==="time"||f==="qtyBoxes"||f==="workers"){renderEditorList();updateEdHeader();}if(f==="time"||f==="qtyBoxes"||f==="workers")updateEdDedicacao();if(f==="mtm")updateMtmUI(it);queueSave();});});
   /* ao sair do campo, normaliza o total de colaboradores (mínimo 1) */
   (function(){var wf=$('[data-field="workers"]');if(!wf)return;wf.addEventListener("blur",function(){var it=currentItem();if(!it)return;var n=nWorkers(wf.value);wf.value=String(n);it.workers=String(n);it.updated=nowStr();renderEditorList();updateEdDedicacao();queueSave();});})();
@@ -2017,6 +2245,71 @@
     }
   });
 
+  /* ===== calculadora rápida do topo (genérica, sem relação com os itens) =====
+     Sem eval: soma um único operador pendente por vez, no padrão de calculadora de bolso. */
+  (function(){
+    var btn=el("btnCalc"),pop=el("calcPop"),disp=el("calcDisplay");
+    if(!btn||!pop||!disp)return;
+    var cs={display:"0",stored:null,op:null,waiting:false};
+    function render(){disp.textContent=cs.display||"0";}
+    function calcCompute(a,b,op){
+      a=isFinite(a)?a:0;b=isFinite(b)?b:0;
+      if(op==="+")return a+b;
+      if(op==="-")return a-b;
+      if(op==="×")return a*b;
+      if(op==="÷")return b===0?0:a/b;
+      return b;
+    }
+    function inputDigit(d){
+      if(cs.waiting||cs.display==="0"){cs.display=d;cs.waiting=false;}
+      else if(cs.display.replace(",","").replace("-","").length<12){cs.display+=d;}
+      render();
+    }
+    function inputDot(){
+      if(cs.waiting){cs.display="0,";cs.waiting=false;render();return;}
+      if(cs.display.indexOf(",")===-1)cs.display+=",";
+      render();
+    }
+    function clearAll(){cs={display:"0",stored:null,op:null,waiting:false};render();}
+    function backspace(){
+      if(cs.waiting)return;
+      cs.display=cs.display.length>1?cs.display.slice(0,-1):"0";
+      if(cs.display==="-")cs.display="0";
+      render();
+    }
+    function applyOp(nextOp){
+      var cur=parseBR(cs.display);if(!isFinite(cur))cur=0;
+      if(cs.op&&!cs.waiting){
+        var res=calcCompute(cs.stored,cur,cs.op);
+        cs.stored=res;cs.display=formatBR(res,8)||"0";
+      }else{
+        cs.stored=cur;
+      }
+      cs.op=nextOp;cs.waiting=true;
+      render();
+    }
+    function equals(){
+      if(!cs.op)return;
+      var cur=parseBR(cs.display);if(!isFinite(cur))cur=0;
+      var res=calcCompute(cs.stored,cur,cs.op);
+      cs.display=formatBR(res,8)||"0";cs.stored=null;cs.op=null;cs.waiting=true;
+      render();
+    }
+    $all("[data-calc-digit]",pop).forEach(function(b){b.addEventListener("click",function(){inputDigit(b.getAttribute("data-calc-digit"));});});
+    $all("[data-calc-op]",pop).forEach(function(b){b.addEventListener("click",function(){applyOp(b.getAttribute("data-calc-op"));});});
+    var dotBtn=pop.querySelector("[data-calc-dot]");if(dotBtn)dotBtn.addEventListener("click",inputDot);
+    var clearBtn=pop.querySelector("[data-calc-clear]");if(clearBtn)clearBtn.addEventListener("click",clearAll);
+    var backBtn=pop.querySelector("[data-calc-back]");if(backBtn)backBtn.addEventListener("click",backspace);
+    var eqBtn=pop.querySelector("[data-calc-eq]");if(eqBtn)eqBtn.addEventListener("click",equals);
+    function openCalc(){pop.hidden=false;btn.setAttribute("aria-expanded","true");}
+    function closeCalc(){pop.hidden=true;btn.setAttribute("aria-expanded","false");}
+    btn.addEventListener("click",function(e){e.stopPropagation();if(pop.hidden){clearAll();openCalc();}else closeCalc();});
+    var closeBtn=el("calcClose");if(closeBtn)closeBtn.addEventListener("click",function(e){e.stopPropagation();closeCalc();});
+    pop.addEventListener("click",function(e){e.stopPropagation();});
+    document.addEventListener("click",function(){if(!pop.hidden)closeCalc();});
+    document.addEventListener("keydown",function(ev){if(ev.key==="Escape"&&!pop.hidden)closeCalc();});
+  })();
+
   /* import / export */
   el("btnExport").addEventListener("click",function(){var blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});var a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="painel-transbordo.json";document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(a.href);},1000);toast("Configuração exportada");});
   el("btnImport").addEventListener("click",function(){authorizeDestructive("importar e substituir os dados atuais",function(){el("fileImport").value="";el("fileImport").click();});});
@@ -2065,7 +2358,7 @@
   function tempoTotalSegundos(it){
     if(!it)return 0;
     var per=tbSecs(it.time);
-    var boxes=parseInt(String(it.qtyBoxes||"").replace(/[^0-9]/g,""),10);if(isNaN(boxes))boxes=0;
+    var boxes=parseBR(it.qtyBoxes);if(!isFinite(boxes)||boxes<0)boxes=0;
     if(per<=0||boxes<=0)return 0;
     return (per*boxes)/fatorDedicacao(it.workers);
   }
@@ -2106,17 +2399,24 @@
     renderMtmThumb(it);
     setTvField("d-code",it.partCode);
     setTvField("d-name",it.partName);
+    biData("d-name",it.partName);
     setTvField("d-name2",it.partName,".pkg-info");
+    biData("d-name2",it.partName);
     setTvField("d-supplier",it.supplier,"#d-supplierRow");
+    biData("d-supplier",it.supplier);
     setTvField("d-oName",it.origin&&it.origin.name,".pkg-info");
+    biData("d-oName",it.origin&&it.origin.name);
     setTvField("d-dName",it.dest&&it.dest.name,".pkg-info");
+    biData("d-dName",it.dest&&it.dest.name);
     setTvField("d-divType",it.dividerType,".pkg-info");
+    biData("d-divType",it.dividerType);
     setTvField("d-time",it.time,".time-sub");
     setTvField("d-qty",it.qtyPerBox,".time-sub");
     (function(){
       var wrap=el("d-obsWrap"),val=el("d-obs");if(!wrap||!val)return;
       var txt=(it.qtyPerBoxObs==null)?"":String(it.qtyPerBoxObs).trim();
       val.textContent=txt;
+      biData("d-obs",txt);
       wrap.hidden=!txt;
       wrap.style.display=txt?"":"none";
     })();
@@ -2133,6 +2433,7 @@
     setTvField("d-workers",String(nWorkers(it.workers)),".time-sub");
     updateTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";
+    (function(){var en=el("d-updated-en");if(en)en.textContent=(it.updated||"").replace(/^Atualizado/,"Updated");})();
     setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");
     setImg("d-oImg",getSlotImages(it,"origin")[0]||"",null);
     setImg("d-dImg",getSlotImages(it,"dest")[0]||"",null);
@@ -2271,6 +2572,18 @@
   /* view / TV */
   function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
   function reqFs(){var d=document.documentElement;try{(d.requestFullscreen||d.webkitRequestFullscreen||function(){}).call(d);}catch(e){}}
+  /* ===== relógio ao lado do título do painel (Modo TV): data e hora ao vivo, São Carlos/SP ===== */
+  var DIAS_SEMANA=["Domingo","Segunda-feira","Terça-feira","Quarta-feira","Quinta-feira","Sexta-feira","Sábado"];
+  var clockTimer=null;
+  function tickClock(){
+    var node=el("d-clock"),nodeEn=el("d-clock-en");if(!node)return;
+    var d=new Date(),p=function(n){return(n<10?"0":"")+n;};
+    var hora=p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes())+":"+p(d.getSeconds());
+    node.textContent=(DIAS_SEMANA[d.getDay()]+", "+hora).toLocaleUpperCase("pt-BR");
+    if(nodeEn)nodeEn.textContent=(DIAS_SEMANA_EN[d.getDay()]+", "+hora).toUpperCase();
+  }
+  function startClock(){stopClock();tickClock();clockTimer=setInterval(tickClock,1000);}
+  function stopClock(){if(clockTimer){clearInterval(clockTimer);clockTimer=null;}}
   function exitFs(){try{if(isFs())(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);}catch(e){}}
   function computeLay(){var big=window.matchMedia("(min-width:1000px) and (orientation:landscape)").matches||isFs();document.body.dataset.lay=(document.body.dataset.view==="display"&&big)?"tv":"flow";applyScale();}
   function fitTimeCard(){
@@ -2287,8 +2600,8 @@
     fit.style.transform=(s<0.999)?("scale("+s+")"):"";
   }
   function applyScale(){var stage=el("stage");if(document.body.dataset.view==="display"&&document.body.dataset.lay==="tv"){var s=Math.min(window.innerWidth/1280,window.innerHeight/720);stage.style.transform="translate(-50%,-50%) scale("+s+")";}else{stage.style.transform="";}fitTimeCard();}
-  function enterDisplay(){document.body.dataset.view="display";el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setLogo(state.settings.logo);reqFs();setTimeout(computeLay,60);startRotation();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);}
-  function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();document.body.dataset.lay="flow";if(!document.body.dataset.page)document.body.dataset.page="lista";markTabs(document.body.dataset.page);renderEditorList();populateForm();}
+  function enterDisplay(){document.body.dataset.view="display";updateHeaderTexts();setLogo(state.settings.logo);reqFs();startClock();setTimeout(computeLay,60);startRotation();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);}
+  function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();stopClock();document.body.dataset.lay="flow";if(!document.body.dataset.page)document.body.dataset.page="lista";markTabs(document.body.dataset.page);renderEditorList();populateForm();}
   el("editFab").addEventListener("click",exitDisplay);
   document.addEventListener("fullscreenchange",computeLay);document.addEventListener("webkitfullscreenchange",computeLay);window.addEventListener("resize",computeLay);window.addEventListener("load",fitTimeCard);
   document.addEventListener("keydown",function(e){if(!el("mtmModal").hidden){if(e.key==="Escape"){e.preventDefault();closeMtm();}return;}if(document.body.dataset.view!=="display")return;if(e.key==="Escape"&&!isFs())exitDisplay();else if(e.key==="ArrowRight")next();else if(e.key==="ArrowLeft")prev();else if(e.key===" "){e.preventDefault();togglePause();}});
@@ -2349,7 +2662,8 @@
   });
 
   /* boot */
-  setLogo(state.settings.logo);el("d-app").textContent=state.settings.panelTitle||"";el("d-status").textContent=state.settings.statusText||"";setPauseIcon();
+  setLogo(state.settings.logo);updateHeaderTexts();setPauseIcon();
+  paintFlags();
   renderEditorList();populateForm();
   if(/[?&]tv=1/.test(location.search)){enterDisplay();}
   computeLay();

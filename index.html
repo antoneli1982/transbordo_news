@@ -984,7 +984,7 @@
                   <div class="slot-timer" id="st-dest" hidden><svg viewBox="0 0 40 40"><circle class="stt" cx="20" cy="20" r="16"/><circle class="stf" cx="20" cy="20" r="16" id="stf-dest"/></svg><span class="stn" id="stn-dest">0</span></div>
                   <div class="img-dots" id="dots-dest" hidden></div>
                 </div>
-                <div class="pkg-info"><div class="pkg-kicker bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Embalagem de destino</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Destination packaging</span></span></div><div class="pkg-name" id="d-dName"></div><div class="pkg-name-en bi-data-en"><i class="flag flag-us"></i><span id="d-dName-en"></span></div></div>
+                <div class="pkg-info"><div class="pkg-name" id="d-dName"></div><div class="pkg-name-en bi-data-en"><i class="flag flag-us"></i><span id="d-dName-en"></span></div></div>
               </article>
             </div>
           </div>
@@ -2371,7 +2371,15 @@
     out.closest(".time-sub").style.display=visible?"":"none";
     var lab=out.closest(".time-sub")?out.closest(".time-sub").querySelector(".ts-l"):null;
     var n=nWorkers(it.workers);
-    if(lab)lab.textContent=(n>1)?("Tempo total do processo · "+n+" colaboradores"):"Tempo total do processo";
+    /* mantem o bloco bilingue (PT em cima / EN embaixo) ao atualizar o rotulo do total */
+    var labPT=(n>1)?("Tempo total do processo · "+n+" colaboradores"):"Tempo total do processo";
+    var labEN=(n>1)?("Total process time · "+n+" team members"):"Total process time";
+    if(lab){
+      lab.classList.add("bi");
+      lab.innerHTML='<span class="bi-pt">'+FLAG_BR+'<span></span></span><span class="bi-en">'+FLAG_US+'<span></span></span>';
+      lab.querySelector(".bi-pt>span:last-child").textContent=labPT;
+      lab.querySelector(".bi-en>span:last-child").textContent=labEN;
+    }
   }
 
   /* Na TV, campos sem preenchimento não deixam rótulos ou traços vazios na tela. */

@@ -1206,7 +1206,7 @@
                   </button>
                 </div>
               </div>
-              <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" placeholder="Ex.: 02:45"></div>
+              <div class="field"><label>Tempo médio por caixa</label><input type="text" data-field="time" inputmode="numeric" maxlength="11" autocomplete="off" placeholder="HH:MM:SS,CC · ex.: 00:02:45,50"></div>
             </div>
             <div class="field" id="obsWrap" hidden>
               <label>Observação</label>
@@ -1645,7 +1645,7 @@
     return {id:o.id||uid(),posto:o.posto||"Posto 12",partName:o.productName||o.partName||"",partCode:o.partCode||o.ref||"",supplier:o.supplier||o.line||"",
       partImages:pI?[pI]:[],mtm:o.mtm||"",mtmName:o.mtmName||"",dividerType:o.dividerType||"",dividerImages:dI?[dI]:[],status:o.status==="closed"?"closed":"open",openedAt:(typeof o.openedAt==="number"?o.openedAt:null),origin:{name:(o.origin&&o.origin.name)||"",images:oI?[oI]:[]},
       dest:{name:(o.dest&&o.dest.name)||"",images:dsI?[dsI]:[]},
-      qtyPerBox:o.qtyPerBox||(o.origin&&o.origin.qty)||"",qtyBoxes:o.qtyBoxes||"",time:o.time||"00:00",workers:String(nWorkers(o.workers)),updated:o.updated||nowStr()};
+      qtyPerBox:o.qtyPerBox||(o.origin&&o.origin.qty)||"",qtyBoxes:o.qtyBoxes||"",time:o.time||"00:00:00,00",workers:String(nWorkers(o.workers)),updated:o.updated||nowStr()};
   }
   function loadState(){
     var v4=lsGet(KEY); if(v4){try{return normalize(JSON.parse(v4));}catch(e){}}
@@ -2299,6 +2299,7 @@
     updateMtmUI(it);
     setObsOpen(!!(it.qtyPerBoxObs&&String(it.qtyPerBoxObs).trim()));
     var wf=$('[data-field="workers"]');if(wf)wf.value=String(nWorkers(it.workers));
+    var tfm=$('[data-field="time"]');if(tfm)tfm.value=fmtTempoCaixa(it.time);
     updateEdDedicacao();
     if(typeof aplicarMaiusculasNoForm==="function")aplicarMaiusculasNoForm();
     autoGrowAll();
@@ -2363,7 +2364,9 @@
     });
   }
   $all("[data-setting]").forEach(function(inp){var _h=function(){var k=inp.getAttribute("data-setting"),v=inp.value;if(k==="intervalSec"){v=parseInt(String(v).replace(/[^0-9]/g,""),10);if(!v||v<2)v=15;}state.settings[k]=v;updateHeaderTexts();if(k==="logo")setLogo(v);queueSave();};inp.addEventListener("input",_h);inp.addEventListener("change",_h);});
-  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="workers"){var vw=inp.value.replace(/[^0-9]/g,"");if(vw!==inp.value)inp.value=vw;it.workers=vw;}if(f==="partName"||f==="partCode"||f==="time"||f==="qtyBoxes"||f==="workers"){renderEditorList();updateEdHeader();}if(f==="time"||f==="qtyBoxes"||f==="workers")updateEdDedicacao();if(f==="mtm")updateMtmUI(it);queueSave();});});
+  $all("[data-field]").forEach(function(inp){inp.addEventListener("input",function(){var it=currentItem();if(!it)return;if(inp.getAttribute("data-field")==="time")mascaraTempo(inp);setPath(it,inp.getAttribute("data-field"),inp.value);it.updated=nowStr();var f=inp.getAttribute("data-field");if(f==="workers"){var vw=inp.value.replace(/[^0-9]/g,"");if(vw!==inp.value)inp.value=vw;it.workers=vw;}if(f==="partName"||f==="partCode"||f==="time"||f==="qtyBoxes"||f==="workers"){renderEditorList();updateEdHeader();}if(f==="time"||f==="qtyBoxes"||f==="workers")updateEdDedicacao();if(f==="mtm")updateMtmUI(it);queueSave();});});
+  /* ao sair do campo de tempo, completa o formato HH:MM:SS,CC e grava */
+  (function(){var tf=$('[data-field="time"]');if(!tf)return;tf.addEventListener("blur",function(){var it=currentItem();if(!it)return;var antes=tf.value;completarTempo(tf);if(tf.value===antes)return;it.time=tf.value;it.updated=nowStr();renderEditorList();updateEdHeader();updateEdDedicacao();queueSave();});})();
   /* ao sair do campo, normaliza o total de colaboradores (mínimo 1) */
   (function(){var wf=$('[data-field="workers"]');if(!wf)return;wf.addEventListener("blur",function(){var it=currentItem();if(!it)return;var n=nWorkers(wf.value);wf.value=String(n);it.workers=String(n);it.updated=nowStr();renderEditorList();updateEdDedicacao();queueSave();});})();
 
@@ -2696,21 +2699,47 @@
   /* display: detail */
   var lastQr=null, shownItem=null, mtmWasPlaying=false, mtmBlobUrl=null;
   /* ===== Tempo total do processo = tempo médio por caixa × nº de caixas ===== */
-  /* Assume o campo "Tempo médio por caixa" no formato MM:SS (ex.: 02:45); também aceita HH:MM:SS. */
+  /* Campo "Tempo médio por caixa" no formato HH:MM:SS,CC (horas:minutos:segundos,centésimos).
+     Continua lendo registros antigos em MM:SS (ex.: 02:45) e HH:MM:SS. Retorna segundos com fração. */
   function tbSecs(str){
     if(str==null)return 0;
     var s=String(str).trim();if(!s)return 0;
-    if(s.indexOf(":")<0){var only=parseInt(s.replace(/[^0-9]/g,""),10);return isNaN(only)?0:only*60;} /* número solto = minutos */
-    var p=s.split(":").map(function(x){var n=parseInt(x.replace(/[^0-9]/g,""),10);return isNaN(n)?0:n;});
-    if(p.length===2)return p[0]*60+p[1];                 /* MM:SS */
-    if(p.length>=3){var q=p.slice(-3);return q[0]*3600+q[1]*60+q[2];} /* HH:MM:SS */
-    return 0;
+    if(s.indexOf(":")<0){var only=parseFloat(s.replace(",",".").replace(/[^0-9.]/g,""));return isNaN(only)?0:only*60;} /* número solto = minutos */
+    var p=s.split(":").map(function(x){var n=parseFloat(String(x).replace(",",".").replace(/[^0-9.]/g,""));return isNaN(n)?0:n;});
+    var r=0;
+    if(p.length===2)r=Math.floor(p[0])*60+p[1];                 /* MM:SS,CC */
+    else if(p.length>=3){var q=p.slice(-3);r=Math.floor(q[0])*3600+Math.floor(q[1])*60+q[2];} /* HH:MM:SS,CC */
+    return Math.round(r*100)/100;
   }
+  /* Formata segundos como HH:MM:SS,CC */
   function tbClock(total){
-    total=Math.round(total);if(total<0)total=0;
-    var h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;
+    var cs=Math.round((Number(total)||0)*100);if(cs<0)cs=0;
+    var h=Math.floor(cs/360000),m=Math.floor(cs/6000)%60,sec=Math.floor(cs/100)%60,c=cs%100;
     var p2=function(n){return(n<10?"0":"")+n;};
-    return h>0?(h+":"+p2(m)+":"+p2(s)):(p2(m)+":"+p2(s));
+    return p2(h)+":"+p2(m)+":"+p2(sec)+","+p2(c);
+  }
+  /* Valor do campo já normalizado para exibição (vazio continua vazio) */
+  function fmtTempoCaixa(v){
+    if(v==null||String(v).trim()==="")return "";
+    return tbClock(tbSecs(v));
+  }
+  /* Máscara de digitação: preenche HH:MM:SS,CC da esquerda para a direita, mantendo o cursor */
+  function mascaraTempo(inp){
+    var v=inp.value,pos=inp.selectionStart==null?v.length:inp.selectionStart;
+    var antes=v.slice(0,pos).replace(/\D/g,"").length;
+    var d=v.replace(/\D/g,"").slice(0,8),out="";
+    for(var i=0;i<d.length;i++){if(i===2||i===4)out+=":";else if(i===6)out+=",";out+=d[i];}
+    if(out!==v){
+      inp.value=out;
+      var c=0,np=0;while(np<out.length&&c<antes){if(/\d/.test(out[np]))c++;np++;}
+      try{inp.setSelectionRange(np,np);}catch(e){}
+    }
+  }
+  /* Ao sair do campo, completa o que faltar com zeros (ex.: 00:02 → 00:02:00,00) */
+  function completarTempo(inp){
+    var d=inp.value.replace(/\D/g,"");if(!d){inp.value="";return;}
+    d=(d+"00000000").slice(0,8);
+    inp.value=d.slice(0,2)+":"+d.slice(2,4)+":"+d.slice(4,6)+","+d.slice(6,8);
   }
   /* Tempo total = (tempo por caixa × caixas) ÷ dedicação equivalente da equipe.
      A dedicação NÃO é linear: 1 colaborador = 100%; cada colaborador a mais soma 80%. */
@@ -2777,7 +2806,7 @@
     biData("d-dName",it.dest&&it.dest.name);
     setTvField("d-divType",it.dividerType,".pkg-info");
     biData("d-divType",it.dividerType);
-    setTvField("d-time",it.time,".time-sub");
+    setTvField("d-time",fmtTempoCaixa(it.time),".time-sub");
     setTvField("d-qty",it.qtyPerBox,".time-sub");
     (function(){
       var wrap=el("d-obsWrap"),val=el("d-obs");if(!wrap||!val)return;
@@ -2888,7 +2917,7 @@
       if(hasTvValue(it.partCode)){var rf=document.createElement("span");rf.className="li-ref";rf.textContent=String(it.partCode).trim();mt.appendChild(rf);}
       if(!mt.children.length)mt.style.display="none";
       bd.appendChild(nm);bd.appendChild(mt);
-      var tm=document.createElement("span");tm.className="li-time";tm.textContent=it.time||"";
+      var tm=document.createElement("span");tm.className="li-time";tm.textContent=fmtTempoCaixa(it.time);
       b.appendChild(th);b.appendChild(bd);b.appendChild(tm);
       b.addEventListener("click",function(){goTo(idx);});
       body.appendChild(b);

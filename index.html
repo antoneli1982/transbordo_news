@@ -1016,8 +1016,8 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
 .pcp-catalog-status{font-size:12px;color:#758299;display:flex;align-items:center;gap:7px}
 .pcp-catalog-status::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#257b67}
 .pcp-table-wrap{overflow-x:auto}
-.pcp-table{border-collapse:collapse;width:100%;table-layout:fixed;min-width:1080px;text-align:left;font-size:14px}
-.pcp-table col:nth-child(1){width:42px}.pcp-table col:nth-child(2){width:176px}.pcp-table col:nth-child(3){width:auto}.pcp-table col:nth-child(4){width:106px}.pcp-table col:nth-child(5){width:128px}.pcp-table col:nth-child(6){width:128px}.pcp-table col:nth-child(7){width:157px}.pcp-table col:nth-child(8){width:44px}
+.pcp-table{border-collapse:collapse;width:100%;table-layout:fixed;min-width:1220px;text-align:left;font-size:14px}
+.pcp-table col:nth-child(1){width:84px}.pcp-table col:nth-child(2){width:176px}.pcp-table col:nth-child(3){width:auto}.pcp-table col:nth-child(4){width:106px}.pcp-table col:nth-child(5){width:128px}.pcp-table col:nth-child(6){width:128px}.pcp-table col:nth-child(7){width:157px}.pcp-table col:nth-child(8){width:128px}.pcp-table col:nth-child(9){width:44px}
 .pcp-table thead{background:#f8fafc}
 .pcp-table th{padding:14px 12px;font-size:11px;line-height:1.4;font-weight:650;letter-spacing:.035em;text-transform:uppercase;color:#63718a;border-bottom:1px solid #e2e8f1;vertical-align:middle}
 .pcp-table th:first-child{text-align:center;padding:14px 4px}
@@ -1027,7 +1027,17 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
 .pcp-row{transition:background .15s}
 .pcp-row:focus-within{background:#fbfcff}
 .pcp-row.pcp-invalid{background:#fffdf7}
-.pcp-table td.pcp-row-no{padding:28px 3px 0;text-align:center;color:#8592a6;font-size:12px;font-weight:600}
+.pcp-table td.pcp-row-no{padding:17px 8px 15px;text-align:center}
+.pcp-cell .pcp-seq-input{text-align:center;color:#135cc3;padding:8px 3px;font-weight:700}
+.pcp-row.pcp-priority{background:#fff7f6}
+.pcp-row.pcp-priority .pcp-total-cell{background:#fff1ef}
+.pcp-priority-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:41px;width:100%;padding:8px 7px;border:1px solid #e7c8c4;border-radius:7px;background:#fff;color:#9e514a;font:600 11px var(--sans);cursor:pointer;white-space:nowrap;transition:background .15s,color .15s}
+.pcp-priority-btn svg{width:15px;height:15px;flex:none}
+.pcp-priority-btn:hover{background:#ffebe8}
+.pcp-priority-btn[aria-pressed="true"]{background:#c92d22;border-color:#c92d22;color:#fff}
+.pcp-priority-btn[aria-pressed="true"]:hover{background:#ad231a}
+.pcp-priority-btn:focus-visible{outline:3px solid #0869f780;outline-offset:2px}
+.pcp-priority-hint{color:#8b6670!important;text-align:center}
 .pcp-cell input{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
 .pcp-code-input{text-transform:uppercase;letter-spacing:.02em}
 .pcp-cell input[aria-invalid="true"]{border-color:#dcab62;background:#fffbf5}
@@ -1111,12 +1121,12 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
   .pcp-sheet-bar{padding:14px;flex-wrap:wrap;gap:6px}.pcp-sheet-title{font-size:14px}.pcp-catalog-status{font-size:10px}
   .pcp-table-wrap{overflow:visible}.pcp-table{min-width:0;display:block}.pcp-table colgroup,.pcp-table thead{display:none}.pcp-table tbody{display:block}
   .pcp-table tr{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:13px;padding:20px 15px;border-bottom:1px solid #e1e7f0}
-  .pcp-table tr:last-child{border-bottom:0}.pcp-table td{display:block;padding:0;border-bottom:0;min-width:0}.pcp-table td.pcp-row-no{display:none}
-  .pcp-code-cell{grid-column:1/-1;padding-right:41px!important}.pcp-desc-cell{grid-column:1/-1}
+  .pcp-table tr:last-child{border-bottom:0}.pcp-table td{display:block;padding:0;border-bottom:0;min-width:0}.pcp-table td.pcp-row-no{display:block;grid-column:1;grid-row:1;text-align:left;padding:0}.pcp-priority-cell{grid-column:2;grid-row:1;padding-right:30px!important}.pcp-priority-hint{display:none!important}
+  .pcp-code-cell{grid-column:1/-1}.pcp-desc-cell{grid-column:1/-1}
   .pcp-mobile-label{display:block;font-size:10px;font-weight:600;letter-spacing:.02em;color:#77859a;margin-bottom:5px;text-transform:uppercase}
   .pcp-cell input{font-size:14px;height:43px}.pcp-cell .pcp-readonly{min-height:0;padding:3px 0}
   .pcp-cell small{margin-top:3px;font-size:10px}.pcp-total-cell{border:1px solid #e0e9fa!important;padding:10px!important;border-radius:8px;align-self:start}
-  .pcp-row-time{font-size:20px!important}.pcp-table td.pcp-remove-cell{position:absolute;right:10px;top:39px;padding:0}
+  .pcp-row-time{font-size:20px!important}.pcp-table td.pcp-remove-cell{position:absolute;right:10px;top:47px;padding:0}
   .pcp-under-table{flex-direction:column;gap:12px}.pcp-draft-status{font-size:10px}
   .pcp-summary{padding:12px 16px}.pcp-summary-inner{gap:15px;align-items:center}.pcp-metrics{gap:14px;flex-wrap:wrap}.pcp-metric{min-width:50px;gap:0}
   .pcp-metric strong{font-size:17px}.pcp-metric span{font-size:9px}.pcp-metric:nth-child(3){display:none}
@@ -1200,7 +1210,7 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
           <div>
             <div class="pcp-eyebrow">Planejamento e controle da produção</div>
             <h1 id="pcpTitle">Planejamento de transbordo</h1>
-            <p>As linhas completas deste planejamento aparecem automaticamente na TV, na ordem abaixo.</p>
+            <p>Altere o SEQ. para mudar a ordem e use Prioridade para destacar um item. As linhas completas aparecem automaticamente na TV.</p>
           </div>
           <div class="pcp-heading-actions">
             <button type="button" class="btn btn-ghost" id="pcpAddTop"><svg class="pcp-btn-icon" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Adicionar linha</button>
@@ -1219,8 +1229,8 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
           </div>
           <div class="pcp-table-wrap">
             <table class="pcp-table" aria-label="Peças, volumes, colaboradores e tempos de transbordo">
-              <colgroup><col><col><col><col><col><col><col><col></colgroup>
-              <thead><tr><th scope="col">#</th><th scope="col">Código da peça<span>Digite ou selecione</span></th><th scope="col">Descrição da peça<span>Preenchimento automático</span></th><th scope="col">Peças / caixa<span>Do cadastro</span></th><th scope="col">Caixas a transbordar</th><th scope="col">Colaboradores</th><th scope="col">Tempo total<span>HH:MM:SS,CC</span></th><th scope="col"><span class="pcp-mobile-label">Ações</span></th></tr></thead>
+              <colgroup><col><col><col><col><col><col><col><col><col></colgroup>
+              <thead><tr><th scope="col">SEQ.<span>Editar ordem</span></th><th scope="col">Código da peça<span>Digite ou selecione</span></th><th scope="col">Descrição da peça<span>Preenchimento automático</span></th><th scope="col">Peças / caixa<span>Do cadastro</span></th><th scope="col">Caixas a transbordar</th><th scope="col">Colaboradores</th><th scope="col">Tempo total<span>HH:MM:SS,CC</span></th><th scope="col">Prioridade<span>Marcar / desmarcar</span></th><th scope="col"><span class="pcp-mobile-label">Ações</span></th></tr></thead>
               <tbody id="pcpRows"></tbody>
             </table>
           </div>
@@ -1772,7 +1782,7 @@ SOFTWARE.
   function reRenderAll(){
     try{setLogo(state.settings.logo);}catch(e){}
     updateHeaderTexts();
-    try{var _si=shownItem?state.items.filter(function(x){return x.id===(shownItem.sourceItemId||shownItem.id);})[0]:null;applyPriorityUI(_si);}catch(e){}
+    try{var _si=shownItem?getVisible().filter(function(x){return x.id===shownItem.id;})[0]:null;applyPriorityUI(_si);}catch(e){}
     try{renderEditorList();}catch(e){}
     try{populateForm();}catch(e){}
     try{pcpRefresh();}catch(e){}
@@ -3031,7 +3041,7 @@ SOFTWARE.
       var index=latest.findIndex(function(it){return it.id===selected;});
       if(index<0)index=Math.min(rotIdx,latest.length-1);rotIdx=index;
       renderItem(latest[index]);startCardSS(latest[index]);el("d-idx").textContent=(index+1)+" / "+latest.length;
-      var sequence=el("d-seq");if(sequence)sequence.textContent=String(index+1);highlightList(index);detail.style.opacity="1";
+      var sequence=el("d-seq");if(sequence)sequence.textContent=String(latest[index].pcpSeq||index+1);highlightList(index);detail.style.opacity="1";
     },170);
     rotStart=performance.now();el("progFill").style.width="0%";updateTimer(interval());cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
   }
@@ -3155,7 +3165,7 @@ SOFTWARE.
   /* ===== PCP: usa o mesmo cadastro e a mesma função de tempo do painel ===== */
   var PCP_KEY="sese_pcp_plan_v1", pcpPlan=null, pcpSaveTimer=null, pcpChanged=false, pcpCatalogSignature="", pcpReady=false;
   function pcpToday(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-  function pcpBlankRow(){return {id:uid(),code:"",itemId:"",boxes:"",workers:"1"};}
+  function pcpBlankRow(){return {id:uid(),code:"",itemId:"",boxes:"",workers:"1",priority:false};}
   function pcpCode(s){return String(s==null?"":s).trim().replace(/\s+/g," ").toLocaleUpperCase("pt-BR");}
   function pcpNumber(s){
     s=String(s==null?"":s).trim();
@@ -3166,8 +3176,8 @@ SOFTWARE.
   function pcpNormalize(p){
     p=p&&typeof p==="object"?p:{};
     var used={};
-    return {version:2,date:/^\d{4}-\d{2}-\d{2}$/.test(p.date||"")?p.date:pcpToday(),reference:String(p.reference||"").slice(0,100),responsible:String(p.responsible||"").slice(0,100),savedAt:Number(p.savedAt)||0,revision:String(p.revision||""),cloudPending:p.cloudPending===true,
-      rows:Array.isArray(p.rows)&&p.rows.length?p.rows.map(function(r){r=r||{};var id=/^[a-zA-Z0-9_-]{1,100}$/.test(r.id||"")&&!used[r.id]?r.id:uid();used[id]=true;return {id:id,code:String(r.code||""),itemId:String(r.itemId||""),boxes:String(r.boxes==null?"":r.boxes),workers:String(r.workers==null?"1":r.workers)};}):[pcpBlankRow()]};
+    return {version:3,date:/^\d{4}-\d{2}-\d{2}$/.test(p.date||"")?p.date:pcpToday(),reference:String(p.reference||"").slice(0,100),responsible:String(p.responsible||"").slice(0,100),savedAt:Number(p.savedAt)||0,revision:String(p.revision||""),cloudPending:p.cloudPending===true,
+      rows:Array.isArray(p.rows)&&p.rows.length?p.rows.map(function(r){r=r||{};var id=/^[a-zA-Z0-9_-]{1,100}$/.test(r.id||"")&&!used[r.id]?r.id:uid();used[id]=true;return {id:id,code:String(r.code||""),itemId:String(r.itemId||""),boxes:String(r.boxes==null?"":r.boxes),workers:String(r.workers==null?"1":r.workers),priority:typeof r.priority==="boolean"?r.priority:null};}):[pcpBlankRow()]};
   }
   function pcpQueueSave(){pcpChanged=true;pcpDraftPending=true;pcpPlan.cloudPending=true;el("pcpDraftStatus").textContent="Salvando planejamento…";clearTimeout(pcpSaveTimer);pcpSaveTimer=setTimeout(pcpSave,220);}
   function pcpSave(){
@@ -3202,16 +3212,43 @@ SOFTWARE.
     var all=pcpPlan.rows.map(pcpResolve),valid=all.filter(function(r){return r.valid;}),invalid=all.filter(function(r){return r.active&&!r.valid;});
     return {all:all,valid:valid,invalid:invalid,cs:valid.reduce(function(n,r){return n+r.cs;},0),boxes:valid.reduce(function(n,r){return n+r.boxes;},0),pieces:valid.reduce(function(n,r){return n+r.boxes*r.qty;},0)};
   }
+  /* A ordem do array é o SEQ. único, salvo e compartilhado com a TV. */
+  function pcpIsPriority(row,item){return typeof row.priority==="boolean"?row.priority:!!(item&&item.priority===true);}
+  function pcpMoveRow(row,tr,inp){
+    var index=pcpPlan.rows.indexOf(row),value=inp.value.trim(),position=Number(value);
+    if(index<0)return;
+    if(!/^\d+$/.test(value)||!Number.isInteger(position)||position<1||position>pcpPlan.rows.length){
+      inp.value=String(index+1);toast("Informe um SEQ. de 1 a "+pcpPlan.rows.length+".");return;
+    }
+    inp.value=String(position);if(position===index+1)return;
+    var keepFocus=document.activeElement===inp,body=el("pcpRows");
+    pcpPlan.rows.splice(index,1);pcpPlan.rows.splice(position-1,0,row);
+    body.removeChild(tr);body.insertBefore(tr,body.children[position-1]||null);
+    pcpPlan.rows.forEach(function(r,i){var node=body.children[i];node.querySelector(".pcp-seq-input").value=String(i+1);pcpUpdateRow(r,node,i);});
+    pcpQueueSave();pcpUpdateTotals();if(keepFocus)inp.focus();
+    toast("Item movido para o SEQ. "+position+".");
+  }
   function pcpNodeRow(row,index){
     var tr=document.createElement("tr");tr.className="pcp-row";tr.dataset.rowId=row.id;
-    tr.innerHTML='<td class="pcp-row-no"></td>'+
+    tr.innerHTML='<td class="pcp-cell pcp-row-no"><label class="pcp-mobile-label">SEQ.</label><input class="pcp-seq-input" type="number" inputmode="numeric" min="1" step="1" required autocomplete="off"><small>Editar ordem</small></td>'+
       '<td class="pcp-cell pcp-code-cell"><label class="pcp-mobile-label">Código da peça</label><input class="pcp-code-input" data-pcp="code" type="text" list="pcpCodes" autocomplete="off" spellcheck="false" placeholder="Digite o código"><small data-msg="code">Selecione no cadastro</small></td>'+
       '<td class="pcp-cell pcp-desc-cell"><span class="pcp-mobile-label">Descrição da peça</span><span class="pcp-readonly pcp-desc" data-out="description">—</span><small data-out="base">Preenchida pelo código</small><select data-pcp="itemId" hidden></select></td>'+
       '<td class="pcp-cell"><span class="pcp-mobile-label">Peças / caixa</span><span class="pcp-readonly" data-out="qty">—</span><small>Do cadastro</small></td>'+
       '<td class="pcp-cell"><label class="pcp-mobile-label">Caixas a transbordar</label><input data-pcp="boxes" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><small data-msg="boxes">Quantidade prevista</small></td>'+
       '<td class="pcp-cell"><label class="pcp-mobile-label">Colaboradores</label><input data-pcp="workers" type="number" inputmode="numeric" min="1" max="99" step="1"><small data-msg="workers">Dedicação de 100%</small></td>'+
       '<td class="pcp-cell pcp-total-cell"><span class="pcp-mobile-label">Tempo total</span><output class="pcp-readonly pcp-row-time" data-out="time">—</output><small data-out="timeHint">Aguardando dados</small></td>'+
+      '<td class="pcp-cell pcp-priority-cell"><span class="pcp-mobile-label">Prioridade</span><button type="button" class="pcp-priority-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 21V4m0 0c5-4 9 4 14 0v10c-5 4-9-4-14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Prioridade</span></button><small class="pcp-priority-hint">Clique para marcar</small></td>'+
       '<td class="pcp-remove-cell"><button type="button" class="pcp-remove" title="Remover linha"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>';
+    var seq=tr.querySelector(".pcp-seq-input");seq.id="pcp-"+row.id+"-seq";seq.parentElement.querySelector("label").htmlFor=seq.id;
+    seq.addEventListener("change",function(){pcpMoveRow(row,tr,seq);});
+    seq.addEventListener("keydown",function(e){
+      if(e.key==="Enter"){e.preventDefault();pcpMoveRow(row,tr,seq);}
+      if(e.key==="Escape"){e.preventDefault();seq.value=String(pcpPlan.rows.indexOf(row)+1);}
+    });
+    tr.querySelector(".pcp-priority-btn").addEventListener("click",function(){
+      row.priority=!pcpIsPriority(row,pcpResolve(row).item);pcpQueueSave();pcpUpdateRow(row,tr);pcpRefreshTV();
+      toast(row.priority?"Item marcado como PRIORIDADE.":"Prioridade removida.");
+    });
     tr.querySelectorAll("[data-pcp]").forEach(function(inp){
       var key=inp.dataset.pcp;inp.value=row[key];inp.id="pcp-"+row.id+"-"+key;
       var label=inp.parentElement.querySelector("label");if(label)label.htmlFor=inp.id;
@@ -3222,13 +3259,19 @@ SOFTWARE.
     });
     tr.querySelector(".pcp-remove").addEventListener("click",function(){
       var idx=pcpPlan.rows.indexOf(row);if(idx<0)return;pcpPlan.rows.splice(idx,1);if(!pcpPlan.rows.length)pcpPlan.rows.push(pcpBlankRow());pcpRenderRows();pcpQueueSave();
-      var focus=el("pcpRows").children[Math.min(idx,pcpPlan.rows.length-1)];if(focus)focus.querySelector("input").focus();
+      var focus=el("pcpRows").children[Math.min(idx,pcpPlan.rows.length-1)];if(focus)focus.querySelector('[data-pcp="code"]').focus();
     });
     return tr;
   }
   function pcpUpdateRow(row,tr,index){
     if(index==null)index=pcpPlan.rows.indexOf(row);var r=pcpResolve(row),inputNames={code:"Código da peça",boxes:"Caixas a transbordar",workers:"Colaboradores",itemId:"Cadastro da peça"};
-    tr.querySelector(".pcp-row-no").textContent=String(index+1).padStart(2,"0");
+    var seq=tr.querySelector(".pcp-seq-input");if(document.activeElement!==seq)seq.value=String(index+1);seq.max=String(pcpPlan.rows.length);
+    seq.setAttribute("aria-label","SEQ. da linha "+(index+1));seq.title="Digite a posição de 1 a "+pcpPlan.rows.length+" e pressione Enter ou saia do campo";
+    var priority=pcpIsPriority(row,r.item),button=tr.querySelector(".pcp-priority-btn");
+    tr.classList.toggle("pcp-priority",priority);button.setAttribute("aria-pressed",String(priority));
+    button.setAttribute("aria-label",(priority?"Remover prioridade da":"Marcar prioridade na")+" linha "+(index+1));
+    button.title=priority?"Remover prioridade":"Marcar como prioridade";
+    tr.querySelector(".pcp-priority-hint").textContent=priority?"Prioridade ativa":"Clique para marcar";
     tr.querySelector(".pcp-remove").setAttribute("aria-label","Remover linha "+(index+1));
     Object.keys(inputNames).forEach(function(k){tr.querySelector('[data-pcp="'+k+'"]').setAttribute("aria-label",inputNames[k]+", linha "+(index+1));});
     tr.classList.toggle("pcp-invalid",r.active&&!!r.error);
@@ -3271,7 +3314,7 @@ SOFTWARE.
     if(document.body.dataset.page==="pcp"){var logo=document.querySelector(".ed-top .logo-img");if(logo){logo.src=LOGO_DEFAULT;logo.alt="SESÉ";}}
   }
   function pcpAdd(){
-    var row=pcpBlankRow();pcpPlan.rows.push(row);var tr=pcpNodeRow(row,pcpPlan.rows.length-1);el("pcpRows").appendChild(tr);pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();tr.querySelector("input").focus();tr.scrollIntoView({block:"nearest",behavior:"smooth"});
+    var row=pcpBlankRow();pcpPlan.rows.push(row);var tr=pcpNodeRow(row,pcpPlan.rows.length-1);el("pcpRows").appendChild(tr);pcpRefresh();pcpQueueSave();tr.querySelector('[data-pcp="code"]').focus();tr.scrollIntoView({block:"nearest",behavior:"smooth"});
   }
   function pcpMetaIntoInputs(){el("pcpDate").value=pcpPlan.date;el("pcpRef").value=pcpPlan.reference;el("pcpResponsible").value=pcpPlan.responsible;}
   function pcpBoot(){
@@ -3292,11 +3335,11 @@ SOFTWARE.
   /* Relatório de impressão e alternativa de PDF do navegador. */
   function pcpDateLabel(){var parts=String(pcpPlan.date||"").split("-");return parts.length===3?parts[2]+"/"+parts[1]+"/"+parts[0]:"Não informada";}
   function pcpPreparePrint(t){
-    var host=el("pcpPrint");host.innerHTML='<div class="pcp-print-head"><img alt="SESÉ"><div><h1>PCP · Planejamento de transbordo</h1><p>Planejamento e controle da produção</p></div></div><div class="pcp-print-meta"></div><table class="pcp-print-table"><colgroup><col style="width:4%"><col style="width:16%"><col style="width:30%"><col style="width:11%"><col style="width:12%"><col style="width:11%"><col style="width:16%"></colgroup><thead><tr><th>#</th><th>Código</th><th>Descrição da peça</th><th>Peças / caixa</th><th>Caixas</th><th>Colaboradores</th><th>Tempo total</th></tr></thead><tbody></tbody></table><div class="pcp-print-foot"><div class="pcp-print-totals"><div class="pcp-print-count"></div><p>Tempo total do planejamento<br><strong></strong></p></div><p class="pcp-print-note"></p></div>';
+    var host=el("pcpPrint");host.innerHTML='<div class="pcp-print-head"><img alt="SESÉ"><div><h1>PCP · Planejamento de transbordo</h1><p>Planejamento e controle da produção</p></div></div><div class="pcp-print-meta"></div><table class="pcp-print-table"><colgroup><col style="width:6%"><col style="width:16%"><col style="width:28%"><col style="width:11%"><col style="width:12%"><col style="width:11%"><col style="width:16%"></colgroup><thead><tr><th>SEQ.</th><th>Código</th><th>Descrição da peça</th><th>Peças / caixa</th><th>Caixas</th><th>Colaboradores</th><th>Tempo total</th></tr></thead><tbody></tbody></table><div class="pcp-print-foot"><div class="pcp-print-totals"><div class="pcp-print-count"></div><p>Tempo total do planejamento<br><strong></strong></p></div><p class="pcp-print-note"></p></div>';
     host.querySelector("img").src=LOGO_DEFAULT;var meta=host.querySelector(".pcp-print-meta");
     [["Data",pcpDateLabel()],["Identificação",pcpPlan.reference||"Não informada"],["Responsável",pcpPlan.responsible||"Não informado"]].forEach(function(pair){var s=document.createElement("span");var b=document.createElement("b");b.textContent=pair[0]+": ";s.appendChild(b);s.appendChild(document.createTextNode(pair[1]));meta.appendChild(s);});
     var body=host.querySelector("tbody");t.valid.forEach(function(r){var tr=document.createElement("tr");var idx=pcpPlan.rows.indexOf(r.row)+1;
-      [idx,r.item.partCode,r.item.partName,r.item.qtyPerBox,pcpFormat(r.boxes),r.workers,tbClock(r.cs/100)].forEach(function(value,j){var td=document.createElement("td");td.textContent=String(value);if(j===6)td.className="pcp-print-time";if(j===2){var sm=document.createElement("small");sm.textContent="Base: "+tbClock(r.per)+" / caixa · Dedicação: "+pctDedicacao(r.workers);td.appendChild(sm);}tr.appendChild(td);});body.appendChild(tr);
+      [idx,r.item.partCode,r.item.partName,r.item.qtyPerBox,pcpFormat(r.boxes),r.workers,tbClock(r.cs/100)].forEach(function(value,j){var td=document.createElement("td");td.textContent=String(value);if(j===6)td.className="pcp-print-time";if(j===2){if(pcpIsPriority(r.row,r.item)){var tag=document.createElement("small");tag.textContent="PRIORIDADE";tag.style.color="#c92d22";tag.style.fontWeight="700";td.appendChild(tag);}var sm=document.createElement("small");sm.textContent="Base: "+tbClock(r.per)+" / caixa · Dedicação: "+pctDedicacao(r.workers);td.appendChild(sm);}tr.appendChild(td);});body.appendChild(tr);
     });
     host.querySelector(".pcp-print-count").textContent=t.valid.length+" itens · "+pcpFormat(t.boxes)+" caixas · "+pcpFormat(t.pieces)+" peças previstas";
     host.querySelector(".pcp-print-totals strong").textContent=tbClock(t.cs/100);
@@ -3309,7 +3352,7 @@ SOFTWARE.
   function getVisible(){
     if(!pcpPlan)return [];
     return pcpPlan.rows.map(pcpResolve).filter(function(r){return r.valid;}).map(function(r){
-      return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:r.row.boxes,workers:r.row.workers,status:"open",pcpRowId:r.row.id});
+      return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:r.row.boxes,workers:r.row.workers,status:"open",pcpRowId:r.row.id,pcpSeq:pcpPlan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
     });
   }
   function pcpRefreshTV(){
@@ -3319,7 +3362,7 @@ SOFTWARE.
     var index=items.findIndex(function(it){return it.id===current;}),wasEmpty=rotEmpty;
     if(index<0||wasEmpty){goTo(Math.min(rotIdx,items.length-1));return;}
     showEmpty(false);rotIdx=index;renderItem(items[index]);startCardSS(items[index]);el("tvDetail").style.opacity="1";
-    el("d-idx").textContent=(index+1)+" / "+items.length;el("d-seq").textContent=String(index+1);highlightList(index);
+    el("d-idx").textContent=(index+1)+" / "+items.length;el("d-seq").textContent=String(items[index].pcpSeq||index+1);highlightList(index);
   }
   function pcpLocalStatus(){
     if(!pcpPlan)return;
@@ -3524,7 +3567,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
       toast("Corrija as linhas com pendências antes de gerar o PDF.");var bad=t.invalid[0],index=pcpPlan.rows.indexOf(bad.row),tr=el("pcpRows").children[index];
       if(tr){var field=bad.codeError?(bad.matches.length>1?"itemId":"code"):bad.boxError?"boxes":bad.workerError?"workers":"code";tr.querySelector('[data-pcp="'+field+'"]').focus();tr.scrollIntoView({block:"center",behavior:"smooth"});}return;
     }
-    if(!t.valid.length){toast("Inclua pelo menos uma peça com caixas e colaboradores.");el("pcpRows").querySelector("input").focus();return;}
+    if(!t.valid.length){toast("Inclua pelo menos uma peça com caixas e colaboradores.");el("pcpRows").querySelector('[data-pcp="code"]').focus();return;}
     if(!el("pcpDate").value||!el("pcpDate").checkValidity()){el("pcpDate").reportValidity();el("pcpDate").focus();return;}
     pcpSave();pcpPreparePrint(t);
     var btn=el("pcpPdf"),label=btn.querySelector("span");btn.disabled=true;label.textContent="Gerando…";
@@ -3534,7 +3577,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
       var regular=await pdf.embedFont(PDFLib.StandardFonts.Helvetica),bold=await pdf.embedFont(PDFLib.StandardFonts.HelveticaBold),logo=await pdf.embedPng(LOGO_DEFAULT);
       pcpPdfMetrics(regular,PCP_PDF_FONTS.regular);pcpPdfMetrics(bold,PCP_PDF_FONTS.bold);
       var C={ink:PDFLib.rgb(.10,.17,.27),muted:PDFLib.rgb(.40,.47,.57),blue:PDFLib.rgb(.02,.38,.93),line:PDFLib.rgb(.86,.89,.93),pale:PDFLib.rgb(.95,.97,.995),white:PDFLib.rgb(1,1,1)};
-      var W=841.89,H=595.28,M=36,usable=W-2*M,columns=[34,111,235,77,94,89,usable-640],x=[M];
+      var W=841.89,H=595.28,M=36,usable=W-2*M,columns=[42,111,227,77,94,89,usable-640],x=[M];
       for(var ci=0;ci<columns.length;ci++)x.push(x[ci]+columns[ci]);
       var page=null,y=0,pages=[],tableTop=0,footLimit=48;
       function str(v){return String(v==null?"":v).replace(/[\r\n\t]+/g," ").replace(/\s+/g," ").trim();}
@@ -3553,7 +3596,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
       function line(py){page.drawLine({start:{x:M,y:py},end:{x:W-M,y:py},thickness:.55,color:C.line});}
       function tableHeader(){
         page.drawRectangle({x:M,y:y-32,width:usable,height:32,color:C.pale});
-        var names=["#","Código da peça","Descrição da peça","Peças / caixa","Caixas","Colaboradores","Tempo total"];
+        var names=["SEQ.","Código da peça","Descrição da peça","Peças / caixa","Caixas","Colaboradores","Tempo total"];
         names.forEach(function(v,j){text(v,x[j]+7,y-19,j===5?8:8.5,bold,C.muted);});y-=32;tableTop=y;
       }
       function newPage(withTable){
@@ -3572,6 +3615,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
         var lines=vals.map(function(v,j){return wrap(v,columns[j]-14,j===6?11:9.5,j===6?bold:regular);});
         var detail="Base: "+tbClock(r.per)+" / caixa · Dedicação: "+pctDedicacao(r.workers);
         if(r.item.posto)detail=String(r.item.posto)+" · "+detail;
+        if(pcpIsPriority(r.row,r.item))detail="PRIORIDADE · "+detail;
         var details=wrap(detail,columns[2]-14,7.6),maxLines=Math.max.apply(null,lines.map(function(a){return a.length;}));
         var fullRowHeight=Math.max(44,maxLines*13+20+details.length*10);
         // Keep ordinary rows together; split only a description taller than a whole page.
@@ -3587,7 +3631,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
           page.drawRectangle({x:x[6],y:y-height,width:columns[6],height:height,color:C.pale});
           lines.forEach(function(arr,j){arr.slice(start,start+sliceCount).forEach(function(l,k){text(l,x[j]+7,y-18-k*13,j===6?11:9.5,j===6?bold:regular,j===6?C.blue:C.ink);});});
           if(continued&&lines[0].length<=start)text(String(rowNumber)+"+",x[0]+5,y-18,7.5,regular,C.muted);
-          if(last){details.forEach(function(l,k){text(l,x[2]+7,y-18-sliceCount*13-k*10,7.6,regular,C.muted);});}
+          if(last){details.forEach(function(l,k){text(l,x[2]+7,y-18-sliceCount*13-k*10,7.6,regular,pcpIsPriority(r.row,r.item)?PDFLib.rgb(.79,.18,.13):C.muted);});}
           else{text("Continua na próxima página",x[2]+7,y-height+7,7,regular,C.muted);}
           line(y-height);y-=height;start+=sliceCount;continued=true;
         }while(start<maxLines);

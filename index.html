@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>try{document.documentElement.dataset.theme=localStorage.getItem("sese_screen_theme_v1")==="light"?"light":"dark";}catch(e){document.documentElement.dataset.theme="dark";}</script>
 <title>SESÉ · PCP e Transbordo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -492,6 +493,10 @@
   body[data-lay="tv"] .time-big .un{font-size:17px}
   .time-sub{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
   .time-sub+.time-sub{margin-top:8px}
+  .time-sub.tsx-plan{border-color:#80a8eb;background:#244e86}
+  .time-sub.tsx-plan[hidden]{display:none!important}
+  .time-sub.tsx-plan .ts-l{flex:1;color:#fff}
+  .time-sub.tsx-plan .bi-pt,.time-sub.tsx-plan .bi-en{white-space:normal}
   .tc-fit>.time-sub:first-child{margin-top:0}
   .time-sub.tsx-hl{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.34)}
   .time-sub .ts-l{font-size:12px;color:rgba(255,255,255,.8);font-weight:600;line-height:1.3;min-width:0}
@@ -1002,6 +1007,17 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
 .pcp-heading p{font-size:14px;color:#69778c;line-height:1.5;margin:9px 0 0}
 .pcp-heading-actions{display:flex;gap:9px;align-items:center;flex-shrink:0}
 .pcp-btn-icon{height:17px;width:17px;flex:none}
+.pcp-demo-bar{display:flex;align-items:center;gap:18px;padding:16px 20px;margin-bottom:22px;background:#fff;border:1px solid #dfe5ef;border-radius:13px}
+.pcp-demo-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;flex-shrink:0;min-height:44px;padding:11px 15px;border:1px solid #bdcce1;border-radius:8px;background:#f6f9ff;color:#244b7e;font:600 13px var(--sans);cursor:pointer}
+.pcp-demo-btn:hover{background:#eaf1ff}.pcp-demo-btn:focus-visible{outline:3px solid #0869f780;outline-offset:3px}
+.pcp-demo-state{font-size:10px;text-transform:uppercase;letter-spacing:.04em;padding:4px 7px;border-radius:5px;background:#e2e9f3;color:#52637b}
+.pcp-demo-btn[aria-pressed="true"]{background:#075ee3;border-color:#075ee3;color:#fff}
+.pcp-demo-btn[aria-pressed="true"] .pcp-demo-state{background:#ffffff26;color:#fff}
+body[data-demo="true"] .pcp-demo-bar{background:#f0f6ff;border-color:#abc9f5}
+.pcp-demo-copy{font-size:12px;line-height:1.6;color:#5e718b;margin:0}.pcp-demo-copy small{display:block;font-size:11px;color:#73849b}
+body[data-demo="true"] .d-status{background:#eaf2ff;border-color:#abc9f5;color:#135cc3}
+body[data-demo="true"] .d-status i{background:#135cc3}
+@media(max-width:650px){.pcp-demo-bar{align-items:stretch;flex-direction:column;gap:10px;padding:14px}.pcp-demo-btn{width:100%}}
 .pcp-meta{display:grid;grid-template-columns:190px 1fr 1fr;gap:18px;background:#fff;border:1px solid #dfe5ef;border-radius:13px;padding:19px 22px;margin-bottom:22px;box-shadow:0 2px 3px #192b4503}
 .pcp-meta label{display:block;font-size:12px;font-weight:600;color:#54637a;margin-bottom:7px}
 .pcp-meta label span{font-weight:400;color:#8692a4}
@@ -1150,6 +1166,83 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
 }
 
 </style>
+
+<style id="screenThemes">
+.pcp-demo-bar{flex-wrap:wrap}.pcp-demo-copy{flex:1;min-width:220px}
+.theme-options{display:inline-flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--line);border-radius:9px;background:var(--card-2);flex-shrink:0}
+.theme-choice{display:inline-flex;align-items:center;gap:6px;border:0;border-radius:6px;padding:9px 10px;font:600 12px var(--sans);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap}
+.theme-choice[aria-pressed="true"]{background:var(--card);color:var(--brand-700);box-shadow:0 1px 4px #0c182b20}
+.theme-tv-toggle{display:inline-flex;align-items:center;justify-content:center;flex:none;width:36px;height:36px;padding:0;border:1px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
+.theme-choice:hover,.theme-tv-toggle:hover{background:var(--brand-50)}
+@media(max-width:650px){.pcp-demo-copy{min-width:0}.theme-options{align-self:stretch}.theme-choice{flex:1;justify-content:center}}
+@media screen{
+  html[data-theme="dark"]{color-scheme:dark;--brand:#3f7ce8;--brand-600:#2861ce;--brand-700:#98bcff;--brand-800:#d4e3ff;--brand-50:#1d3356;--brand-100:#355783;--ink:#e8eef8;--ink-2:#cfdaeb;--muted:#a4b3c9;--muted-2:#91a2bb;--line:#35445d;--bg:#0d1421;--card:#172233;--card-2:#1c2a3d;--ok:#48c99d;--warn:#f2bc66;--bad:#ff9a94;--sh1:0 2px 12px #0003}
+  html[data-theme="dark"] body,html[data-theme="dark"] body[data-page="pcp"] #pgPCP{background:var(--bg);color:var(--ink)}
+  html[data-theme="dark"] :is(.ed-top,.ed-nav,.pg-bar,.group,.ed-item,.pcp-meta,.pcp-sheet,.pcp-summary,.pcp-demo-bar,.tv-list,.pkg,.part-card,.pw-dialog,.mtm-dialog,.calc-pop,.mtm-card){background:var(--card);border-color:var(--line);color:var(--ink)}
+  html[data-theme="dark"] :is(.btn-ghost,.edit-fab,.calc-key,.ctl-btn,.tctl-btn,.mtm-open,.mtm-close,.chip,.obs-btn,.ed-item .ei-del,.ei-ord,.ei-prio){background:var(--card-2);border-color:var(--line);color:var(--ink-2)}
+  html[data-theme="dark"] :is(.btn-ghost,.edit-fab,.calc-key,.ctl-btn,.tctl-btn):hover{background:var(--brand-50)}
+  html[data-theme="dark"] :is(.field input,.field select,.field textarea,.pcp-meta input,.pcp-cell input,.pcp-cell select,.ed-search input,.pw-input,.pw-input:focus,.ed-item .ei-boxes input,.ed-item .ei-team input,.ei-convert input){background:#0f1929;border-color:#435572;color:var(--ink)}
+  html[data-theme="dark"] :is(input,textarea)::placeholder{color:#94a4bc}
+  html[data-theme="dark"] :is(.pcp-heading h1,.pcp-sheet-title,.pcp-cell .pcp-readonly,.pcp-metric strong,.catalog-facts strong){color:var(--ink)}
+  html[data-theme="dark"] :is(.pcp-heading p,.pcp-eyebrow,.pcp-meta label,.pcp-catalog-status,.pcp-cell small,.pcp-rule summary,.pcp-rule p,.pcp-draft-status,.pcp-demo-copy,.pcp-demo-copy small,.catalog-note,.catalog-facts span,.pcp-metric span,.pcp-total-label,.pcp-grand-total small){color:var(--muted)}
+  html[data-theme="dark"] :is(.pcp-sheet-bar,.pcp-table th,.pcp-table td,.pcp-grand-total,.ed-item .ei-foot,.step-head,.tv-list-head,.d-footer,.d-docinfo){border-color:var(--line)}
+  html[data-theme="dark"] :is(.pcp-table thead,.pcp-add-row,.pcp-total-cell,.catalog-facts>div,.tv-list-head,.calc-display,.thumb,.multi-thumb,.asset-upload .multi-thumb,.multi-thumb-ph,.ded-box,.ed-item .ei-thumb,.ed-item .ei-convert){background:var(--card-2);border-color:var(--line);color:var(--ink-2)}
+  html[data-theme="dark"] .pcp-table th{color:#b9c8dd}
+  html[data-theme="dark"] .pcp-table th span{color:#9cacc3}
+  html[data-theme="dark"] .pcp-row:focus-within{background:#1c2c43}
+  html[data-theme="dark"] .pcp-row.pcp-priority,html[data-theme="dark"] .ed-item.prio{background:#33252d;border-color:#734348}
+  html[data-theme="dark"] .pcp-row.pcp-priority .pcp-total-cell{background:#3c2a33}
+  html[data-theme="dark"] .pcp-priority-btn{background:#252532;border-color:#73525b;color:#efb2ad}
+  html[data-theme="dark"] .pcp-priority-btn[aria-pressed="true"]{background:#b52d27;border-color:#d76b66;color:#fff}
+  html[data-theme="dark"] .pcp-priority-hint{color:#d2a0a8!important}
+  html[data-theme="dark"] :is(.pcp-row.pcp-invalid,.pcp-row.pcp-invalid .pcp-total-cell,.pcp-alert){background:#332b1d;border-color:#7c6240;color:#f3cd8c}
+  html[data-theme="dark"] .pcp-cell input[aria-invalid="true"]{background:#2b241a;border-color:#c49955}
+  html[data-theme="dark"] .pcp-cell .pcp-error-text{color:#f3cd8c}
+  html[data-theme="dark"] .pcp-row-time{color:#8bb8ff!important}
+  html[data-theme="dark"] .pcp-grand-total output{color:#8bb8ff}
+  html[data-theme="dark"] .pcp-demo-btn{background:#1b304e;border-color:#496991;color:#d7e7ff}
+  html[data-theme="dark"] .pcp-demo-state{background:#31435c;color:#d2deef}
+  html[data-theme="dark"] body[data-demo="true"] .pcp-demo-bar{background:#182c46;border-color:#446da0}
+  html[data-theme="dark"] .pcp-demo-btn[aria-pressed="true"]{background:#2464d2;border-color:#6599ed;color:#fff}
+  html[data-theme="dark"] .pcp-demo-btn[aria-pressed="true"] .pcp-demo-state{background:#ffffff26;color:#fff}
+  html[data-theme="dark"] :is(.lista-col.col-closed,.lista-col.col-flow){background:#152134;border-color:var(--line)}
+  html[data-theme="dark"] #pgLista .col-closed{background:transparent;border:0}
+  html[data-theme="dark"] :is(.ed-group,.ed-group.flow){border-color:var(--line);color:var(--ink-2)}
+  html[data-theme="dark"] :is(.ed-group .gc,.ed-group.flow .gc,.ed-tab .tc,.pg-title .c,.ei-status.closed,.ed-item .ei-boxes){background:#25354d;border-color:var(--line);color:var(--ink-2)}
+  html[data-theme="dark"] :is(.ed-item .ei-team,.ei-status.open,.d-status){background:#183a32;border-color:#326c57;color:#a0edce}
+  html[data-theme="dark"] .ed-empty-hint{background:var(--card);border-color:var(--line);color:var(--muted)}
+  html[data-theme="dark"] body[data-lay="tv"] #display{background:#060b13}
+  html[data-theme="dark"] body[data-lay="tv"] .stage{background:#101a2b;border-color:#35445d}
+  html[data-theme="dark"] body[data-lay="flow"] .stage{background:#101a2b}
+  html[data-theme="dark"] .logo-img{mix-blend-mode:normal;background:#fff;border-radius:4px;padding:3px}
+  html[data-theme="dark"] .pkg-figure,html[data-theme="dark"] .part-figure{background:radial-gradient(ellipse at 50% 20%,#31415c,#19273b)}
+  html[data-theme="dark"] .li{background:var(--card);color:var(--ink)}
+  html[data-theme="dark"] .li.active,html[data-theme="dark"] .li:hover{background:#233c60;border-color:#4b6e9a}
+  html[data-theme="dark"] .det-seq{background:#2458b9;color:#fff}
+  html[data-theme="dark"] :is(.d-timer,.d-footer){background:#1a2a43;border-color:var(--line)}
+  html[data-theme="dark"] .prog{background:#344760}
+  html[data-theme="dark"] .ctl-btn.play{background:#2861ce;border-color:#4d87ed;color:#fff}
+  html[data-theme="dark"] body[data-demo="true"] .d-status{background:#1b3558;border-color:#4b73a6;color:#d4e5ff}
+  html[data-theme="dark"] body[data-demo="true"] .d-status i{background:#91baff}
+}
+</style>
+
+<style id="tvDataArea">
+/* Os dados ocupam o quadro inteiro; o ajuste altera tipografia, nunca a largura. */
+body[data-lay="tv"] .time-card{padding:12px 14px;align-items:stretch;justify-content:flex-start}
+body[data-lay="tv"] .tc-fit{--tc-scale:1;display:flex;flex-direction:column;gap:calc(6px * var(--tc-scale));width:100%;min-width:0;min-height:0;flex:1 1 auto;transform:none!important;scrollbar-width:thin;scrollbar-color:#6285bb transparent}
+body[data-lay="tv"] .tc-fit>.time-sub{flex:1 0 auto;width:100%;min-width:0;margin:0;gap:calc(9px * var(--tc-scale));padding:calc(7px * var(--tc-scale)) calc(10px * var(--tc-scale))}
+body[data-lay="tv"] .tc-fit .ts-l{flex:1 1 0;font-size:calc(16px * var(--tc-scale));line-height:1.15}
+body[data-lay="tv"] .tc-fit .ts-v{font-size:calc(32px * var(--tc-scale));line-height:1.1}
+body[data-lay="tv"] .tc-fit .bi-pt,body[data-lay="tv"] .tc-fit .bi-en{white-space:normal;line-height:1.15}
+body[data-lay="tv"] .tc-fit .ts-l .bi-pt>span,body[data-lay="tv"] .tc-fit .ts-l .bi-en>span{min-width:0;overflow-wrap:anywhere}
+body[data-lay="tv"] .tc-fit>.time-obs{flex:0 0 auto;width:100%;margin:0;padding:calc(9px * var(--tc-scale)) calc(10px * var(--tc-scale));gap:calc(8px * var(--tc-scale))}
+body[data-lay="tv"] .tc-fit .to-ico{width:calc(20px * var(--tc-scale));height:calc(20px * var(--tc-scale))}
+body[data-lay="tv"] .tc-fit .to-txt{flex:1;gap:calc(3px * var(--tc-scale))}
+body[data-lay="tv"] .tc-fit .to-lab{font-size:calc(12px * var(--tc-scale))}
+body[data-lay="tv"] .tc-fit .to-val{font-size:calc(20px * var(--tc-scale));line-height:1.2}
+body[data-lay="tv"] .tc-fit .to-val-en{font-size:calc(14px * var(--tc-scale));line-height:1.2;overflow-wrap:anywhere}
+</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <div class="bg-fx"></div>
@@ -1215,6 +1308,17 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
           <div class="pcp-heading-actions">
             <button type="button" class="btn btn-ghost" id="pcpAddTop"><svg class="pcp-btn-icon" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Adicionar linha</button>
             <button type="button" class="btn btn-primary" id="pcpPdf"><svg class="pcp-btn-icon" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m-4-4 4 4 4-4M5 16v4h14v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Gerar PDF</span></button>
+          </div>
+        </div>
+        <div class="pcp-demo-bar">
+          <button type="button" class="pcp-demo-btn" id="pcpDemoToggle" aria-pressed="false" aria-describedby="pcpDemoDescription" title="Ligar o modo demonstrativo">
+            <svg class="pcp-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 21h8M12 17v4m-2-13 5 3-5 3V8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+            <span>Modo Demonstrativo</span><span class="pcp-demo-state" id="pcpDemoState">Desligado</span>
+          </button>
+          <p class="pcp-demo-copy"><span id="pcpDemoDescription" role="status">A TV segue as linhas completas do PCP. Ligue para exibir todos os itens cadastrados, independentemente do planejamento.</span><small id="pcpDemoSync" role="status">O planejamento é preservado ao ligar e desligar.</small></p>
+          <div class="theme-options" role="group" aria-label="Aparência da tela">
+            <button type="button" class="theme-choice" data-theme-choice="light" aria-pressed="false">☀ <span>Tela clara</span></button>
+            <button type="button" class="theme-choice" data-theme-choice="dark" aria-pressed="true">☾ <span>Tela escura</span></button>
           </div>
         </div>
         <div class="pcp-meta">
@@ -1471,13 +1575,13 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
 
     <header class="d-header">
       <div class="d-brand"><span class="logo-slot" data-logo><img class="logo logo-img" alt="logo"></span><span class="d-app bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span id="d-app">Controle de Transbordo</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span id="d-app-en"></span></span></span><span class="d-loc"><span class="d-loc-city">São Carlos</span><span class="d-loc-sep">·</span><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span class="d-loc-clock" id="d-clock"></span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span class="d-loc-clock-en" id="d-clock-en"></span></span></span></span></div>
-      <div class="d-hright"><span class="d-count"><b id="d-count">0</b> <span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span>ITENS DO PCP</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span>PCP ITEMS</span></span></span></span><span class="priority-alert" id="d-priority" role="status" aria-label="Item prioritário" hidden><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span>PRIORIDADE</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span>PRIORITY</span></span></span></span><span class="d-status"><i></i><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span id="d-status">Em operação</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span id="d-status-en"></span></span></span></span><button class="edit-fab" id="editFab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 6 4 12l6 6M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span>SAIR DO MODO TV</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span>EXIT TV MODE</span></span></span></button></div>
+      <div class="d-hright"><span class="d-count"><b id="d-count">0</b> <span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span id="d-count-label">ITENS DO PCP</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span id="d-count-label-en">PCP ITEMS</span></span></span></span><span class="priority-alert" id="d-priority" role="status" aria-label="Item prioritário" hidden><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span>PRIORIDADE</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span>PRIORITY</span></span></span></span><span class="d-status"><i></i><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span id="d-status">Em operação</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span id="d-status-en"></span></span></span></span><button type="button" class="theme-tv-toggle" data-theme-toggle title="Usar tela clara" aria-label="Usar tela clara"><span aria-hidden="true">☀</span></button><button class="edit-fab" id="editFab"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M10 6 4 12l6 6M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="bi"><span class="bi-pt"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#009B3A"/><polygon points="10,2 18,7 10,12 2,7" fill="#FEDF00"/><circle cx="10" cy="7" r="3.4" fill="#002776"/></svg><span>SAIR DO MODO TV</span></span><span class="bi-en"><svg class="flag" width="14" height="10" viewBox="0 0 20 14" aria-hidden="true"><rect width="20" height="14" rx="1.5" fill="#B22234"/><g fill="#fff"><rect y="1.08" width="20" height="1.08"/><rect y="3.23" width="20" height="1.08"/><rect y="5.38" width="20" height="1.08"/><rect y="7.54" width="20" height="1.08"/><rect y="9.69" width="20" height="1.08"/><rect y="11.85" width="20" height="1.08"/></g><rect width="9" height="7.5" fill="#3C3B6E" rx="1"/></svg><span>EXIT TV MODE</span></span></span></button></div>
     </header>
 
     <div class="d-main" id="dMain">
       <!-- LIST -->
       <section class="tv-list">
-        <div class="tv-list-head"><span class="t bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Em transbordo</span></span><span class="bi-en"><i class="flag flag-us"></i><span>In transshipment</span></span></span></div>
+        <div class="tv-list-head"><span class="t bi"><span class="bi-pt"><i class="flag flag-br"></i><span id="tv-list-label">Em transbordo</span></span><span class="bi-en"><i class="flag flag-us"></i><span id="tv-list-label-en">In transshipment</span></span></span></div>
         <div class="tv-list-body" id="tvListBody"></div>
       </section>
 
@@ -1572,13 +1676,14 @@ body[data-page="pcp"] #sync-badge{bottom:auto!important;top:21px!important;right
               <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Tempo médio por caixa</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Average time per box</span></span></span><span class="ts-v" id="d-time"></span></div>
               <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Caixas para transbordar</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Boxes to transship</span></span></span><span class="ts-v" id="d-boxes"></span></div>
               <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Colaboradores</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Team members</span></span></span><span class="ts-v" id="d-workers"></span></div>
-              <div class="time-sub tsx-hl"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Tempo total do processo</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Total process time</span></span></span><span class="ts-v" id="d-total">—</span></div>
+              <div class="time-sub tsx-plan" id="d-planTotalWrap" hidden><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span id="d-planTotalLabel">Tempo total do planejamento</span></span><span class="bi-en"><i class="flag flag-us"></i><span id="d-planTotalLabel-en">Total planning time</span></span></span><span class="ts-v" id="d-planTotal" aria-live="polite"></span></div>
               <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Peças por caixa</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Pieces per box</span></span></span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-obs" id="d-obsWrap" hidden>
                 <svg class="to-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 21.4 19.4a1 1 0 0 1-.87 1.5H3.47a1 1 0 0 1-.87-1.5L12 3.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.4v4.4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.15" fill="currentColor"/></svg>
                 <div class="to-txt"><span class="to-lab bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Observação</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Note</span></span></span><span class="to-val" id="d-obs"></span><span class="to-val-en bi-data-en"><i class="flag flag-us"></i><span id="d-obs-en"></span></span></div>
               </div>
               <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Aponte a câmera para abrir a ficha</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Point your camera to open the sheet</span></span></span></div>
+              <div class="time-sub tsx-hl"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Tempo total do processo</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Total process time</span></span></span><span class="ts-v" id="d-total">—</span></div>
               </div>
             </div>
           </aside>
@@ -1773,7 +1878,7 @@ SOFTWARE.
   }
   /* atualiza título/status do cabeçalho (PT) + dispara a tradução automática (EN) */
   function updateHeaderTexts(){
-    var t=state.settings.panelTitle||"",s=state.settings.statusText||"";
+    var t=state.settings.panelTitle||"",s=isDemoMode()?"Modo demonstrativo":state.settings.statusText||"";
     var dApp=el("d-app");if(dApp)dApp.textContent=t;
     biData("d-app",t);
     var dStatus=el("d-status");if(dStatus)dStatus.textContent=s;
@@ -2872,6 +2977,19 @@ SOFTWARE.
     }
   }
 
+  /* Mesmo total do rodapé do PCP: soma das linhas válidas, em centésimos.
+     O demonstrativo não apresenta valores derivados do planejamento. */
+  function updatePlanningTotalTime(totals){
+    var wrap=el("d-planTotalWrap"),out=el("d-planTotal");if(!wrap||!out)return;
+    var visible=!!pcpPlan&&!isDemoMode();wrap.hidden=!visible;
+    if(!visible){out.textContent="";return;}
+    var t=totals||pcpTotals(),partial=t.invalid.length>0;
+    out.textContent=tbClock(t.cs/100);
+    el("d-planTotalLabel").textContent=partial?"Tempo total do planejamento (parcial)":"Tempo total do planejamento";
+    el("d-planTotalLabel-en").textContent=partial?"Total planning time (partial)":"Total planning time";
+    wrap.title=partial?"Soma das linhas completas do PCP. Há linhas com pendências.":"Soma de todas as linhas completas do PCP, considerando execução sequencial.";
+  }
+
   /* Na TV, campos sem preenchimento não deixam rótulos ou traços vazios na tela. */
   function hasTvValue(value){return value!==null&&value!==undefined&&String(value).trim()!=="";}
   function setTvField(id,value,container){
@@ -2929,7 +3047,7 @@ SOFTWARE.
     if(flow)flow.classList.toggle("tv-one-card",(hasOrigin?1:0)+(hasDest?1:0)<=1);
     setTvField("d-boxes",it.qtyBoxes,".time-sub");
     setTvField("d-workers",String(nWorkers(it.workers)),".time-sub");
-    updateTotalTime();fitTimeCard();
+    updateTotalTime();updatePlanningTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";
     (function(){var en=el("d-updated-en");if(en)en.textContent=(it.updated||"").replace(/^Atualizado/,"Updated");})();
     setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");
@@ -3030,7 +3148,7 @@ SOFTWARE.
   /* rotation */
   var rotIdx=0,rotStart=0,rotRAF=null,rotPaused=false,rotPausedAt=0,rotEmpty=false,tvTransitionTimer=null;
   function interval(){return (state.settings.intervalSec||15)*1000;}
-  function showEmpty(on){rotEmpty=on;if(on){clearTimeout(tvTransitionTimer);stopCardSS();shownItem=null;applyPriorityUI(null);el("progFill").style.width="0%";}var _dt=el("d-timer");if(_dt)_dt.style.visibility=on?"hidden":"visible";var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";e.textContent="Nenhuma peça completa no PCP Planejamento. Preencha código, caixas e colaboradores para exibir na TV.";el("dMain").appendChild(e);}detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";var _ds0=el("d-seq");if(_ds0)_ds0.textContent="";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
+  function showEmpty(on){rotEmpty=on;if(on){clearTimeout(tvTransitionTimer);stopCardSS();shownItem=null;applyPriorityUI(null);el("progFill").style.width="0%";}var _dt=el("d-timer");if(_dt)_dt.style.visibility=on?"hidden":"visible";var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";el("dMain").appendChild(e);}el("dEmpty").textContent=isDemoMode()?"Nenhum item cadastrado para exibir no modo demonstrativo.":"Nenhuma peça completa no PCP Planejamento. Preencha código, caixas e colaboradores para exibir na TV.";detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";var _ds0=el("d-seq");if(_ds0)_ds0.textContent="";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
   function goTo(i){
     clearTimeout(tvTransitionTimer);
     var items=getVisible();if(!items.length){showEmpty(true);return;}showEmpty(false);
@@ -3094,17 +3212,57 @@ SOFTWARE.
   function fitTimeCard(){
     var card=document.querySelector(".time-card");if(!card)return;
     var fit=card.querySelector(".tc-fit");if(!fit)return;
-    fit.style.transform="none";
-    if(document.body.dataset.lay!=="tv")return; /* só a TV precisa caber sem rolagem */
+    fit.style.transform="none";fit.style.height="";fit.style.overflow="";
+    fit.style.removeProperty("--tc-scale");
+    if(document.body.dataset.lay!=="tv")return;
     var cs=getComputedStyle(card);
     var availH=card.clientHeight-parseFloat(cs.paddingTop)-parseFloat(cs.paddingBottom);
     var availW=card.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);
-    var natH=fit.scrollHeight,natW=fit.scrollWidth;
-    if(natH<=0||availH<=0)return;
-    var s=Math.min(1,availH/natH,availW/natW);
-    fit.style.transform=(s<0.999)?("scale("+s+")"):"";
+    if(availH<=0||availW<=0)return;
+    fit.style.height=availH+"px";
+    // A largura continua em 100%. Busca o maior texto que cabe no espaço disponível.
+    function fits(size){
+      fit.style.setProperty("--tc-scale",String(size));
+      return fit.scrollHeight<=availH+1&&fit.scrollWidth<=availW+1;
+    }
+    var low=0.7,high=1.5,best=low;
+    if(fits(high))best=high;
+    else{
+      for(var i=0;i<9;i++){
+        var mid=(low+high)/2;
+        if(fits(mid)){best=mid;low=mid;}else high=mid;
+      }
+    }
+    // Observações excepcionalmente longas podem rolar, mantendo o texto legível.
+    fit.style.overflow=fits(best)?"hidden":"auto";
   }
-  function applyScale(){var stage=el("stage");if(document.body.dataset.view==="display"&&document.body.dataset.lay==="tv"){var s=Math.min(window.innerWidth/1280,window.innerHeight/720);stage.style.transform="translate(-50%,-50%) scale("+s+")";}else{stage.style.transform="";}fitTimeCard();}
+  var timeCardFitRAF=null;
+  function queueTimeCardFit(){
+    if(timeCardFitRAF!==null)return;
+    timeCardFitRAF=requestAnimationFrame(function(){timeCardFitRAF=null;fitTimeCard();});
+  }
+  function watchTimeCard(){
+    var card=document.querySelector(".time-card"),fit=card&&card.querySelector(".tc-fit");
+    if(!fit)return;
+    if(window.ResizeObserver){var resize=new ResizeObserver(queueTimeCardFit);resize.observe(card);}
+    // Inclui traduções que chegam depois de a ficha já ter sido exibida.
+    if(window.MutationObserver){var content=new MutationObserver(queueTimeCardFit);content.observe(fit,{childList:true,characterData:true,subtree:true});}
+  }
+  function applyScale(){
+    var stage=el("stage");
+    if(document.body.dataset.view==="display"&&document.body.dataset.lay==="tv"){
+      var width=Math.max(1,window.innerWidth),height=Math.max(1,window.innerHeight);
+      var scale=Math.min(width/1280,height/720);
+      // Expande a área de layout para preencher a tela; a escala permanece uniforme.
+      // Assim, telas mais largas ganham espaço útil sem esticar textos ou fotografias.
+      stage.style.width=(width/scale)+"px";
+      stage.style.height=(height/scale)+"px";
+      stage.style.transform="translate(-50%,-50%) scale("+scale+")";
+    }else{
+      stage.style.width="";stage.style.height="";stage.style.transform="";
+    }
+    fitTimeCard();
+  }
   function enterDisplay(){document.body.dataset.view="display";updateHeaderTexts();setLogo(state.settings.logo);reqFs();startClock();setTimeout(computeLay,60);startRotation();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);}
   function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();stopClock();document.body.dataset.lay="flow";if(!document.body.dataset.page)document.body.dataset.page="lista";markTabs(document.body.dataset.page);renderEditorList();populateForm();}
   el("editFab").addEventListener("click",exitDisplay);
@@ -3299,6 +3457,7 @@ SOFTWARE.
   }
   function pcpUpdateTotals(){
     if(!pcpPlan)return;var t=pcpTotals();el("pcpCount").textContent=String(t.valid.length);el("pcpBoxesTotal").textContent=pcpFormat(t.boxes);el("pcpPiecesTotal").textContent=pcpFormat(t.pieces);el("pcpGrandTotal").textContent=tbClock(t.cs/100);
+    updatePlanningTotalTime(t);
     el("pcpTotalNote").textContent=t.invalid.length?"Total parcial · há linhas com pendências":"Soma das linhas · execução sequencial";
     var alert=el("pcpAlert");alert.hidden=!t.invalid.length;
     alert.textContent=t.invalid.length+" linha(s) com pendências. O total considera apenas as linhas completas. Corrija os campos indicados antes de gerar o PDF.";
@@ -3346,10 +3505,130 @@ SOFTWARE.
     host.querySelector(".pcp-print-note").textContent="Cálculo por linha: (tempo por caixa × caixas) ÷ [1 + 0,8 × (colaboradores − 1)]. O 1º colaborador conta com 100% de dedicação e cada adicional com 80%. Total = soma dos tempos exibidos, considerando execução sequencial. Horas:minutos:segundos,centésimos."+(t.invalid.length?" ATENÇÃO: relatório parcial; "+t.invalid.length+" linha(s) com pendências não incluídas.":"");
   }
 
-  /* Linhas completas do PCP alimentam a TV, preservando ordem e repetições. */
+  /* Tema visual local: independente do cadastro, do PCP e do modo demonstrativo. */
+  var THEME_KEY="sese_screen_theme_v1";
+  function themeApply(value,persist){
+    var theme=value==="light"?"light":"dark",dark=theme==="dark";
+    document.documentElement.dataset.theme=theme;
+    $all("[data-theme-choice]").forEach(function(button){button.setAttribute("aria-pressed",String(button.dataset.themeChoice===theme));});
+    $all("[data-theme-toggle]").forEach(function(button){
+      button.title=dark?"Usar tela clara":"Usar tela escura";button.setAttribute("aria-label",button.title);
+      button.querySelector("span").textContent=dark?"☀":"☾";
+    });
+    if(persist)lsSet(THEME_KEY,theme);
+  }
+  function themeBoot(){
+    themeApply(lsGet(THEME_KEY),false);
+    $all("[data-theme-choice]").forEach(function(button){button.addEventListener("click",function(){themeApply(button.dataset.themeChoice,true);});});
+    $all("[data-theme-toggle]").forEach(function(button){button.addEventListener("click",function(){themeApply(document.documentElement.dataset.theme==="dark"?"light":"dark",true);});});
+    window.addEventListener("storage",function(e){if(e.key===THEME_KEY)themeApply(e.newValue,false);});
+  }
+
+  /* Modo demonstrativo: estado próprio; nunca grava ou altera as linhas do PCP. */
+  var DEMO_KEY="sese_tv_demo_v1",demoState=null,demoChanged=false,demoHydrated=false;
+  var demoCloudRef=null,demoCloudStarted=false,demoCloudReady=false,demoCloudBusy=false,demoCloudError=false;
+  var DEMO_CLIENT="demo-"+uid();
+  function isDemoMode(){return !!(demoState&&demoState.enabled);}
+  function demoNormalize(value){
+    value=value&&typeof value==="object"?value:{};
+    return {enabled:value.enabled===true,savedAt:Number(value.savedAt)||0,revision:String(value.revision||""),cloudPending:value.cloudPending===true};
+  }
+  function demoUpdateUI(){
+    var enabled=isDemoMode(),button=el("pcpDemoToggle");
+    document.body.dataset.demo=String(enabled);
+    button.setAttribute("aria-pressed",String(enabled));button.title=enabled?"Desligar e voltar ao PCP normal":"Ligar o modo demonstrativo";
+    el("pcpDemoState").textContent=enabled?"Ligado":"Desligado";
+    el("pcpDemoDescription").textContent=enabled?"A TV exibe todos os itens cadastrados e ignora os dados do PCP. Desligue para voltar ao planejamento.":"A TV segue as linhas completas do PCP. Ligue para exibir todos os itens cadastrados, independentemente do planejamento.";
+    el("d-count-label").textContent=enabled?"ITENS CADASTRADOS":"ITENS DO PCP";
+    el("d-count-label-en").textContent=enabled?"REGISTERED ITEMS":"PCP ITEMS";
+    el("tv-list-label").textContent=enabled?"Todos os cadastrados":"Em transbordo";
+    el("tv-list-label-en").textContent=enabled?"All registered items":"In transshipment";
+    updateHeaderTexts();demoSyncStatus();
+  }
+  function demoSyncStatus(){
+    var text="O planejamento é preservado ao ligar e desligar.";
+    if(demoState&&demoState.cloudPending){
+      text=demoCloudError?"Modo salvo neste navegador · sincronização com outras TVs pendente.":demoCloudReady?"Modo salvo neste navegador · sincronizando com as TVs…":"Modo salvo neste navegador · aguardando conexão para atualizar outras TVs.";
+    }else if(demoCloudReady)text="Modo sincronizado com as TVs · planejamento preservado.";
+    el("pcpDemoSync").textContent=text;
+  }
+  function demoPersist(){
+    var json=JSON.stringify(demoState),localOK=false;
+    try{localStorage.setItem(DEMO_KEY,json);localOK=true;}catch(e){}
+    return idbSet(DEMO_KEY,json).catch(function(){if(!localOK)el("pcpDemoSync").textContent="Modo aplicado nesta sessão · não foi possível salvar neste navegador.";});
+  }
+  function demoRefresh(){
+    demoUpdateUI();
+    if(document.body.dataset.view==="display"){rotIdx=0;stopRotation();buildList();goTo(0);}
+  }
+  function demoToggle(){
+    demoChanged=true;demoCloudError=false;
+    demoState={enabled:!isDemoMode(),savedAt:Date.now(),revision:uid(),cloudPending:true};
+    demoRefresh();demoPersist();demoPublish();
+    toast(isDemoMode()?"Modo demonstrativo ligado: todos os cadastrados na TV.":"Modo demonstrativo desligado: a TV voltou ao PCP.");
+  }
+  function demoPublish(){
+    if(!demoHydrated||!demoCloudReady||!demoCloudRef||demoCloudBusy||!demoState.cloudPending)return;
+    var outgoing=Object.assign({},demoState,{cloudPending:false}),revision=outgoing.revision;
+    demoCloudBusy=true;demoCloudError=false;demoSyncStatus();
+    window.__FB.setDoc(demoCloudRef,{mode:outgoing,updatedBy:DEMO_CLIENT}).then(function(){
+      if(demoState.revision===revision){demoState.cloudPending=false;demoPersist();}
+      demoSyncStatus();
+    }).catch(function(){demoCloudError=true;demoSyncStatus();}).finally(function(){
+      demoCloudBusy=false;if(demoState.revision!==revision)demoPublish();
+    });
+  }
+  function demoConnectCloud(){
+    if(demoCloudStarted||!window.__FB||!demoHydrated)return;demoCloudStarted=true;
+    var FB=window.__FB;demoCloudRef=FB.doc(FB.db,"paineis","tv_demo");
+    FB.onSnapshot(demoCloudRef,{includeMetadataChanges:true},function(snap){
+      var cached=!!(snap.metadata&&snap.metadata.fromCache);
+      if(!cached){demoCloudReady=true;demoCloudError=false;}
+      if(!snap.exists()){if(!cached)demoPublish();demoSyncStatus();return;}
+      var data=snap.data()||{},mode=data.mode;
+      if(!mode||typeof mode.enabled!=="boolean")return;
+      var remote=demoNormalize(mode);
+      if(data.updatedBy===DEMO_CLIENT){
+        if(!cached&&!(snap.metadata&&snap.metadata.hasPendingWrites)&&demoState.revision===remote.revision){demoState.cloudPending=false;demoPersist();demoSyncStatus();}
+        return;
+      }
+      // Uma alteração local aguarda publicação; abrir a TV nunca grava por cima do modo remoto.
+      if(demoState.cloudPending){demoPublish();return;}
+      if(demoState.revision!==remote.revision||demoState.enabled!==remote.enabled){
+        demoState=remote;demoState.cloudPending=false;demoRefresh();demoPersist();
+      }else demoSyncStatus();
+    },function(){demoCloudError=true;el("pcpDemoSync").textContent="Modo local disponível · conexão com outras TVs indisponível.";});
+  }
+  function demoBoot(){
+    var raw;try{raw=JSON.parse(localStorage.getItem(DEMO_KEY)||"null");}catch(e){}
+    demoState=demoNormalize(raw);demoUpdateUI();
+    el("pcpDemoToggle").addEventListener("click",demoToggle);
+    idbGet(DEMO_KEY).then(function(json){
+      if(!json||demoChanged)return;var saved;try{saved=JSON.parse(json);}catch(e){return;}
+      if((Number(saved.savedAt)||0)>demoState.savedAt){demoState=demoNormalize(saved);demoRefresh();}
+    }).catch(function(){}).finally(function(){demoHydrated=true;demoConnectCloud();});
+    window.addEventListener("firebase-ready",demoConnectCloud,{once:true});
+    window.addEventListener("online",function(){demoCloudError=false;demoPublish();});
+    window.addEventListener("storage",function(e){
+      if(e.key!==DEMO_KEY||!e.newValue)return;
+      try{
+        var incoming=demoNormalize(JSON.parse(e.newValue));
+        if(incoming.savedAt<demoState.savedAt)return;
+        var changed=incoming.enabled!==demoState.enabled;
+        demoChanged=true;demoState=incoming;
+        if(changed)demoRefresh();else demoSyncStatus();
+      }catch(err){}
+    });
+  }
+
+  /* Linhas completas do PCP alimentam a TV no modo normal, preservando ordem e repetições. */
   var pcpCloudRef=null,pcpCloudStarted=false,pcpCloudInitialDone=false,pcpCloudTimer=null,pcpCloudBusy=false,pcpDraftPending=false,pcpHydrated=false;
   var PCP_CLIENT="pcp-"+uid();
   function getVisible(){
+    // A demonstração lê SOMENTE o cadastro: sem filtros, ordem, volumes ou prioridades do PCP.
+    if(isDemoMode())return state.items.map(function(it,index){
+      return Object.assign({},it,{id:"demo-"+it.id,sourceItemId:it.id,pcpSeq:index+1});
+    });
     if(!pcpPlan)return [];
     return pcpPlan.rows.map(pcpResolve).filter(function(r){return r.valid;}).map(function(r){
       return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:r.row.boxes,workers:r.row.workers,status:"open",pcpRowId:r.row.id,pcpSeq:pcpPlan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
@@ -3659,7 +3938,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
   setLogo(state.settings.logo);updateHeaderTexts();setPauseIcon();
   paintFlags();
   renderEditorList();populateForm();
-  pcpBoot();
+  themeBoot();demoBoot();pcpBoot();watchTimeCard();
   if(/[?&]tv=1/.test(location.search)){enterDisplay();}
   computeLay();
 

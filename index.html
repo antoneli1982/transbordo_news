@@ -1243,6 +1243,30 @@ body[data-lay="tv"] .tc-fit .to-lab{font-size:calc(12px * var(--tc-scale))}
 body[data-lay="tv"] .tc-fit .to-val{font-size:calc(20px * var(--tc-scale));line-height:1.2}
 body[data-lay="tv"] .tc-fit .to-val-en{font-size:calc(14px * var(--tc-scale));line-height:1.2;overflow-wrap:anywhere}
 </style>
+<style id="pcpStationsStyles">
+.pcp-station-controls{display:flex;align-items:flex-end;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.pcp-post-count{flex:1;min-width:96px}.pcp-post-count label{display:block;font-size:11px;font-weight:650;margin-bottom:5px;color:#63718a}
+.pcp-cell .pcp-post-count input{appearance:auto;width:82px;padding-right:5px}
+.pcp-simultaneous{min-height:41px;padding:8px 10px;border:1px solid #c9d7eb;border-radius:7px;background:#f5f8fc;color:#546b88;font:600 11px var(--sans);cursor:pointer}
+.pcp-simultaneous[aria-pressed="true"]{background:#0869e8;color:#fff;border-color:#0869e8}
+.pcp-simultaneous:focus-visible{outline:3px solid #0869f780;outline-offset:2px}
+.pcp-cell .pcp-mode-hint{margin:0 0 10px;font-size:11px}
+.pcp-stations-list{display:grid;gap:9px}
+.pcp-station{display:grid;grid-template-columns:1fr 1fr;gap:7px 9px;padding:10px;border:1px solid #dce5f2;border-radius:8px;background:#f8faff}
+.pcp-station-head{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;color:#526984}
+.pcp-station-head output{font-weight:700;color:#1360d8;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pcp-station label{display:block;font-size:10px;color:#677b94;margin-bottom:4px}
+.pcp-station input{height:37px;font-size:14px;padding:7px 8px}
+.pcp-cell .pcp-station small{font-size:10px;line-height:1.35;min-height:0}
+.pcp-station.pcp-longest{border-color:#72a7ee;background:#eef5ff}
+html[data-theme="dark"] .pcp-station{background:#15243a;border-color:#3c506e}
+html[data-theme="dark"] .pcp-station.pcp-longest{background:#1d3555;border-color:#76a9ee}
+html[data-theme="dark"] :is(.pcp-post-count label,.pcp-station-head,.pcp-station label){color:#b5c6dd}
+html[data-theme="dark"] .pcp-station-head output{color:#94bfff}
+html[data-theme="dark"] .pcp-simultaneous{background:#22344e;border-color:#526c91;color:#d0e1f8}
+html[data-theme="dark"] .pcp-simultaneous[aria-pressed="true"]{background:#2464d2;border-color:#6599ed;color:#fff}
+@media(max-width:650px){.pcp-stations-cell{grid-column:1/-1}.pcp-post-count{flex:0 0 auto}.pcp-station-head,.pcp-station label{font-size:12px}.pcp-cell .pcp-station small{font-size:11px}}
+</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <div class="bg-fx"></div>
@@ -1334,14 +1358,14 @@ body[data-lay="tv"] .tc-fit .to-val-en{font-size:calc(14px * var(--tc-scale));li
           <div class="pcp-table-wrap">
             <table class="pcp-table" aria-label="Peças, volumes, colaboradores e tempos de transbordo">
               <colgroup><col><col><col><col><col><col><col><col><col></colgroup>
-              <thead><tr><th scope="col">SEQ.<span>Editar ordem</span></th><th scope="col">Código da peça<span>Digite ou selecione</span></th><th scope="col">Descrição da peça<span>Preenchimento automático</span></th><th scope="col">Peças / caixa<span>Do cadastro</span></th><th scope="col">Caixas a transbordar</th><th scope="col">Colaboradores</th><th scope="col">Tempo total<span>HH:MM:SS,CC</span></th><th scope="col">Prioridade<span>Marcar / desmarcar</span></th><th scope="col"><span class="pcp-mobile-label">Ações</span></th></tr></thead>
+              <thead><tr><th scope="col">SEQ.<span>Editar ordem</span></th><th scope="col">Código da peça<span>Digite ou selecione</span></th><th scope="col">Descrição da peça<span>Preenchimento automático</span></th><th scope="col">Peças / caixa<span>Do cadastro</span></th><th scope="col" colspan="2">Postos de trabalho<span>Quantidade de caixas e colaboradores por posto</span></th><th scope="col">Tempo total<span>HH:MM:SS,CC</span></th><th scope="col">Prioridade<span>Marcar / desmarcar</span></th><th scope="col"><span class="pcp-mobile-label">Ações</span></th></tr></thead>
               <tbody id="pcpRows"></tbody>
             </table>
           </div>
           <button type="button" class="pcp-add-row" id="pcpAddBottom"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Adicionar outra peça</button>
         </section>
         <div class="pcp-under-table">
-          <details class="pcp-rule"><summary><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v6m0-10v.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Como o tempo é calculado</summary><p><b>Tempo total = (tempo médio por caixa × quantidade de caixas) ÷ [1 + 0,8 × (colaboradores − 1)].</b><br>O primeiro colaborador corresponde a 100% de dedicação; cada adicional acrescenta 80%. Descrição, peças por caixa e tempo médio são lidos do cadastro. Caixas fracionadas podem ser informadas com vírgula. O total geral soma os tempos das linhas, considerando execução sequencial.</p></details>
+          <details class="pcp-rule"><summary><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v6m0-10v.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Como o tempo é calculado</summary><p><b>Tempo de cada posto = (tempo médio por caixa × caixas do posto) ÷ [1 + 0,8 × (colaboradores do posto − 1)].</b><br>O primeiro colaborador de cada posto corresponde a 100% de dedicação; cada adicional acrescenta 80%. Informe as caixas e os colaboradores em cada posto. Com <b>Simultâneo ligado</b>, vale somente o maior tempo dos postos, mesmo se houver empate. Desligado, os tempos são somados. O total do planejamento soma os tempos das peças. Caixas fracionadas podem ser informadas com vírgula.</p></details>
           <span class="pcp-draft-status" id="pcpDraftStatus" role="status">Planejamento salvo neste navegador</span>
         </div>
         <div class="pcp-alert" id="pcpAlert" role="status" hidden></div>
@@ -1356,7 +1380,7 @@ body[data-lay="tv"] .tc-fit .to-val-en{font-size:calc(14px * var(--tc-scale));li
           <div class="pcp-grand-total">
             <div class="pcp-total-label"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.7"/><path d="M12 8v5l3 2M9 2h6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Tempo total do planejamento</div>
             <output id="pcpGrandTotal" aria-live="polite">00:00:00,00</output>
-            <small id="pcpTotalNote">Soma das linhas · execução sequencial</small>
+            <small id="pcpTotalNote">Soma das peças · respeita o modo dos postos</small>
           </div>
         </div>
       </footer>
@@ -1673,17 +1697,16 @@ body[data-lay="tv"] .tc-fit .to-val-en{font-size:calc(14px * var(--tc-scale));li
           <aside class="d-right">
             <div class="time-card">
               <div class="tc-fit">
+              <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Peças por caixa</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Pieces per box</span></span></span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Tempo médio por caixa</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Average time per box</span></span></span><span class="ts-v" id="d-time"></span></div>
               <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Caixas para transbordar</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Boxes to transship</span></span></span><span class="ts-v" id="d-boxes"></span></div>
               <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Colaboradores</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Team members</span></span></span><span class="ts-v" id="d-workers"></span></div>
-              <div class="time-sub tsx-plan" id="d-planTotalWrap" hidden><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span id="d-planTotalLabel">Tempo total do planejamento</span></span><span class="bi-en"><i class="flag flag-us"></i><span id="d-planTotalLabel-en">Total planning time</span></span></span><span class="ts-v" id="d-planTotal" aria-live="polite"></span></div>
-              <div class="time-sub"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Peças por caixa</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Pieces per box</span></span></span><span class="ts-v" id="d-qty"></span></div>
               <div class="time-obs" id="d-obsWrap" hidden>
                 <svg class="to-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.2 21.4 19.4a1 1 0 0 1-.87 1.5H3.47a1 1 0 0 1-.87-1.5L12 3.2Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M12 9.4v4.4" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.15" fill="currentColor"/></svg>
                 <div class="to-txt"><span class="to-lab bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Observação</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Note</span></span></span><span class="to-val" id="d-obs"></span><span class="to-val-en bi-data-en"><i class="flag flag-us"></i><span id="d-obs-en"></span></span></div>
               </div>
               <div class="time-qr"><div class="qbox"><div id="qr"></div></div><span class="qtxt bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Aponte a câmera para abrir a ficha</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Point your camera to open the sheet</span></span></span></div>
-              <div class="time-sub tsx-hl"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Tempo total do processo</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Total process time</span></span></span><span class="ts-v" id="d-total">—</span></div>
+              <div class="time-sub tsx-hl"><span class="ts-l bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Tempo total do código</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Total time for this code</span></span></span><span class="ts-v" id="d-total">—</span></div>
               </div>
             </div>
           </aside>
@@ -1811,7 +1834,7 @@ SOFTWARE.
     "Peça":"Part","Divisória":"Divider","Origem":"Origin","Destino":"Destination","Transbordo":"Transfer",
     "Embalagem de origem":"Origin packaging","Embalagem de destino":"Destination packaging",
     "Tempo médio por caixa":"Average time per box","Caixas para transbordar":"Boxes to transship",
-    "Colaboradores":"Team members","Tempo total do processo":"Total process time","Peças por caixa":"Pieces per box",
+    "Colaboradores":"Team members","Tempo total do código":"Total time for this code","Peças por caixa":"Pieces per box",
     "Observação":"Note","Aponte a câmera para abrir a ficha":"Point your camera to open the sheet",
     "Data de emissão":"Issue date","Atualizado":"Updated","Em operação":"In operation"
   };
@@ -2905,7 +2928,7 @@ SOFTWARE.
 
   /* display: detail */
   var lastQr=null, shownItem=null, mtmWasPlaying=false, mtmBlobUrl=null;
-  /* ===== Tempo total do processo = tempo médio por caixa × nº de caixas ===== */
+  /* ===== Tempo total do código = tempo médio por caixa × nº de caixas ===== */
   /* Campo "Tempo médio por caixa" no formato HH:MM:SS,CC (horas:minutos:segundos,centésimos).
      Continua lendo registros antigos em MM:SS (ex.: 02:45) e HH:MM:SS. Retorna segundos com fração. */
   function tbSecs(str){
@@ -2952,6 +2975,7 @@ SOFTWARE.
      A dedicação NÃO é linear: 1 colaborador = 100%; cada colaborador a mais soma 80%. */
   function tempoTotalSegundos(it){
     if(!it)return 0;
+    if(it.pcpRowId&&Number.isSafeInteger(it.pcpCs))return it.pcpCs/100;
     var per=tbSecs(it.time);
     var boxes=parseBR(it.qtyBoxes);if(!isFinite(boxes)||boxes<0)boxes=0;
     if(per<=0||boxes<=0)return 0;
@@ -2967,27 +2991,15 @@ SOFTWARE.
     var lab=out.closest(".time-sub")?out.closest(".time-sub").querySelector(".ts-l"):null;
     var n=nWorkers(it.workers);
     /* mantem o bloco bilingue (PT em cima / EN embaixo) ao atualizar o rotulo do total */
-    var labPT=(n>1)?("Tempo total do processo · "+n+" colaboradores"):"Tempo total do processo";
-    var labEN=(n>1)?("Total process time · "+n+" team members"):"Total process time";
+    var labPT=(n>1)?("Tempo total do código · "+n+" colaboradores"):"Tempo total do código";
+    var labEN=(n>1)?("Total time for this code · "+n+" team members"):"Total time for this code";
+    if(it.pcpPostCount>1){labPT="Tempo total do código · "+it.pcpPostCount+" postos · "+(it.pcpSimultaneous?"simultâneo":"sequencial");labEN="Total time for this code · "+it.pcpPostCount+" stations · "+(it.pcpSimultaneous?"simultaneous":"sequential");}
     if(lab){
       lab.classList.add("bi");
       lab.innerHTML='<span class="bi-pt">'+FLAG_BR+'<span></span></span><span class="bi-en">'+FLAG_US+'<span></span></span>';
       lab.querySelector(".bi-pt>span:last-child").textContent=labPT;
       lab.querySelector(".bi-en>span:last-child").textContent=labEN;
     }
-  }
-
-  /* Mesmo total do rodapé do PCP: soma das linhas válidas, em centésimos.
-     O demonstrativo não apresenta valores derivados do planejamento. */
-  function updatePlanningTotalTime(totals){
-    var wrap=el("d-planTotalWrap"),out=el("d-planTotal");if(!wrap||!out)return;
-    var visible=!!pcpPlan&&!isDemoMode();wrap.hidden=!visible;
-    if(!visible){out.textContent="";return;}
-    var t=totals||pcpTotals(),partial=t.invalid.length>0;
-    out.textContent=tbClock(t.cs/100);
-    el("d-planTotalLabel").textContent=partial?"Tempo total do planejamento (parcial)":"Tempo total do planejamento";
-    el("d-planTotalLabel-en").textContent=partial?"Total planning time (partial)":"Total planning time";
-    wrap.title=partial?"Soma das linhas completas do PCP. Há linhas com pendências.":"Soma de todas as linhas completas do PCP, considerando execução sequencial.";
   }
 
   /* Na TV, campos sem preenchimento não deixam rótulos ou traços vazios na tela. */
@@ -3046,8 +3058,8 @@ SOFTWARE.
     var arrow=el("flow-arrow");if(arrow)arrow.style.display=(hasOrigin&&hasDest)?"":"none";
     if(flow)flow.classList.toggle("tv-one-card",(hasOrigin?1:0)+(hasDest?1:0)<=1);
     setTvField("d-boxes",it.qtyBoxes,".time-sub");
-    setTvField("d-workers",String(nWorkers(it.workers)),".time-sub");
-    updateTotalTime();updatePlanningTotalTime();fitTimeCard();
+    setTvField("d-workers",it.pcpRowId?String(it.workers):String(nWorkers(it.workers)),".time-sub");
+    updateTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";
     (function(){var en=el("d-updated-en");if(en)en.textContent=(it.updated||"").replace(/^Atualizado/,"Updated");})();
     setImg("d-partImg",getSlotImages(it,"part")[0]||"","d-partPh");setImg("d-divImg",getSlotImages(it,"divider")[0]||"","d-divPh");
@@ -3323,7 +3335,7 @@ SOFTWARE.
   /* ===== PCP: usa o mesmo cadastro e a mesma função de tempo do painel ===== */
   var PCP_KEY="sese_pcp_plan_v1", pcpPlan=null, pcpSaveTimer=null, pcpChanged=false, pcpCatalogSignature="", pcpReady=false;
   function pcpToday(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-  function pcpBlankRow(){return {id:uid(),code:"",itemId:"",boxes:"",workers:"1",priority:false};}
+  function pcpBlankRow(){return {id:uid(),code:"",itemId:"",postCount:"1",stations:[{boxes:"",workers:"1"}],simultaneous:false,priority:false};}
   function pcpCode(s){return String(s==null?"":s).trim().replace(/\s+/g," ").toLocaleUpperCase("pt-BR");}
   function pcpNumber(s){
     s=String(s==null?"":s).trim();
@@ -3334,37 +3346,49 @@ SOFTWARE.
   function pcpNormalize(p){
     p=p&&typeof p==="object"?p:{};
     var used={};
-    return {version:3,date:/^\d{4}-\d{2}-\d{2}$/.test(p.date||"")?p.date:pcpToday(),reference:String(p.reference||"").slice(0,100),responsible:String(p.responsible||"").slice(0,100),savedAt:Number(p.savedAt)||0,revision:String(p.revision||""),cloudPending:p.cloudPending===true,
-      rows:Array.isArray(p.rows)&&p.rows.length?p.rows.map(function(r){r=r||{};var id=/^[a-zA-Z0-9_-]{1,100}$/.test(r.id||"")&&!used[r.id]?r.id:uid();used[id]=true;return {id:id,code:String(r.code||""),itemId:String(r.itemId||""),boxes:String(r.boxes==null?"":r.boxes),workers:String(r.workers==null?"1":r.workers),priority:typeof r.priority==="boolean"?r.priority:null};}):[pcpBlankRow()]};
+    return {version:4,date:/^\d{4}-\d{2}-\d{2}$/.test(p.date||"")?p.date:pcpToday(),reference:String(p.reference||"").slice(0,100),responsible:String(p.responsible||"").slice(0,100),savedAt:Number(p.savedAt)||0,revision:String(p.revision||""),cloudPending:p.cloudPending===true,
+      rows:Array.isArray(p.rows)&&p.rows.length?p.rows.map(function(r){r=r||{};var id=/^[a-zA-Z0-9_-]{1,100}$/.test(r.id||"")&&!used[r.id]?r.id:uid();used[id]=true;var stations=Array.isArray(r.stations)&&r.stations.length?r.stations.slice(0,99).map(function(st){st=st||{};return {boxes:String(st.boxes==null?"":st.boxes),workers:String(st.workers==null?"1":st.workers)};}):[{boxes:String(r.boxes==null?"":r.boxes),workers:String(r.workers==null?"1":r.workers)}];
+        var count=String(r.postCount==null?stations.length:r.postCount);
+        if(/^\d+$/.test(count)&&Number(count)>=1&&Number(count)<=99)while(stations.length<Number(count))stations.push({boxes:"",workers:"1"});
+        return {id:id,code:String(r.code||""),itemId:String(r.itemId||""),postCount:count,stations:stations,simultaneous:r.simultaneous===true,priority:typeof r.priority==="boolean"?r.priority:null};}):[pcpBlankRow()]};
   }
   function pcpQueueSave(){pcpChanged=true;pcpDraftPending=true;pcpPlan.cloudPending=true;el("pcpDraftStatus").textContent="Salvando planejamento…";clearTimeout(pcpSaveTimer);pcpSaveTimer=setTimeout(pcpSave,220);}
   function pcpSave(){
     if(!pcpPlan)return;clearTimeout(pcpSaveTimer);pcpDraftPending=false;pcpPlan.savedAt=Date.now();pcpPlan.revision=uid();pcpPlan.cloudPending=true;pcpPersistDraft();pcpScheduleCloud();
   }
+  function pcpStationCount(row){var v=String(row.postCount);return /^\d+$/.test(v)&&Number(v)>=1&&Number(v)<=99?Number(v):0;}
   function pcpResolve(row){
     var code=pcpCode(row.code),matches=state.items.filter(function(it){return code&&pcpCode(it.partCode)===code;});
     var item=matches.length===1?matches[0]:matches.filter(function(it){return it.id===row.itemId;})[0]||null;
-    var active=!!code||String(row.boxes).trim()!==""||String(row.workers)!=="1";
-    var boxes=pcpNumber(row.boxes),workers=Number(row.workers),qty=item?pcpNumber(item.qtyPerBox):NaN;
-    var per=item?tbSecs(item.time):0;
+    var count=pcpStationCount(row),stations=row.stations.slice(0,count||1);
+    var active=!!code||String(row.postCount)!=="1"||row.simultaneous||stations.some(function(st){return String(st.boxes).trim()!==""||String(st.workers)!=="1";});
+    var qty=item?pcpNumber(item.qtyPerBox):NaN,per=item?tbSecs(item.time):0;
     var validTime=item&&/^(?:\d+(?:[,.]\d+)?|\d+:\d{1,2}(?:[,.]\d{1,2})?|\d+:\d{1,2}:\d{1,2}(?:[,.]\d{1,2})?)$/.test(String(item.time||"").trim())&&isFinite(per)&&per>0;
-    var error="",codeError="",boxError="",workerError="",catalogError="";
+    var codeError="",catalogError="",countError=active&&!count?"Use de 1 a 99 postos.":"";
     if(active){
       if(!code)codeError="Informe o código da peça.";
       else if(!matches.length)codeError="Código não encontrado no cadastro.";
       else if(!item)codeError="Escolha o cadastro deste código.";
-      if(!isFinite(boxes)||boxes<=0)boxError="Informe caixas > 0 (ex.: 10 ou 10,5).";
-      if(!/^\d+$/.test(String(row.workers))||!Number.isInteger(workers)||workers<1||workers>99)workerError="Use de 1 a 99 colaboradores.";
       if(item){
         if(!String(item.partName||"").trim())catalogError="Descrição ausente no cadastro.";
         else if(!isFinite(qty)||qty<=0)catalogError="Peças por caixa ausentes ou inválidas no cadastro.";
         else if(!validTime)catalogError="Tempo por caixa ausente ou inválido no cadastro.";
       }
-      error=codeError||catalogError||boxError||workerError;
     }
-    var seconds=active&&!error?tempoTotalSegundos({time:item.time,qtyBoxes:row.boxes,workers:row.workers}):0;
-    if(!Number.isFinite(seconds)||seconds*100>Number.MAX_SAFE_INTEGER){error="Volume excede o limite de cálculo.";boxError=error;seconds=0;}
-    return {row:row,active:active,item:item,matches:matches,boxes:boxes,workers:workers,qty:qty,per:per,error:error,codeError:codeError,boxError:boxError,workerError:workerError,catalogError:catalogError,cs:Math.round(seconds*100),valid:active&&!error};
+    var resolved=stations.map(function(st,index){
+      var boxes=pcpNumber(st.boxes),workers=Number(st.workers),boxError="",workerError="";
+      if(active){
+        if(!isFinite(boxes)||boxes<=0)boxError="Informe caixas > 0 (ex.: 10,5).";
+        if(!/^\d+$/.test(String(st.workers))||!Number.isInteger(workers)||workers<1||workers>99)workerError="Use de 1 a 99 colaboradores.";
+      }
+      var seconds=active&&!codeError&&!catalogError&&!countError&&!boxError&&!workerError?tempoTotalSegundos({time:item.time,qtyBoxes:st.boxes,workers:st.workers}):0;
+      if(!Number.isFinite(seconds)||seconds*100>Number.MAX_SAFE_INTEGER){boxError="Volume excede o limite de cálculo.";seconds=0;}
+      return {station:st,index:index,boxes:boxes,workers:workers,boxError:boxError,workerError:workerError,cs:Math.round(seconds*100),valid:active&&!codeError&&!catalogError&&!countError&&!boxError&&!workerError};
+    });
+    var bad=resolved.find(function(st){return st.boxError||st.workerError;}),error=codeError||catalogError||countError||(bad&&(bad.boxError||bad.workerError))||"";
+    var cs=row.simultaneous?Math.max.apply(null,resolved.map(function(st){return st.cs;})):resolved.reduce(function(n,st){return n+st.cs;},0);
+    if(!Number.isSafeInteger(cs)){error="Volume excede o limite de cálculo.";countError=error;}
+    return {row:row,active:active,item:item,matches:matches,stations:resolved,count:count,boxes:resolved.reduce(function(n,st){return n+st.boxes;},0),workers:resolved.reduce(function(n,st){return n+st.workers;},0),qty:qty,per:per,error:error,codeError:codeError,catalogError:catalogError,countError:countError,cs:error?0:cs,valid:active&&!error};
   }
   function pcpTotals(){
     var all=pcpPlan.rows.map(pcpResolve),valid=all.filter(function(r){return r.valid;}),invalid=all.filter(function(r){return r.active&&!r.valid;});
@@ -3392,8 +3416,7 @@ SOFTWARE.
       '<td class="pcp-cell pcp-code-cell"><label class="pcp-mobile-label">Código da peça</label><input class="pcp-code-input" data-pcp="code" type="text" list="pcpCodes" autocomplete="off" spellcheck="false" placeholder="Digite o código"><small data-msg="code">Selecione no cadastro</small></td>'+
       '<td class="pcp-cell pcp-desc-cell"><span class="pcp-mobile-label">Descrição da peça</span><span class="pcp-readonly pcp-desc" data-out="description">—</span><small data-out="base">Preenchida pelo código</small><select data-pcp="itemId" hidden></select></td>'+
       '<td class="pcp-cell"><span class="pcp-mobile-label">Peças / caixa</span><span class="pcp-readonly" data-out="qty">—</span><small>Do cadastro</small></td>'+
-      '<td class="pcp-cell"><label class="pcp-mobile-label">Caixas a transbordar</label><input data-pcp="boxes" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><small data-msg="boxes">Quantidade prevista</small></td>'+
-      '<td class="pcp-cell"><label class="pcp-mobile-label">Colaboradores</label><input data-pcp="workers" type="number" inputmode="numeric" min="1" max="99" step="1"><small data-msg="workers">Dedicação de 100%</small></td>'+
+      '<td class="pcp-cell pcp-stations-cell" colspan="2"><div class="pcp-station-controls"><div class="pcp-post-count"><label>Quantidade de postos</label><input data-pcp="postCount" type="number" inputmode="numeric" min="1" max="99" step="1" required><small data-msg="postCount"></small></div><button type="button" class="pcp-simultaneous" aria-pressed="false">Simultâneo · desligado</button></div><small class="pcp-mode-hint"></small><div class="pcp-stations-list"></div></td>'+
       '<td class="pcp-cell pcp-total-cell"><span class="pcp-mobile-label">Tempo total</span><output class="pcp-readonly pcp-row-time" data-out="time">—</output><small data-out="timeHint">Aguardando dados</small></td>'+
       '<td class="pcp-cell pcp-priority-cell"><span class="pcp-mobile-label">Prioridade</span><button type="button" class="pcp-priority-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 21V4m0 0c5-4 9 4 14 0v10c-5 4-9-4-14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Prioridade</span></button><small class="pcp-priority-hint">Clique para marcar</small></td>'+
       '<td class="pcp-remove-cell"><button type="button" class="pcp-remove" title="Remover linha"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>';
@@ -3407,11 +3430,13 @@ SOFTWARE.
       row.priority=!pcpIsPriority(row,pcpResolve(row).item);pcpQueueSave();pcpUpdateRow(row,tr);pcpRefreshTV();
       toast(row.priority?"Item marcado como PRIORIDADE.":"Prioridade removida.");
     });
+    pcpRenderStations(row,tr);
+    tr.querySelector(".pcp-simultaneous").addEventListener("click",function(){row.simultaneous=!row.simultaneous;pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
     tr.querySelectorAll("[data-pcp]").forEach(function(inp){
       var key=inp.dataset.pcp;inp.value=row[key];inp.id="pcp-"+row.id+"-"+key;
       var label=inp.parentElement.querySelector("label");if(label)label.htmlFor=inp.id;
       var event=key==="itemId"?"change":"input";
-      inp.addEventListener(event,function(){row[key]=inp.value;if(key==="code")row.itemId="";pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
+      inp.addEventListener(event,function(){row[key]=inp.value;if(key==="code")row.itemId="";if(key==="postCount"&&pcpStationCount(row)){while(row.stations.length<pcpStationCount(row))row.stations.push({boxes:"",workers:"1"});pcpRenderStations(row,tr);}pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
       if(key==="code")inp.addEventListener("blur",function(){row.code=pcpCode(row.code);inp.value=row.code;pcpUpdateRow(row,tr);pcpQueueSave();});
       if(key==="boxes")inp.addEventListener("blur",function(){row.boxes=row.boxes.trim();inp.value=row.boxes;pcpUpdateRow(row,tr);pcpQueueSave();});
     });
@@ -3421,8 +3446,20 @@ SOFTWARE.
     });
     return tr;
   }
+  function pcpRenderStations(row,tr){
+    var list=tr.querySelector(".pcp-stations-list");list.innerHTML="";
+    row.stations.slice(0,pcpStationCount(row)||1).forEach(function(st,stationIndex){
+      var node=document.createElement("div");node.className="pcp-station";
+      node.innerHTML='<div class="pcp-station-head"><b>Posto '+(stationIndex+1)+'</b><output>—</output></div><div><label>Caixas a transbordar</label><input data-station-field="boxes" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><small data-station-msg="boxes"></small></div><div><label>Colaboradores</label><input data-station-field="workers" type="number" inputmode="numeric" min="1" max="99" step="1"><small data-station-msg="workers"></small></div>';
+      node.querySelectorAll("input").forEach(function(input){
+        var key=input.dataset.stationField;input.value=st[key];input.id="pcp-"+row.id+"-station-"+stationIndex+"-"+key;input.previousElementSibling.htmlFor=input.id;
+        input.addEventListener("input",function(){st[key]=input.value;pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
+        if(key==="boxes")input.addEventListener("blur",function(){st.boxes=st.boxes.trim();input.value=st.boxes;pcpQueueSave();});
+      });list.appendChild(node);
+    });
+  }
   function pcpUpdateRow(row,tr,index){
-    if(index==null)index=pcpPlan.rows.indexOf(row);var r=pcpResolve(row),inputNames={code:"Código da peça",boxes:"Caixas a transbordar",workers:"Colaboradores",itemId:"Cadastro da peça"};
+    if(index==null)index=pcpPlan.rows.indexOf(row);var r=pcpResolve(row),inputNames={code:"Código da peça",postCount:"Quantidade de postos",itemId:"Cadastro da peça"};
     var seq=tr.querySelector(".pcp-seq-input");if(document.activeElement!==seq)seq.value=String(index+1);seq.max=String(pcpPlan.rows.length);
     seq.setAttribute("aria-label","SEQ. da linha "+(index+1));seq.title="Digite a posição de 1 a "+pcpPlan.rows.length+" e pressione Enter ou saia do campo";
     var priority=pcpIsPriority(row,r.item),button=tr.querySelector(".pcp-priority-btn");
@@ -3440,8 +3477,21 @@ SOFTWARE.
     out("base",r.item?(r.catalogError||((r.item.posto?r.item.posto+" · ":"")+tbClock(r.per)+" / caixa")):"Preenchida pelo código");
     tr.querySelector('[data-out="base"]').classList.toggle("pcp-error-text",!!r.catalogError);
     msg("code",r.codeError||(r.item?"Peça localizada":"Selecione no cadastro"),r.codeError);
-    msg("boxes",r.boxError||"Quantidade prevista",r.boxError);
-    msg("workers",r.workerError||("Dedicação de "+pctDedicacao(row.workers)),r.workerError);
+    msg("postCount",r.countError||"Digite ou use as setas",r.countError);
+    var simultaneous=tr.querySelector(".pcp-simultaneous");simultaneous.setAttribute("aria-pressed",String(row.simultaneous));simultaneous.textContent="Simultâneo · "+(row.simultaneous?"ligado":"desligado");simultaneous.setAttribute("aria-label","Simultâneo, linha "+(index+1));
+    tr.querySelector(".pcp-mode-hint").textContent=row.simultaneous?"Considera o maior tempo dos postos.":"Soma os tempos dos postos.";
+    tr.querySelectorAll(".pcp-station").forEach(function(node,stationIndex){
+      var st=r.stations[stationIndex];if(!st)return;
+      var longest=row.simultaneous&&r.valid&&st.cs===r.cs;
+      node.classList.toggle("pcp-longest",longest);
+      node.querySelector("output").textContent=st.valid?tbClock(st.cs/100):"—";
+      node.querySelector("output").title=longest?"Maior tempo: define o total desta peça":"Tempo deste posto";
+      ["boxes","workers"].forEach(function(key){
+        var input=node.querySelector('[data-station-field="'+key+'"]'),hint=node.querySelector('[data-station-msg="'+key+'"]'),bad=key==="boxes"?st.boxError:st.workerError;
+        input.setAttribute("aria-label",(key==="boxes"?"Caixas":"Colaboradores")+", posto "+(stationIndex+1)+", linha "+(index+1));
+        hint.textContent=bad||(key==="workers"?"Dedicação de "+pctDedicacao(st.workers):"Quantidade neste posto");hint.classList.toggle("pcp-error-text",!!bad);hint.id=input.id+"-hint";input.setAttribute("aria-invalid",String(!!bad));input.setAttribute("aria-describedby",hint.id);
+      });
+    });
     var select=tr.querySelector('[data-pcp="itemId"]'),sig=r.matches.map(function(it){return it.id+"|"+it.posto+"|"+(it.dest&&it.dest.name)+"|"+it.qtyPerBox+"|"+it.time;}).join("\n");
     select.hidden=r.matches.length<=1;
     if(r.matches.length>1&&select.dataset.signature!==sig){
@@ -3449,7 +3499,7 @@ SOFTWARE.
       r.matches.forEach(function(it){var opt=document.createElement("option");opt.value=it.id;opt.textContent=[it.posto,(it.dest||{}).name,(it.qtyPerBox||"?")+" pç/caixa",tbClock(tbSecs(it.time))].filter(Boolean).join(" · ");select.appendChild(opt);});select.dataset.signature=sig;
     }
     if(r.matches.length>1)select.value=row.itemId;
-    out("time",r.valid?tbClock(r.cs/100):"—");out("timeHint",r.valid?"HH:MM:SS,CC":r.active?"Complete os dados":"Aguardando dados");
+    out("time",r.valid?tbClock(r.cs/100):"—");out("timeHint",r.valid?(r.count===1?"1 posto":r.count+" postos · "+(row.simultaneous?"maior tempo":"soma dos tempos")):r.active?"Complete os dados":"Aguardando dados");
   }
   function pcpRenderRows(){
     if(!pcpPlan)return;var body=el("pcpRows");body.innerHTML="";
@@ -3457,8 +3507,7 @@ SOFTWARE.
   }
   function pcpUpdateTotals(){
     if(!pcpPlan)return;var t=pcpTotals();el("pcpCount").textContent=String(t.valid.length);el("pcpBoxesTotal").textContent=pcpFormat(t.boxes);el("pcpPiecesTotal").textContent=pcpFormat(t.pieces);el("pcpGrandTotal").textContent=tbClock(t.cs/100);
-    updatePlanningTotalTime(t);
-    el("pcpTotalNote").textContent=t.invalid.length?"Total parcial · há linhas com pendências":"Soma das linhas · execução sequencial";
+    el("pcpTotalNote").textContent=t.invalid.length?"Total parcial · há linhas com pendências":"Soma das peças · respeita o modo dos postos";
     var alert=el("pcpAlert");alert.hidden=!t.invalid.length;
     alert.textContent=t.invalid.length+" linha(s) com pendências. O total considera apenas as linhas completas. Corrija os campos indicados antes de gerar o PDF.";
     el("pcpPdf").setAttribute("aria-disabled",(!t.valid.length||!!t.invalid.length)?"true":"false");
@@ -3493,16 +3542,28 @@ SOFTWARE.
 
   /* Relatório de impressão e alternativa de PDF do navegador. */
   function pcpDateLabel(){var parts=String(pcpPlan.date||"").split("-");return parts.length===3?parts[2]+"/"+parts[1]+"/"+parts[0]:"Não informada";}
+  function pcpReportRows(t){
+    var rows=[];t.valid.forEach(function(r){var seq=pcpPlan.rows.indexOf(r.row)+1;
+      r.stations.forEach(function(st,i){
+        var detail="Posto "+(i+1)+" de "+r.count+" · Base: "+tbClock(r.per)+" / caixa · Dedicação: "+pctDedicacao(st.workers);
+        if(r.item.posto)detail=String(r.item.posto)+" · "+detail;
+        if(r.count>1)detail+=" · "+(r.row.simultaneous?"Simultâneo (maior tempo)":"Sequencial (soma)");
+        if(i===r.count-1)detail+=" · Total da peça: "+tbClock(r.cs/100);
+        if(pcpIsPriority(r.row,r.item))detail="PRIORIDADE · "+detail;
+        rows.push({r:r,seq:r.count>1?seq+"."+(i+1):String(seq),detail:detail,values:[r.count>1?seq+"."+(i+1):String(seq),r.item.partCode,r.item.partName,String(r.item.qtyPerBox),pcpFormat(st.boxes),String(st.workers),tbClock(st.cs/100)]});
+      });
+    });return rows;
+  }
   function pcpPreparePrint(t){
-    var host=el("pcpPrint");host.innerHTML='<div class="pcp-print-head"><img alt="SESÉ"><div><h1>PCP · Planejamento de transbordo</h1><p>Planejamento e controle da produção</p></div></div><div class="pcp-print-meta"></div><table class="pcp-print-table"><colgroup><col style="width:6%"><col style="width:16%"><col style="width:28%"><col style="width:11%"><col style="width:12%"><col style="width:11%"><col style="width:16%"></colgroup><thead><tr><th>SEQ.</th><th>Código</th><th>Descrição da peça</th><th>Peças / caixa</th><th>Caixas</th><th>Colaboradores</th><th>Tempo total</th></tr></thead><tbody></tbody></table><div class="pcp-print-foot"><div class="pcp-print-totals"><div class="pcp-print-count"></div><p>Tempo total do planejamento<br><strong></strong></p></div><p class="pcp-print-note"></p></div>';
+    var host=el("pcpPrint");host.innerHTML='<div class="pcp-print-head"><img alt="SESÉ"><div><h1>PCP · Planejamento de transbordo</h1><p>Planejamento e controle da produção</p></div></div><div class="pcp-print-meta"></div><table class="pcp-print-table"><colgroup><col style="width:6%"><col style="width:16%"><col style="width:28%"><col style="width:11%"><col style="width:12%"><col style="width:11%"><col style="width:16%"></colgroup><thead><tr><th>SEQ.</th><th>Código</th><th>Descrição da peça</th><th>Peças / caixa</th><th>Caixas</th><th>Colaboradores</th><th>Tempo do posto</th></tr></thead><tbody></tbody></table><div class="pcp-print-foot"><div class="pcp-print-totals"><div class="pcp-print-count"></div><p>Tempo total do planejamento<br><strong></strong></p></div><p class="pcp-print-note"></p></div>';
     host.querySelector("img").src=LOGO_DEFAULT;var meta=host.querySelector(".pcp-print-meta");
     [["Data",pcpDateLabel()],["Identificação",pcpPlan.reference||"Não informada"],["Responsável",pcpPlan.responsible||"Não informado"]].forEach(function(pair){var s=document.createElement("span");var b=document.createElement("b");b.textContent=pair[0]+": ";s.appendChild(b);s.appendChild(document.createTextNode(pair[1]));meta.appendChild(s);});
-    var body=host.querySelector("tbody");t.valid.forEach(function(r){var tr=document.createElement("tr");var idx=pcpPlan.rows.indexOf(r.row)+1;
-      [idx,r.item.partCode,r.item.partName,r.item.qtyPerBox,pcpFormat(r.boxes),r.workers,tbClock(r.cs/100)].forEach(function(value,j){var td=document.createElement("td");td.textContent=String(value);if(j===6)td.className="pcp-print-time";if(j===2){if(pcpIsPriority(r.row,r.item)){var tag=document.createElement("small");tag.textContent="PRIORIDADE";tag.style.color="#c92d22";tag.style.fontWeight="700";td.appendChild(tag);}var sm=document.createElement("small");sm.textContent="Base: "+tbClock(r.per)+" / caixa · Dedicação: "+pctDedicacao(r.workers);td.appendChild(sm);}tr.appendChild(td);});body.appendChild(tr);
+    var body=host.querySelector("tbody");pcpReportRows(t).forEach(function(entry){var tr=document.createElement("tr");
+      entry.values.forEach(function(value,j){var td=document.createElement("td");td.textContent=String(value);if(j===6)td.className="pcp-print-time";if(j===2){var sm=document.createElement("small");sm.textContent=entry.detail;td.appendChild(sm);}tr.appendChild(td);});body.appendChild(tr);
     });
     host.querySelector(".pcp-print-count").textContent=t.valid.length+" itens · "+pcpFormat(t.boxes)+" caixas · "+pcpFormat(t.pieces)+" peças previstas";
     host.querySelector(".pcp-print-totals strong").textContent=tbClock(t.cs/100);
-    host.querySelector(".pcp-print-note").textContent="Cálculo por linha: (tempo por caixa × caixas) ÷ [1 + 0,8 × (colaboradores − 1)]. O 1º colaborador conta com 100% de dedicação e cada adicional com 80%. Total = soma dos tempos exibidos, considerando execução sequencial. Horas:minutos:segundos,centésimos."+(t.invalid.length?" ATENÇÃO: relatório parcial; "+t.invalid.length+" linha(s) com pendências não incluídas.":"");
+    host.querySelector(".pcp-print-note").textContent="Cálculo por posto: (tempo por caixa × caixas do posto) ÷ [1 + 0,8 × (colaboradores do posto − 1)]. O 1º colaborador de cada posto conta com 100% de dedicação e cada adicional com 80%. Simultâneo ligado: maior tempo dos postos, contado uma vez. Desligado: soma dos postos. O total geral soma os totais das peças. Horas:minutos:segundos,centésimos."+(t.invalid.length?" ATENÇÃO: relatório parcial; "+t.invalid.length+" linha(s) com pendências não incluídas.":"");
   }
 
   /* Tema visual local: independente do cadastro, do PCP e do modo demonstrativo. */
@@ -3631,7 +3692,7 @@ SOFTWARE.
     });
     if(!pcpPlan)return [];
     return pcpPlan.rows.map(pcpResolve).filter(function(r){return r.valid;}).map(function(r){
-      return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:r.row.boxes,workers:r.row.workers,status:"open",pcpRowId:r.row.id,pcpSeq:pcpPlan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
+      return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:pcpFormat(r.boxes),workers:String(r.workers),pcpCs:r.cs,pcpPostCount:r.count,pcpSimultaneous:r.row.simultaneous,status:"open",pcpRowId:r.row.id,pcpSeq:pcpPlan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
     });
   }
   function pcpRefreshTV(){
@@ -3844,7 +3905,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
     pcpRefresh();var t=pcpTotals();
     if(t.invalid.length){
       toast("Corrija as linhas com pendências antes de gerar o PDF.");var bad=t.invalid[0],index=pcpPlan.rows.indexOf(bad.row),tr=el("pcpRows").children[index];
-      if(tr){var field=bad.codeError?(bad.matches.length>1?"itemId":"code"):bad.boxError?"boxes":bad.workerError?"workers":"code";tr.querySelector('[data-pcp="'+field+'"]').focus();tr.scrollIntoView({block:"center",behavior:"smooth"});}return;
+      if(tr){var input=tr.querySelector('[aria-invalid="true"]')||tr.querySelector('[data-pcp="code"]');input.focus();tr.scrollIntoView({block:"center",behavior:"smooth"});}return;
     }
     if(!t.valid.length){toast("Inclua pelo menos uma peça com caixas e colaboradores.");el("pcpRows").querySelector('[data-pcp="code"]').focus();return;}
     if(!el("pcpDate").value||!el("pcpDate").checkValidity()){el("pcpDate").reportValidity();el("pcpDate").focus();return;}
@@ -3875,7 +3936,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
       function line(py){page.drawLine({start:{x:M,y:py},end:{x:W-M,y:py},thickness:.55,color:C.line});}
       function tableHeader(){
         page.drawRectangle({x:M,y:y-32,width:usable,height:32,color:C.pale});
-        var names=["SEQ.","Código da peça","Descrição da peça","Peças / caixa","Caixas","Colaboradores","Tempo total"];
+        var names=["SEQ.","Código da peça","Descrição da peça","Peças / caixa","Caixas","Colaboradores","Tempo do posto"];
         names.forEach(function(v,j){text(v,x[j]+7,y-19,j===5?8:8.5,bold,C.muted);});y-=32;tableTop=y;
       }
       function newPage(withTable){
@@ -3888,13 +3949,9 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
         y=H-106-max*12-15;if(withTable)tableHeader();
       }
       newPage(true);
-      t.valid.forEach(function(r,i){
-        var rowNumber=pcpPlan.rows.indexOf(r.row)+1;
-        var vals=[String(rowNumber),r.item.partCode,r.item.partName,String(r.item.qtyPerBox),pcpFormat(r.boxes),String(r.workers),tbClock(r.cs/100)];
+      pcpReportRows(t).forEach(function(entry,i){
+        var r=entry.r,rowNumber=entry.seq,vals=entry.values,detail=entry.detail;
         var lines=vals.map(function(v,j){return wrap(v,columns[j]-14,j===6?11:9.5,j===6?bold:regular);});
-        var detail="Base: "+tbClock(r.per)+" / caixa · Dedicação: "+pctDedicacao(r.workers);
-        if(r.item.posto)detail=String(r.item.posto)+" · "+detail;
-        if(pcpIsPriority(r.row,r.item))detail="PRIORIDADE · "+detail;
         var details=wrap(detail,columns[2]-14,7.6),maxLines=Math.max.apply(null,lines.map(function(a){return a.length;}));
         var fullRowHeight=Math.max(44,maxLines*13+20+details.length*10);
         // Keep ordinary rows together; split only a description taller than a whole page.
@@ -3923,7 +3980,7 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
       text(totalLabel,W-M-14-bold.widthOfTextAtSize(totalLabel,8),y-18,8,bold,C.muted);
       text(totalValue,W-M-14-bold.widthOfTextAtSize(totalValue,25),y-46,25,bold,C.blue);
       y-=78;
-      var notes=["Cálculo por linha: (tempo médio por caixa × caixas) ÷ [1 + 0,8 × (colaboradores - 1)].","Dedicação: primeiro colaborador = 100%; cada adicional = 80%. Total = soma dos tempos exibidos, considerando execução sequencial.","Tempos apresentados em horas:minutos:segundos,centésimos. Descrição, peças por caixa e tempo médio seguem o cadastro no momento da emissão."];
+      var notes=["Cálculo por posto: (tempo médio por caixa × caixas do posto) ÷ [1 + 0,8 × (colaboradores do posto - 1)].","Dedicação por posto: primeiro colaborador = 100%; adicionais = 80%. Simultâneo ligado: maior tempo, contado uma vez. Desligado: soma dos postos. Total geral: soma dos totais das peças.","Tempos apresentados em horas:minutos:segundos,centésimos. Descrição, peças por caixa e tempo médio seguem o cadastro no momento da emissão."];
       notes.forEach(function(note){var ls=wrap(note,usable,8.1);ls.forEach(function(l){text(l,M,y,8.1,regular,C.muted);y-=11;});y-=3;});
       var emitted="Emitido em "+new Date().toLocaleString("pt-BR");
       pages.forEach(function(p,j){page=p;page.drawLine({start:{x:M,y:33},end:{x:W-M,y:33},thickness:.5,color:C.line});text("SESÉ · PCP  |  "+emitted,M,20,7.5,regular,C.muted);var n="Página "+(j+1)+" de "+pages.length;text(n,W-M-regular.widthOfTextAtSize(n,7.5),20,7.5,regular,C.muted);});

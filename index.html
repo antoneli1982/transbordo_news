@@ -1324,6 +1324,32 @@ body[data-page="colaboradores"] #pgColaboradores{display:block;background:var(--
 .people-empty{padding:38px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.55}
 .people-empty strong{display:block;color:var(--ink-2);font-size:14px;margin-bottom:4px}
 #pcpPeopleFile{display:none}
+/* ===== Janela de importação: escolher entre atualizar ou substituir o cadastro ===== */
+.imp-dialog{width:min(560px,94vw)}
+.imp-ico{background:var(--brand-50)!important;color:var(--brand-700)!important}
+.imp-analysis{display:grid;gap:0;border:1px solid var(--line);border-radius:11px;overflow:hidden;margin-bottom:16px;background:var(--card-2)}
+.imp-line{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:8px 12px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink-2);line-height:1.4}
+.imp-line:last-child{border-bottom:0}
+.imp-line b{font-size:13.5px;font-weight:720;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.imp-line.is-out b{color:#b43434}
+.imp-options{display:grid;gap:10px}
+.imp-opt{display:block;width:100%;text-align:left;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);cursor:pointer;font-family:var(--sans);transition:border-color .15s,background .15s}
+.imp-opt:hover{border-color:var(--brand-100);background:var(--brand-50)}
+.imp-opt:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.imp-opt-t{display:block;font-size:13.5px;font-weight:720;line-height:1.35;color:var(--ink)}
+.imp-opt-d{display:block;margin-top:5px;font-size:11.5px;line-height:1.55;color:var(--muted)}
+.imp-opt.danger:hover{border-color:#efc8c8;background:#fff5f5}
+.imp-opt.danger .imp-opt-t{color:#b43434}
+.imp-warn{margin:13px 0 0;padding:10px 12px;border:1px solid #efdcb8;border-radius:9px;background:#fffaf0;color:#8a5c1c;font-size:11.5px;line-height:1.55}
+.imp-warn[hidden]{display:none}
+html[data-theme="dark"] .imp-analysis{background:var(--card-2)}
+html[data-theme="dark"] .imp-opt{background:var(--card-2)}
+html[data-theme="dark"] .imp-opt:hover{background:#1d3356}
+html[data-theme="dark"] .imp-opt.danger:hover{background:#33252d;border-color:#734348}
+html[data-theme="dark"] .imp-opt.danger .imp-opt-t{color:#efb2ad}
+html[data-theme="dark"] .imp-line.is-out b{color:#efb2ad}
+html[data-theme="dark"] .imp-warn{background:#332b1d;border-color:#7c6240;color:#f3cd8c}
+@media(max-width:560px){.imp-dialog{padding:18px}}
 /* Seleção nominal dos postos do PCP */
 .pcp-person-slots{grid-column:1/-1;border:1px solid #d7e2f0;padding:10px;border-radius:8px;background:#f7faff}
 .pcp-person-slots[hidden]{display:none}
@@ -1462,7 +1488,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
           <section class="people-card" aria-labelledby="peopleListTitle">
             <div class="people-card-head"><div><div class="people-card-kicker">Equipe cadastrada</div><h2 id="peopleListTitle">Colaboradores</h2><p class="people-card-sub" id="pcpPeopleStatus">Nenhum colaborador cadastrado.</p></div></div>
             <div class="people-toolbar">
-              <div class="people-toolbar-copy">Planilha padrão: coluna A = <b>Chapa VW</b> · coluna B = <b>Matrícula</b> <span style="opacity:.72">(não utilizada)</span> · coluna C = <b>Nome</b>. O cabeçalho pode permanecer na linha 3.</div>
+              <div class="people-toolbar-copy">Planilha padrão: coluna A = <b>Chapa VW</b> · coluna B = <b>Matrícula</b> <span style="opacity:.72">(não utilizada)</span> · coluna C = <b>Nome</b>. O cabeçalho pode permanecer na linha 3.<br>Ao importar, a planilha é analisada e você escolhe entre <b>atualizar</b> o cadastro atual ou <b>substituir</b> todos os registros.</div>
               <div class="people-toolbar-actions"><button type="button" class="btn btn-ghost btn-sm" id="pcpImportPeople">Importar Excel</button><button type="button" class="btn btn-ghost btn-sm" id="pcpExportPeople">Exportar Excel</button><input type="file" id="pcpPeopleFile" accept=".xlsx"></div>
             </div>
             <div class="people-list" id="pcpPeopleList"></div>
@@ -1908,6 +1934,27 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
       <button class="btn btn-ghost btn-sm" id="pwCancel" data-pw-close>Cancelar</button>
       <button class="btn btn-primary btn-sm" id="pwOk">Confirmar</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ IMPORTAÇÃO DE COLABORADORES (atualizar x substituir) ============ -->
+<div class="pw-modal" id="peopleImpModal" hidden>
+  <div class="pw-backdrop" data-imp-close></div>
+  <div class="pw-dialog imp-dialog" role="dialog" aria-modal="true" aria-labelledby="impTitle" aria-describedby="impFile">
+    <div class="pw-head">
+      <div class="pw-ico imp-ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4m0 12-4-4m4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <div>
+        <div class="pw-title" id="impTitle">Como aplicar esta planilha?</div>
+        <div class="pw-sub" id="impFile"></div>
+      </div>
+    </div>
+    <div class="imp-analysis" id="impAnalysis" aria-label="Análise da planilha"></div>
+    <div class="imp-options">
+      <button type="button" class="imp-opt" id="impMerge"><span class="imp-opt-t">Adicionar e atualizar</span><span class="imp-opt-d" id="impMergeDesc"></span></button>
+      <button type="button" class="imp-opt danger" id="impReplace"><span class="imp-opt-t">Substituir todo o cadastro</span><span class="imp-opt-d" id="impReplaceDesc"></span></button>
+    </div>
+    <p class="imp-warn" id="impWarn" hidden></p>
+    <div class="pw-actions"><button type="button" class="btn btn-ghost btn-sm" data-imp-close>Cancelar</button></div>
   </div>
 </div>
 
@@ -3525,7 +3572,9 @@ SOFTWARE.
       var p=peoplePerson(raw);if(!p.name)return;
       var chapaKey=p.chapa?peopleLower(p.chapa):"",nameKey=peopleLower(p.name);
       if(chapaKey){
-        if(byChapa[chapaKey])return;
+        /* Índice 0 é um valor falsy: a checagem precisa ser por "definido", senão o primeiro
+           registro nunca bloqueia duplicatas da mesma Chapa VW na importação. */
+        if(byChapa[chapaKey]!==undefined)return;
         /* Se a mesma pessoa existia como cadastro legado sem chapa, completa o registro. */
         var legacyIndex=blankByName[nameKey];
         if(legacyIndex!==undefined&&out[legacyIndex]&&!out[legacyIndex].chapa){
@@ -3635,7 +3684,9 @@ SOFTWARE.
     zip.file("xl/workbook.xml",'<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Colaboradores" sheetId="1" r:id="rId1"/></sheets></workbook>');
     zip.file("xl/_rels/workbook.xml.rels",'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>');
     zip.file("xl/worksheets/sheet1.xml",'<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+rows+'</sheetData></worksheet>');
-    peopleDownload(await zip.generateAsync({type:"blob",compression:"DEFLATE"}),"Colaboradores_SESE_Volkswagen.xlsx");
+    var hoje=new Date(),dois=function(n){return String(n).padStart(2,"0");},nomeArq="Colaboradores_SESE_Volkswagen_"+hoje.getFullYear()+dois(hoje.getMonth()+1)+dois(hoje.getDate())+".xlsx";
+    peopleDownload(await zip.generateAsync({type:"blob",compression:"DEFLATE"}),nomeArq);
+    toast(pcpPeople.length+" colaborador(es) exportado(s). Edite a planilha e importe de volta para atualizar o cadastro.");
   }
   async function peopleImport(file){
     if(!file||file.size>8e6)throw Error("Selecione um Excel de até 8 MB.");
@@ -3649,11 +3700,75 @@ SOFTWARE.
     if(headerIndex<0)throw Error("Formato não reconhecido. A planilha padrão deve ter Chapa VW na coluna A, Matrícula na B e Nome na C.");
     var imported=sheetRows.slice(headerIndex+1).map(function(row){return {chapa:peopleChapa(cellValue(row,"A")),name:peopleText(cellValue(row,"C"))};}).filter(function(p){return !!p.name;});
     if(!imported.length)throw Error("Nenhum colaborador encontrado após o cabeçalho da planilha.");
-    /* A planilha importada tem prioridade quando uma chapa já existe, permitindo atualizar o nome. */
-    pcpPeople=peopleNormalize(imported.concat(pcpPeople));peopleSave();
+    /* Nada é gravado antes de o usuário decidir entre atualizar e substituir o cadastro. */
+    peopleImportAsk(imported,file.name||"planilha.xlsx");
+  }
+
+  /* ===== Importação: análise prévia e escolha entre atualizar ou substituir ===== */
+  var peopleImpPending=null;
+  function peopleImpAnalyze(imported){
+    var limpos=peopleNormalize(imported),porChapa={},porNome={},vistos={};
+    pcpPeople.forEach(function(pe){if(pe.chapa)porChapa[peopleLower(pe.chapa)]=pe;else porNome[peopleLower(pe.name)]=pe;});
+    var novos=0,atualizados=0,iguais=0,semChapa=0;
+    limpos.forEach(function(pe){
+      if(!pe.chapa)semChapa++;
+      var chave=pe.chapa?peopleLower(pe.chapa):"";
+      if(chave)vistos[chave]=true;
+      var atual=chave?porChapa[chave]:porNome[peopleLower(pe.name)];
+      if(!atual)novos++;
+      else if(peopleLower(atual.name)!==peopleLower(pe.name))atualizados++;
+      else iguais++;
+    });
+    var fora=pcpPeople.filter(function(pe){
+      var chave=pe.chapa?peopleLower(pe.chapa):"";
+      if(chave)return !vistos[chave];
+      return !limpos.some(function(x){return peopleLower(x.name)===peopleLower(pe.name);});
+    });
+    return {rows:limpos,lidos:imported.length,validos:limpos.length,duplicados:imported.length-limpos.length,
+      novos:novos,atualizados:atualizados,iguais:iguais,semChapa:semChapa,
+      fora:fora.length,foraEmUso:fora.filter(function(pe){return peopleUsage(pe)>0;}).length,atual:pcpPeople.length};
+  }
+  function peopleImpLine(box,label,value,danger){
+    var line=document.createElement("div");line.className="imp-line"+(danger?" is-out":"");
+    var l=document.createElement("span");l.textContent=label;var v=document.createElement("b");v.textContent=String(value);
+    line.appendChild(l);line.appendChild(v);box.appendChild(line);
+  }
+  function peopleImpClose(){var m=el("peopleImpModal");if(m)m.hidden=true;peopleImpPending=null;}
+  function peopleImpClose_keep(){var m=el("peopleImpModal");if(m)m.hidden=true;}
+  function peopleImportAsk(imported,fileName){
+    var info=peopleImpAnalyze(imported),m=el("peopleImpModal");
+    if(!m){ /* Sem o modal, o padrão seguro é apenas atualizar, nunca apagar registros. */
+      peopleImpPending={info:info};peopleImpApply("merge");return;
+    }
+    peopleImpPending={info:info};
+    el("impFile").textContent=fileName+" · "+info.validos+" registro(s) válido(s) de "+info.lidos+" linha(s) lida(s).";
+    var box=el("impAnalysis");box.replaceChildren();
+    peopleImpLine(box,"Cadastro atual",info.atual+" colaborador(es)");
+    peopleImpLine(box,"Novos na planilha",info.novos);
+    peopleImpLine(box,"Cadastros que seriam atualizados",info.atualizados);
+    peopleImpLine(box,"Já idênticos ao cadastro",info.iguais);
+    if(info.duplicados>0)peopleImpLine(box,"Linhas repetidas ou ignoradas",info.duplicados);
+    if(info.semChapa>0)peopleImpLine(box,"Linhas sem Chapa VW",info.semChapa);
+    peopleImpLine(box,"No cadastro e ausentes na planilha",info.fora,info.fora>0);
+    el("impMergeDesc").textContent="Mantém os "+info.atual+" cadastro(s) atuais, inclui "+info.novos+" novo(s) e atualiza "+info.atualizados+" registro(s) pela Chapa VW. Nada é excluído.";
+    el("impReplaceDesc").textContent="Apaga o cadastro atual e deixa apenas os "+info.validos+" registro(s) da planilha"+(info.fora?(", removendo "+info.fora+" colaborador(es) que não constam nela"):"")+". Pede a senha do dia.";
+    var warn=el("impWarn");
+    if(info.foraEmUso>0){warn.hidden=false;warn.textContent="Atenção: "+info.foraEmUso+" colaborador(es) que seriam removidos na substituição estão vinculados a postos do PCP atual. Os nomes já lançados permanecem no planejamento, mas deixarão de constar no cadastro.";}
+    else{warn.hidden=true;warn.textContent="";}
+    m.hidden=false;
+    setTimeout(function(){try{el("impMerge").focus();}catch(e){}},30);
+  }
+  function peopleImpApply(mode){
+    var pend=peopleImpPending;if(!pend)return;var info=pend.info;
+    /* No modo "merge" a planilha tem prioridade sobre o cadastro para a mesma Chapa VW. */
+    pcpPeople=mode==="replace"?peopleNormalize(info.rows):peopleNormalize(info.rows.concat(pcpPeople));
+    peopleSave();
     try{localStorage.setItem(PEOPLE_SEED_MARK,"1");}catch(e){}
-    var semChapa=imported.filter(function(p){return !p.chapa;}).length;
-    toast(imported.length+" colaborador(es) lido(s) da planilha"+(semChapa?(" · "+semChapa+" sem Chapa VW"):"")+".");
+    peopleImpPending=null;
+    if(peopleEditKey&&!pcpPeople.some(function(pe){return peopleOption(pe)===peopleEditKey;}))peopleResetForm();
+    toast(mode==="replace"
+      ? ("Cadastro substituído · "+pcpPeople.length+" colaborador(es) na base.")
+      : (info.novos+" novo(s) e "+info.atualizados+" atualizado(s) · "+pcpPeople.length+" colaborador(es) na base."));
   }
   function peopleSubmit(){
     var name=peopleText(el("pcpNewPerson").value),chapa=peopleChapa(el("pcpNewChapa").value);peopleFormError("");
@@ -3678,6 +3793,19 @@ SOFTWARE.
     el("pcpNewChapa").addEventListener("input",function(){var pos=this.selectionStart,v=peopleChapa(this.value);if(v!==this.value){this.value=v;try{this.setSelectionRange(pos,pos);}catch(e){}}});
     el("pcpExportPeople").onclick=function(){peopleExport().catch(function(){toast("Não foi possível exportar o Excel.");});};el("pcpImportPeople").onclick=function(){el("pcpPeopleFile").click();};
     el("pcpPeopleFile").onchange=function(){peopleImport(this.files[0]).catch(function(error){toast(error.message||"Erro ao importar Excel.");});this.value="";};
+    (function(){
+      var m=el("peopleImpModal");if(!m)return;
+      $all("[data-imp-close]").forEach(function(b){b.addEventListener("click",peopleImpClose);});
+      el("impMerge").addEventListener("click",function(){peopleImpClose_keep();peopleImpApply("merge");});
+      el("impReplace").addEventListener("click",function(){
+        var pend=peopleImpPending;if(!pend)return;
+        el("peopleImpModal").hidden=true;
+        authorizeDestructive("substituir todo o cadastro de colaboradores pela planilha",
+          function(){peopleImpPending=pend;peopleImpApply("replace");},
+          "Substituir cadastro de colaboradores");
+      });
+      document.addEventListener("keydown",function(ev){if(ev.key==="Escape"&&!m.hidden){ev.preventDefault();peopleImpClose();}});
+    })();
     window.addEventListener("storage",function(e){if(e.key===PEOPLE_KEY)peopleLoad();});
   }
   /* ===== PCP: usa o mesmo cadastro e a mesma função de tempo do painel ===== */

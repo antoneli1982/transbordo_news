@@ -1324,6 +1324,16 @@ body[data-page="colaboradores"] #pgColaboradores{display:block;background:var(--
 .people-empty{padding:38px 20px;text-align:center;color:var(--muted);font-size:13px;line-height:1.55}
 .people-empty strong{display:block;color:var(--ink-2);font-size:14px;margin-bottom:4px}
 #pcpPeopleFile{display:none}
+/* ===== Importar / Exportar Excel em destaque ===== */
+.people-hero-actions{display:flex;flex:0 0 auto;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center}
+.people-hero-actions .btn{min-height:42px;white-space:nowrap}
+.people-xls{display:inline-flex;align-items:center;gap:7px}
+.people-btn-ico{width:16px;height:16px;flex:0 0 auto}
+.btn.btn-outline{background:var(--card);color:var(--brand-700);border:1.5px solid var(--brand);font-weight:680}
+.btn.btn-outline:hover{background:var(--brand-50);border-color:var(--brand-700)}
+.people-toolbar-actions .btn.people-xls{min-height:38px;padding:8px 13px;font-size:12.5px}
+html[data-theme="dark"] .btn.btn-outline{background:transparent;color:#9dc2ff;border-color:#4c7fe0}
+html[data-theme="dark"] .btn.btn-outline:hover{background:#1d3356;border-color:#7aa8f5}
 /* ===== Janela de importação: escolher entre atualizar ou substituir o cadastro ===== */
 .imp-dialog{width:min(560px,94vw)}
 .imp-ico{background:var(--brand-50)!important;color:var(--brand-700)!important}
@@ -1370,7 +1380,110 @@ html[data-theme="dark"] .people-avatar,html[data-theme="dark"] .people-stat-ico{
 html[data-theme="dark"] .people-badge{background:#183a32;color:#a0edce}
 html[data-theme="dark"] .people-badge.off{background:#25354d;color:#b9c8dd}
 @media(max-width:900px){.people-grid{grid-template-columns:1fr}.people-stats{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:680px){.people-shell{padding:24px 16px 56px}.people-hero{flex-direction:column}.people-back{width:100%}.people-title{font-size:25px}.people-stats{grid-template-columns:1fr}.people-stat{min-height:66px}.people-row{grid-template-columns:minmax(0,1fr) auto;gap:10px}.people-chapa{grid-column:1}.people-row-actions{grid-column:2;grid-row:1/3}.people-toolbar{align-items:flex-start;flex-direction:column}.people-toolbar-actions{width:100%;justify-content:stretch}.people-toolbar-actions .btn{flex:1}.pcp-person-slots:not([hidden]){grid-template-columns:1fr}}
+@media(max-width:680px){.people-shell{padding:24px 16px 56px}.people-hero{flex-direction:column}.people-hero-actions{width:100%;justify-content:stretch}.people-hero-actions .btn{flex:1 1 140px}.people-back{width:100%}.people-title{font-size:25px}.people-stats{grid-template-columns:1fr}.people-stat{min-height:66px}.people-row{grid-template-columns:minmax(0,1fr) auto;gap:10px}.people-chapa{grid-column:1}.people-row-actions{grid-column:2;grid-row:1/3}.people-toolbar{align-items:flex-start;flex-direction:column}.people-toolbar-actions{width:100%;justify-content:stretch}.people-toolbar-actions .btn{flex:1}.pcp-person-slots:not([hidden]){grid-template-columns:1fr}}
+</style>
+
+<style id="dashStyles">
+/* ===== Dashboard de movimentações =====
+   Barras de série única no azul da marca: o comprimento já codifica a grandeza,
+   então não há rampa de cor por valor. Eixos e grades recuam; os números moram
+   na tabela e no tooltip, com rótulo direto só no maior valor. */
+.ed-nav .ed-tab[data-page="dash"]{flex:0 0 auto;min-width:max-content}
+body[data-page="dash"] #pgDash{display:block;background:var(--bg);overflow-y:auto;padding:0}
+.dash-shell{width:min(1320px,100%);margin:0 auto;padding:34px 32px 72px}
+.dash-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:20px}
+.dash-eyebrow{font-size:11px;font-weight:750;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);margin-bottom:7px}
+.dash-title{margin:0;color:var(--ink);font-size:30px;line-height:1.16;letter-spacing:-.035em;font-weight:730}
+.dash-lead{max-width:780px;margin:9px 0 0;color:var(--muted);font-size:13.5px;line-height:1.6}
+.dash-hero-actions{display:flex;flex:0 0 auto;flex-wrap:wrap;gap:8px;justify-content:flex-end}
+.dash-hero-actions .btn{min-height:42px;white-space:nowrap}
+
+.dash-filters{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh1);padding:14px 16px;margin-bottom:16px}
+.dash-ranges{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.dash-range{appearance:none;border:1px solid var(--line);background:var(--card-2);color:var(--ink-2);min-height:34px;padding:7px 12px;border-radius:999px;font:650 12px var(--sans);cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.dash-range:hover{border-color:var(--brand-100);background:var(--brand-50);color:var(--brand-700)}
+.dash-range.is-on{background:var(--brand);border-color:var(--brand);color:#fff}
+.dash-fields{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}
+.dash-field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.dash-field label{color:var(--ink-2);font-size:11px;font-weight:650}
+.dash-field input,.dash-field select{min-height:38px;padding:8px 10px;border:1px solid #cfd9e6;border-radius:9px;background:#fff;color:#15243b;font:500 13px var(--sans);outline:none;max-width:260px}
+.dash-field select{min-width:190px}
+.dash-field input:focus,.dash-field select:focus{border-color:var(--brand);box-shadow:var(--ds-focus)}
+.dash-clear{margin-left:auto}
+.dash-period{margin:11px 0 0;color:var(--muted);font-size:11.5px;line-height:1.5}
+
+.dash-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.dash-kpi{background:var(--card);border:1px solid var(--line);border-radius:13px;box-shadow:var(--sh1);padding:15px 17px}
+.dash-kpi-l{font-size:10.5px;font-weight:750;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);line-height:1.3}
+.dash-kpi-v{display:block;margin-top:8px;color:var(--ink);font-size:27px;line-height:1.05;font-weight:730;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.dash-kpi-s{display:block;margin-top:5px;color:var(--muted);font-size:11px;line-height:1.4}
+
+.dash-empty{padding:44px 24px;text-align:center;color:var(--muted);font-size:13px;line-height:1.6;background:var(--card);border:1px dashed var(--line);border-radius:14px}
+.dash-empty[hidden]{display:none}
+.dash-empty strong{display:block;color:var(--ink-2);font-size:15px;margin-bottom:6px}
+
+.dash-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.dash-body[hidden]{display:none}
+.dash-card{background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:var(--sh1);overflow:hidden;min-width:0}
+.dash-wide{grid-column:1/-1}
+.dash-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 19px 14px;border-bottom:1px solid var(--line)}
+.dash-card-kicker{font-size:10.5px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.dash-card h2{margin:0;color:var(--ink);font-size:16.5px;line-height:1.3;letter-spacing:-.015em;font-weight:700}
+.dash-card-sub{margin:5px 0 0;color:var(--muted);font-size:11.5px;line-height:1.5}
+.dash-card-note{color:var(--muted);font-size:11.5px;text-align:right;line-height:1.45;flex:0 0 auto;font-variant-numeric:tabular-nums}
+.dash-chart{padding:16px 19px 18px;overflow-x:auto}
+.dash-chart svg{display:block;max-width:100%;height:auto;overflow:visible}
+.dash-grid-line{stroke:var(--line);stroke-width:1}
+.dash-axis-txt{fill:var(--muted);font:500 10.5px var(--sans)}
+.dash-bar{fill:var(--brand);transition:opacity .12s}
+.dash-bar-hit{fill:transparent;cursor:pointer}
+.dash-bar-g:hover .dash-bar{opacity:.72}
+.dash-bar-lab{fill:var(--ink-2);font:700 10.5px var(--sans);font-variant-numeric:tabular-nums}
+.dash-chart-empty{padding:28px 4px;color:var(--muted);font-size:12.5px;text-align:center}
+
+.dash-table-wrap{overflow-x:auto}
+.dash-table{width:100%;border-collapse:collapse;font-size:12.5px}
+.dash-table th{position:sticky;top:0;background:var(--card-2);color:var(--muted);font-size:10.5px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);white-space:nowrap}
+.dash-table td{padding:11px 14px;border-bottom:1px solid var(--line);color:var(--ink-2);line-height:1.4;vertical-align:middle}
+.dash-table tbody tr:last-child td{border-bottom:0}
+.dash-table tbody tr.is-click{cursor:pointer;transition:background .15s}
+.dash-table tbody tr.is-click:hover{background:var(--brand-50)}
+.dash-table .num,.dash-table th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.dash-table .strong{color:var(--ink);font-weight:680}
+.dash-table .dim{color:var(--muted)}
+.dash-total td{background:var(--card-2);color:var(--ink);font-weight:720;border-top:1px solid var(--line)}
+
+.dash-tip{position:fixed;z-index:200;pointer-events:none;background:#101b2d;color:#fff;border-radius:9px;padding:8px 11px;font:600 11.5px var(--sans);line-height:1.5;box-shadow:0 14px 30px -12px rgba(0,0,0,.6);max-width:260px}
+.dash-tip[hidden]{display:none}
+.dash-tip b{display:block;font-size:12.5px;font-weight:750;margin-bottom:3px}
+.dash-tip span{display:block;color:#b9cbe6;font-variant-numeric:tabular-nums}
+
+.det-dialog{width:min(720px,94vw)}
+.det-scroll{max-height:min(58vh,520px);overflow-y:auto;border:1px solid var(--line);border-radius:11px}
+.det-block+.det-block{border-top:1px solid var(--line)}
+.det-block-t{padding:10px 14px;background:var(--card-2);color:var(--ink-2);font-size:11px;font-weight:750;letter-spacing:.06em;text-transform:uppercase}
+
+html[data-theme="dark"] .dash-field input,html[data-theme="dark"] .dash-field select{background:#0f1929;border-color:#435572;color:var(--ink)}
+html[data-theme="dark"] .dash-filters,html[data-theme="dark"] .dash-kpi,html[data-theme="dark"] .dash-card,html[data-theme="dark"] .dash-empty{background:var(--card);border-color:var(--line)}
+html[data-theme="dark"] .dash-range{background:var(--card-2);border-color:var(--line);color:var(--ink-2)}
+html[data-theme="dark"] .dash-range:hover{background:#1d3356;color:#bcd6ff}
+html[data-theme="dark"] .dash-table th,html[data-theme="dark"] .det-block-t,html[data-theme="dark"] .dash-total td{background:var(--card-2)}
+html[data-theme="dark"] .dash-table tbody tr.is-click:hover{background:#1d3356}
+html[data-theme="dark"] .dash-bar{fill:#4f8ef7}
+html[data-theme="dark"] .dash-tip{background:#e8eefb;color:#101b2d}
+html[data-theme="dark"] .dash-tip span{color:#4a5d78}
+
+@media(max-width:1100px){.dash-kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){.dash-body{grid-template-columns:1fr}.dash-card{grid-column:1/-1}}
+@media(max-width:680px){
+  .dash-shell{padding:24px 16px 56px}
+  .dash-hero{flex-direction:column}
+  .dash-hero-actions{width:100%}.dash-hero-actions .btn{flex:1 1 140px}
+  .dash-title{font-size:25px}
+  .dash-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .dash-field,.dash-field input,.dash-field select{width:100%;max-width:none}
+  .dash-clear{margin-left:0;width:100%}
+}
 </style>
 
 <style id="pcpV7Adjustments">
@@ -1413,7 +1526,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
     <nav class="ed-nav" id="edNav">
       <button type="button" class="ed-tab" data-page="colaboradores"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3" stroke="currentColor" stroke-width="1.7"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M17 11a3 3 0 0 0 0-6M18 14a5 5 0 0 1 3 5v1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Colaboradores</button>
       <button type="button" class="ed-tab" data-page="pcp"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M3 9h18M8 9v11" stroke="currentColor" stroke-width="1.7"/></svg>PCP <span class="lb-full">· Planejamento</span></button>
-      <button type="button" class="ed-tab" data-page="cadastro"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16M4 12h16M4 18.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Cadastro <span class="lb-full">de embalagem</span></button>
+      <button type="button" class="ed-tab" data-page="dash"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 19V11M10 19V5M15 19v-6M20 19v-9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>Dashboard</button><button type="button" class="ed-tab" data-page="cadastro"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16M4 12h16M4 18.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Cadastro <span class="lb-full">de embalagem</span></button>
       <button type="button" class="ed-tab" data-page="lista"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="4" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="12.5" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="12.5" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/></svg>Embalagens <span class="lb-full">cadastradas</span><span class="tc" id="navCount">0</span></button>
       <button type="button" class="ed-tab" data-page="tv" id="btnTv"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="4.5" width="19" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 20.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Modo TV</button>
     </nav>
@@ -1462,7 +1575,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
             <h1 class="people-title" id="pcpPeopleTitle">Cadastro de colaboradores</h1>
             <p class="people-lead">Equipe identificada por <b>Nome + Chapa Volkswagen</b>. A base inicial já vem carregada da planilha de mão de obra; no PCP, a seleção nominal fica vinculada aos postos e, na TV, os nomes aparecem automaticamente quando estiverem informados.</p>
           </div>
-          <button type="button" class="btn btn-ghost people-back" id="pcpClosePeople"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Voltar ao PCP</button>
+          <div class="people-hero-actions"><button type="button" class="btn btn-primary people-xls" id="pcpImportPeopleTop"><svg class="people-btn-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V3m0 12-4-4m4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Importar Excel</button><button type="button" class="btn btn-outline people-xls" id="pcpExportPeopleTop"><svg class="people-btn-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Exportar Excel</button><button type="button" class="btn btn-ghost people-back" id="pcpClosePeople"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Voltar ao PCP</button></div>
         </div>
 
         <div class="people-stats" aria-label="Resumo de colaboradores">
@@ -1489,7 +1602,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
             <div class="people-card-head"><div><div class="people-card-kicker">Equipe cadastrada</div><h2 id="peopleListTitle">Colaboradores</h2><p class="people-card-sub" id="pcpPeopleStatus">Nenhum colaborador cadastrado.</p></div></div>
             <div class="people-toolbar">
               <div class="people-toolbar-copy">Planilha padrão: coluna A = <b>Chapa VW</b> · coluna B = <b>Matrícula</b> <span style="opacity:.72">(não utilizada)</span> · coluna C = <b>Nome</b>. O cabeçalho pode permanecer na linha 3.<br>Ao importar, a planilha é analisada e você escolhe entre <b>atualizar</b> o cadastro atual ou <b>substituir</b> todos os registros.</div>
-              <div class="people-toolbar-actions"><button type="button" class="btn btn-ghost btn-sm" id="pcpImportPeople">Importar Excel</button><button type="button" class="btn btn-ghost btn-sm" id="pcpExportPeople">Exportar Excel</button><input type="file" id="pcpPeopleFile" accept=".xlsx"></div>
+              <div class="people-toolbar-actions"><button type="button" class="btn btn-primary btn-sm people-xls" id="pcpImportPeople"><svg class="people-btn-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V3m0 12-4-4m4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Importar Excel</button><button type="button" class="btn btn-outline btn-sm people-xls" id="pcpExportPeople"><svg class="people-btn-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Exportar Excel</button><input type="file" id="pcpPeopleFile" accept=".xlsx"></div>
             </div>
             <div class="people-list" id="pcpPeopleList"></div>
             <div class="people-empty" id="pcpPeopleEmpty"><strong>Nenhum colaborador cadastrado</strong>Cadastre nome e chapa Volkswagen para começar a identificar os postos do PCP.</div>
@@ -1497,6 +1610,76 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
         </div>
       </div>
     </section>
+    <!-- ====== DASHBOARD DE MOVIMENTAÇÕES ====== -->
+    <section class="pg dash-page" id="pgDash" aria-labelledby="dashTitle">
+      <div class="dash-shell">
+        <div class="dash-hero">
+          <div>
+            <div class="dash-eyebrow">Produtividade · Transbordo</div>
+            <h1 class="dash-title" id="dashTitle">Dashboard de movimentações</h1>
+            <p class="dash-lead">Horas de mão de obra, caixas e peças transbordadas apuradas por dia, por mês, por colaborador e por peça. Cada planejamento salvo no PCP alimenta este painel automaticamente, usando a <b>data do planejamento</b> como data do movimento.</p>
+          </div>
+          <div class="dash-hero-actions">
+            <button type="button" class="btn btn-outline people-xls" id="dashExport"><svg class="people-btn-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Exportar Excel</button>
+            <button type="button" class="btn btn-ghost" id="dashBack"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Voltar ao PCP</button>
+          </div>
+        </div>
+
+        <div class="dash-filters" role="group" aria-label="Filtros do dashboard">
+          <div class="dash-ranges" role="group" aria-label="Período">
+            <button type="button" class="dash-range" data-range="hoje">Hoje</button>
+            <button type="button" class="dash-range" data-range="7">Últimos 7 dias</button>
+            <button type="button" class="dash-range" data-range="30">Últimos 30 dias</button>
+            <button type="button" class="dash-range is-on" data-range="mes">Mês atual</button>
+            <button type="button" class="dash-range" data-range="ano">Ano atual</button>
+            <button type="button" class="dash-range" data-range="tudo">Tudo</button>
+          </div>
+          <div class="dash-fields">
+            <div class="dash-field"><label for="dashFrom">De</label><input type="date" id="dashFrom"></div>
+            <div class="dash-field"><label for="dashTo">Até</label><input type="date" id="dashTo"></div>
+            <div class="dash-field"><label for="dashPerson">Colaborador</label><select id="dashPerson"><option value="">Todos</option></select></div>
+            <div class="dash-field"><label for="dashPart">Peça</label><select id="dashPart"><option value="">Todas</option></select></div>
+            <button type="button" class="btn btn-ghost btn-sm dash-clear" id="dashClear">Limpar filtros</button>
+          </div>
+          <p class="dash-period" id="dashPeriod" role="status"></p>
+        </div>
+
+        <div class="dash-kpis" id="dashKpis" aria-label="Indicadores do período"></div>
+
+        <div class="dash-empty" id="dashEmpty" hidden>
+          <strong>Ainda não há movimentações registradas</strong>
+          Salve um planejamento no <b>PCP</b> com código da peça, caixas e colaboradores identificados. O movimento é gravado na data do planejamento e aparece aqui automaticamente.
+        </div>
+
+        <div class="dash-body" id="dashBody">
+          <section class="dash-card dash-wide" aria-labelledby="dashDayTitle">
+            <div class="dash-card-head"><div><div class="dash-card-kicker">Movimentações por dia</div><h2 id="dashDayTitle">Horas de mão de obra por dia</h2></div><div class="dash-card-note" id="dashDayNote"></div></div>
+            <div class="dash-chart" id="dashDayChart"></div>
+          </section>
+
+          <section class="dash-card" aria-labelledby="dashMonthTitle">
+            <div class="dash-card-head"><div><div class="dash-card-kicker">Movimentações por mês</div><h2 id="dashMonthTitle">Horas por mês</h2></div><div class="dash-card-note" id="dashMonthNote"></div></div>
+            <div class="dash-chart" id="dashMonthChart"></div>
+          </section>
+
+          <section class="dash-card" aria-labelledby="dashTopTitle">
+            <div class="dash-card-head"><div><div class="dash-card-kicker">Ranking</div><h2 id="dashTopTitle">Horas por colaborador</h2></div><div class="dash-card-note" id="dashTopNote"></div></div>
+            <div class="dash-chart" id="dashTopChart"></div>
+          </section>
+
+          <section class="dash-card dash-wide" aria-labelledby="dashPeopleTitle">
+            <div class="dash-card-head"><div><div class="dash-card-kicker">Detalhamento</div><h2 id="dashPeopleTitle">Quanto cada colaborador trabalhou</h2><p class="dash-card-sub">Clique em um colaborador para ver em quais peças ele trabalhou.</p></div></div>
+            <div class="dash-table-wrap"><table class="dash-table" id="dashPeopleTable"><thead><tr><th scope="col">Colaborador</th><th scope="col">Chapa VW</th><th scope="col" class="num">Horas</th><th scope="col" class="num">Dias</th><th scope="col" class="num">Peças transbordadas</th><th scope="col" class="num">Caixas</th><th scope="col" class="num">Códigos</th></tr></thead><tbody></tbody></table></div>
+          </section>
+
+          <section class="dash-card dash-wide" aria-labelledby="dashPartsTitle">
+            <div class="dash-card-head"><div><div class="dash-card-kicker">Detalhamento</div><h2 id="dashPartsTitle">Peças transbordadas</h2><p class="dash-card-sub">Volume e mão de obra por código de peça no período.</p></div></div>
+            <div class="dash-table-wrap"><table class="dash-table" id="dashPartsTable"><thead><tr><th scope="col">Código</th><th scope="col">Descrição</th><th scope="col" class="num">Peças</th><th scope="col" class="num">Caixas</th><th scope="col" class="num">Horas</th><th scope="col" class="num">Colaboradores</th><th scope="col" class="num">Dias</th></tr></thead><tbody></tbody></table></div>
+          </section>
+        </div>
+      </div>
+    </section>
+
     <!-- ====== PCP — PLANEJAMENTO DE TRANSBORDO ====== -->
     <section class="pg" id="pgPCP" aria-labelledby="pcpTitle">
       <div class="pcp-main">
@@ -1934,6 +2117,22 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
       <button class="btn btn-ghost btn-sm" id="pwCancel" data-pw-close>Cancelar</button>
       <button class="btn btn-primary btn-sm" id="pwOk">Confirmar</button>
     </div>
+  </div>
+</div>
+
+<!-- ============ DETALHE DO COLABORADOR (dashboard) ============ -->
+<div class="pw-modal" id="dashDetail" hidden>
+  <div class="pw-backdrop" data-det-close></div>
+  <div class="pw-dialog det-dialog" role="dialog" aria-modal="true" aria-labelledby="detTitle">
+    <div class="pw-head">
+      <div class="pw-ico imp-ico"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M3 20v-2a6 6 0 0 1 12 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 4.5h4M19 2.5v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+      <div><div class="pw-title" id="detTitle">Colaborador</div><div class="pw-sub" id="detSub"></div></div>
+    </div>
+    <div class="det-scroll">
+      <div class="det-block"><div class="det-block-t">Peças em que trabalhou</div><div class="dash-table-wrap"><table class="dash-table"><thead><tr><th scope="col">Código</th><th scope="col">Descrição</th><th scope="col" class="num">Horas</th><th scope="col" class="num">Peças</th><th scope="col" class="num">Caixas</th></tr></thead><tbody id="detParts"></tbody></table></div></div>
+      <div class="det-block"><div class="det-block-t">Dia a dia</div><div class="dash-table-wrap"><table class="dash-table"><thead><tr><th scope="col">Data</th><th scope="col" class="num">Horas</th><th scope="col" class="num">Peças</th><th scope="col" class="num">Caixas</th><th scope="col">Códigos do dia</th></tr></thead><tbody id="detDays"></tbody></table></div></div>
+    </div>
+    <div class="pw-actions"><button type="button" class="btn btn-ghost btn-sm" data-det-close>Fechar</button></div>
   </div>
 </div>
 
@@ -2692,8 +2891,8 @@ SOFTWARE.
   }
   function goToPage(pg){
     document.body.dataset.view="editor";document.body.dataset.page=pg;markTabs(pg);
-    if(pg==="pcp"){pcpRefresh();}else if(pg==="lista"){renderEditorList();}else if(pg==="cadastro"){populateForm();}
-    var sc=el(pg==="pcp"?"pgPCP":pg==="lista"?"pgLista":pg==="colaboradores"?"pgColaboradores":"pgCadastro");if(sc)sc.scrollTop=0;
+    if(pg==="pcp"){pcpRefresh();}else if(pg==="lista"){renderEditorList();}else if(pg==="cadastro"){populateForm();}else if(pg==="dash"){dashRender();}
+    var sc=el(pg==="pcp"?"pgPCP":pg==="lista"?"pgLista":pg==="colaboradores"?"pgColaboradores":pg==="dash"?"pgDash":"pgCadastro");if(sc)sc.scrollTop=0;
   }
   /* cabeçalho da página de cadastro: qual embalagem está aberta + setas anterior/próximo */
   function updateEdHeader(){
@@ -3272,7 +3471,7 @@ SOFTWARE.
     if(flow)flow.classList.toggle("tv-one-card",(hasOrigin?1:0)+(hasDest?1:0)<=1);
     setTvField("d-boxes",it.qtyBoxes,".time-sub");
     (function(){
-      var names=it.pcpRowId&&Array.isArray(it.pcpPeopleNames)?it.pcpPeopleNames.filter(Boolean):[],count=it.pcpRowId?Number(it.workers):nWorkers(it.workers),value=names.length?names.join(" · "):String(count||1),node=el("d-workers");
+      var names=it.pcpRowId&&Array.isArray(it.pcpPeopleNames)?it.pcpPeopleNames.filter(Boolean):[],count=it.pcpRowId?Number(it.workers):nWorkers(it.workers),value=names.length?names.join(" | "):String(count||1),node=el("d-workers");
       if(node)node.classList.toggle("is-names",names.length>0);
       var pt=el("d-workers-label-pt"),en=el("d-workers-label-en"),plural=names.length?names.length>1:count>1;
       if(pt)pt.textContent=plural?"Colaboradores":"Colaborador";if(en)en.textContent=plural?"Team members":"Team member";
@@ -3791,7 +3990,11 @@ SOFTWARE.
     peopleLoad();el("pcpClosePeople").onclick=function(){setPage("pcp");};el("pcpAddPerson").onclick=peopleSubmit;el("pcpCancelPersonEdit").onclick=peopleResetForm;
     ["pcpNewPerson","pcpNewChapa"].forEach(function(id){el(id).addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();peopleSubmit();}});});
     el("pcpNewChapa").addEventListener("input",function(){var pos=this.selectionStart,v=peopleChapa(this.value);if(v!==this.value){this.value=v;try{this.setSelectionRange(pos,pos);}catch(e){}}});
-    el("pcpExportPeople").onclick=function(){peopleExport().catch(function(){toast("Não foi possível exportar o Excel.");});};el("pcpImportPeople").onclick=function(){el("pcpPeopleFile").click();};
+    var peopleDoExport=function(){peopleExport().catch(function(){toast("Não foi possível exportar o Excel.");});};
+    var peopleDoImport=function(){el("pcpPeopleFile").click();};
+    /* Os mesmos comandos aparecem no topo da página e na barra da lista. */
+    ["pcpExportPeople","pcpExportPeopleTop"].forEach(function(id){var b=el(id);if(b)b.onclick=peopleDoExport;});
+    ["pcpImportPeople","pcpImportPeopleTop"].forEach(function(id){var b=el(id);if(b)b.onclick=peopleDoImport;});
     el("pcpPeopleFile").onchange=function(){peopleImport(this.files[0]).catch(function(error){toast(error.message||"Erro ao importar Excel.");});this.value="";};
     (function(){
       var m=el("peopleImpModal");if(!m)return;
@@ -3871,6 +4074,381 @@ SOFTWARE.
     var all=pcpPlan.rows.map(pcpResolve),valid=all.filter(function(r){return r.valid;}),invalid=all.filter(function(r){return r.active&&!r.valid;});
     return {all:all,valid:valid,invalid:invalid,cs:valid.reduce(function(n,r){return n+r.laborCs;},0),boxes:valid.reduce(function(n,r){return n+r.boxes;},0),pieces:valid.reduce(function(n,r){return n+r.boxes*r.qty;},0)};
   }
+  /* ===== Histórico de movimentações =====
+     A cada salvamento o planejamento vira um retrato do dia (chave = data do PCP).
+     É desse histórico que o dashboard tira horas por colaborador, peças transbordadas
+     e o comparativo por dia e por mês. Regravar a mesma data substitui o retrato,
+     então o histórico sempre reflete o último planejamento daquela data. */
+  var HIST_KEY="sese_pcp_hist_v1",HIST_MAX_DAYS=800,pcpHist={};
+  function histLoad(){
+    try{var raw=JSON.parse(localStorage.getItem(HIST_KEY)||"{}");pcpHist=raw&&typeof raw==="object"&&!Array.isArray(raw)?raw:{};}catch(e){pcpHist={};}
+  }
+  function histPersist(){
+    /* Mantém apenas os dias mais recentes para não estourar o armazenamento do navegador. */
+    var dias=Object.keys(pcpHist).sort();
+    while(dias.length>HIST_MAX_DAYS){delete pcpHist[dias.shift()];}
+    try{localStorage.setItem(HIST_KEY,JSON.stringify(pcpHist));}catch(e){}
+  }
+  /* Monta o retrato do dia a partir das linhas válidas do planejamento.
+     Cada posto roda em paralelo: todo mundo daquele posto trabalha o tempo do posto.
+     As peças e as caixas do posto são rateadas entre os colaboradores do posto. */
+  function histSnapshotFromPlan(){
+    if(!pcpPlan||!/^\d{4}-\d{2}-\d{2}$/.test(pcpPlan.date||""))return null;
+    var entradas=[],totalSeg=0,totalPecas=0,totalCaixas=0;
+    pcpPlan.rows.forEach(function(row){
+      var r=pcpResolve(row);if(!r.valid||!r.item)return;
+      var codigo=String(r.item.partCode||""),peca=String(r.item.partName||""),porCaixa=isFinite(r.qty)?r.qty:0;
+      r.stations.forEach(function(st,i){
+        if(!st.valid)return;
+        var seg=st.cs/100,caixas=st.boxes,pecas=caixas*porCaixa,vagas=st.workers;
+        totalSeg+=seg*vagas;totalPecas+=pecas;totalCaixas+=caixas;
+        var nomes=(st.station.people||[]).map(function(v){return peopleFind(v);}).filter(Boolean);
+        var anon=Math.max(0,vagas-nomes.length);
+        var todos=nomes.map(function(pe){return {n:pe.name,ch:pe.chapa||""};});
+        for(var k=0;k<anon;k++)todos.push({n:"Não identificado",ch:""});
+        todos.forEach(function(pe){
+          entradas.push({n:pe.n,ch:pe.ch,c:codigo,p:peca,s:seg,pc:vagas?pecas/vagas:0,bx:vagas?caixas/vagas:0,po:i+1});
+        });
+      });
+    });
+    if(!entradas.length)return null;
+    return {d:pcpPlan.date,at:Date.now(),ref:String(pcpPlan.reference||""),resp:String(pcpPlan.responsible||""),
+      seg:totalSeg,pc:totalPecas,bx:totalCaixas,e:entradas};
+  }
+  /* Chamado depois de cada gravação do planejamento. */
+  function histRecord(){
+    if(!pcpReady||!pcpPlan)return;
+    var snap=histSnapshotFromPlan(),data=pcpPlan.date;
+    if(snap)pcpHist[data]=snap;
+    else if(pcpHist[data])delete pcpHist[data]; /* dia esvaziado deixa de constar */
+    histPersist();
+    if(document.body.dataset.page==="dash")dashRender();
+  }
+  /* ===== Agregações do dashboard ===== */
+  function histDays(){return Object.keys(pcpHist).filter(function(d){return /^\d{4}-\d{2}-\d{2}$/.test(d)&&pcpHist[d]&&Array.isArray(pcpHist[d].e);}).sort();}
+  function histRows(inicio,fim,pessoa,peca){
+    /* Uma linha por colaborador × peça × posto × dia, já filtrada. */
+    var out=[];
+    histDays().forEach(function(d){
+      if(inicio&&d<inicio)return;
+      if(fim&&d>fim)return;
+      var dia=pcpHist[d];
+      dia.e.forEach(function(en){
+        var chave=en.ch?(en.n+" · VW "+en.ch):en.n;
+        if(pessoa&&chave!==pessoa)return;
+        if(peca&&en.c!==peca)return;
+        out.push({d:d,mes:d.slice(0,7),n:en.n,ch:en.ch||"",chave:chave,c:en.c,p:en.p,
+          seg:Number(en.s)||0,pc:Number(en.pc)||0,bx:Number(en.bx)||0,po:en.po||1});
+      });
+    });
+    return out;
+  }
+  function histGroup(linhas,campo){
+    var mapa={},ordem=[];
+    linhas.forEach(function(l){
+      var k=l[campo];
+      if(!mapa[k]){mapa[k]={k:k,seg:0,pc:0,bx:0,dias:{},pessoas:{},pecas:{},rotulo:k};ordem.push(k);}
+      var g=mapa[k];g.seg+=l.seg;g.pc+=l.pc;g.bx+=l.bx;g.dias[l.d]=true;g.pessoas[l.chave]=true;g.pecas[l.c]=true;
+      if(campo==="c")g.rotulo=l.p||l.c;
+      if(campo==="chave")g.rotulo=l.n;
+    });
+    return ordem.map(function(k){var g=mapa[k];g.nDias=Object.keys(g.dias).length;g.nPessoas=Object.keys(g.pessoas).length;g.nPecas=Object.keys(g.pecas).length;return g;});
+  }
+  function histHoras(seg){return seg/3600;}
+  function histHorasTexto(seg){
+    var h=Math.floor(seg/3600),m=Math.round((seg-h*3600)/60);
+    if(m===60){h+=1;m=0;}
+    return h+"h"+String(m).padStart(2,"0");
+  }
+  function histNum(n,casas){return Number(n||0).toLocaleString("pt-BR",{maximumFractionDigits:casas==null?0:casas});}
+
+  /* ===== Dashboard =====
+     Série única em uma cor só: o comprimento da barra já carrega a grandeza.
+     Rótulo direto apenas no maior valor; o resto fica no tooltip e nas tabelas. */
+  var dashState={range:"mes",from:"",to:"",person:"",part:""},dashTip=null;
+  function dashISO(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+  function dashBR(iso){var p=String(iso||"").split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:String(iso||"");}
+  function dashDiaCurto(iso){var p=String(iso||"").split("-");return p.length===3?p[2]+"/"+p[1]:String(iso||"");}
+  var DASH_MESES=["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+  function dashMesLabel(ym){var p=String(ym||"").split("-");return p.length===2?(DASH_MESES[Number(p[1])-1]||p[1])+"/"+p[0].slice(2):String(ym||"");}
+  /* A data de hoje é lida do relógio do dispositivo a cada apuração. */
+  function dashPeriodo(){
+    var hoje=new Date(),ini="",fim=dashISO(hoje);
+    if(dashState.range==="livre")return {ini:dashState.from,fim:dashState.to};
+    if(dashState.range==="hoje")ini=dashISO(hoje);
+    else if(dashState.range==="7"){var a=new Date(hoje);a.setDate(a.getDate()-6);ini=dashISO(a);}
+    else if(dashState.range==="30"){var b=new Date(hoje);b.setDate(b.getDate()-29);ini=dashISO(b);}
+    else if(dashState.range==="mes")ini=dashISO(new Date(hoje.getFullYear(),hoje.getMonth(),1));
+    else if(dashState.range==="ano")ini=dashISO(new Date(hoje.getFullYear(),0,1));
+    else {ini="";fim="";}
+    return {ini:ini,fim:fim};
+  }
+  function dashTipShow(ev,titulo,linhas){
+    if(!dashTip){dashTip=document.createElement("div");dashTip.className="dash-tip";dashTip.hidden=true;document.body.appendChild(dashTip);}
+    dashTip.replaceChildren();
+    var b=document.createElement("b");b.textContent=titulo;dashTip.appendChild(b);
+    linhas.forEach(function(t){var sp=document.createElement("span");sp.textContent=t;dashTip.appendChild(sp);});
+    dashTip.hidden=false;
+    var x=ev.clientX+14,y=ev.clientY+14,w=dashTip.offsetWidth,h=dashTip.offsetHeight;
+    if(x+w>window.innerWidth-10)x=ev.clientX-w-14;
+    if(y+h>window.innerHeight-10)y=ev.clientY-h-14;
+    dashTip.style.left=Math.max(8,x)+"px";dashTip.style.top=Math.max(8,y)+"px";
+  }
+  function dashTipHide(){if(dashTip)dashTip.hidden=true;}
+  function svgEl(nome,attrs){var n=document.createElementNS("http://www.w3.org/2000/svg",nome);Object.keys(attrs||{}).forEach(function(k){n.setAttribute(k,attrs[k]);});return n;}
+  /* Escala do eixo com topo em número redondo. */
+  function dashEscala(max){
+    if(!(max>0))return {topo:1,passo:1};
+    var bruto=max/4,exp=Math.pow(10,Math.floor(Math.log(bruto)/Math.LN10)),norm=bruto/exp;
+    var passo=(norm<=1?1:norm<=2?2:norm<=2.5?2.5:norm<=5?5:10)*exp;
+    return {topo:Math.ceil(max/passo)*passo,passo:passo};
+  }
+  function dashTicks(topo,passo){var t=[],v=0;while(v<topo+passo/2){t.push(v);v+=passo;}return t;}
+  /* Colunas verticais: dias e meses. */
+  function dashColunas(host,dados,formatoRotulo){
+    host.replaceChildren();
+    if(!dados.length){var vazio=document.createElement("p");vazio.className="dash-chart-empty";vazio.textContent="Sem movimentações no período filtrado.";host.appendChild(vazio);return;}
+    var largura=Math.max(host.clientWidth-2,320),H=236,padL=46,padR=12,padT=22,padB=34;
+    /* Poucos períodos não esticam o gráfico pela tela toda; muitos geram rolagem horizontal. */
+    var minimo=padL+padR+36*dados.length,ideal=padL+padR+72*dados.length;
+    var W=minimo>largura?minimo:Math.min(largura,ideal);
+    var plotW=W-padL-padR,plotH=H-padT-padB;
+    var max=Math.max.apply(null,dados.map(function(d){return d.v;})),esc=dashEscala(max),topo=esc.topo||1;
+    var svg=svgEl("svg",{viewBox:"0 0 "+W+" "+H,width:W,height:H,role:"img"});
+    svg.appendChild(svgEl("title",{})).textContent="Horas de mão de obra por período";
+    dashTicks(topo,esc.passo).forEach(function(t){
+      var y=padT+plotH-(t/topo)*plotH;
+      svg.appendChild(svgEl("line",{x1:padL,x2:W-padR,y1:y,y2:y,class:"dash-grid-line"}));
+      var tx=svgEl("text",{x:padL-8,y:y+3.5,class:"dash-axis-txt","text-anchor":"end"});tx.textContent=histNum(t,t<10?1:0)+"h";svg.appendChild(tx);
+    });
+    var banda=plotW/dados.length,esp=Math.min(24,Math.max(10,banda-10));
+    dados.forEach(function(d,i){
+      var h=topo?(d.v/topo)*plotH:0,x=padL+banda*i+(banda-esp)/2,y=padT+plotH-h;
+      var g=svgEl("g",{class:"dash-bar-g"});
+      if(h>0){
+        /* Ponta arredondada só no topo; a base encosta quadrada na linha zero. */
+        var r=Math.min(4,esp/2,h),d2="M"+x+" "+(y+h)+"V"+(y+r)+"a"+r+" "+r+" 0 0 1 "+r+" "+(-r)+"h"+(esp-2*r)+"a"+r+" "+r+" 0 0 1 "+r+" "+r+"V"+(y+h)+"Z";
+        g.appendChild(svgEl("path",{d:d2,class:"dash-bar"}));
+      }
+      var hit=svgEl("rect",{x:padL+banda*i,y:padT,width:banda,height:plotH,class:"dash-bar-hit"});
+      hit.addEventListener("mousemove",function(ev){dashTipShow(ev,d.titulo,d.detalhe);});
+      hit.addEventListener("mouseleave",dashTipHide);
+      g.appendChild(hit);
+      if(d.v===max&&max>0){var lab=svgEl("text",{x:x+esp/2,y:y-6,class:"dash-bar-lab","text-anchor":"middle"});lab.textContent=histHorasTexto(d.seg);g.appendChild(lab);}
+      var passoRot=Math.ceil(dados.length/Math.max(1,Math.floor(plotW/46)));
+      if(i%passoRot===0||i===dados.length-1){var ax=svgEl("text",{x:padL+banda*i+banda/2,y:H-12,class:"dash-axis-txt","text-anchor":"middle"});ax.textContent=formatoRotulo(d.k);g.appendChild(ax);}
+      svg.appendChild(g);
+    });
+    svg.appendChild(svgEl("line",{x1:padL,x2:W-padR,y1:padT+plotH,y2:padT+plotH,class:"dash-grid-line"}));
+    host.appendChild(svg);
+  }
+  /* Barras horizontais: ranking de colaboradores (nomes longos). */
+  function dashBarras(host,dados){
+    host.replaceChildren();
+    if(!dados.length){var vazio=document.createElement("p");vazio.className="dash-chart-empty";vazio.textContent="Sem colaboradores identificados no período.";host.appendChild(vazio);return;}
+    var W=Math.max(host.clientWidth-2,340),linha=30,padT=8,padB=8,padL=Math.min(190,Math.max(120,W*0.34)),padR=64;
+    var H=padT+padB+linha*dados.length,plotW=Math.max(60,W-padL-padR);
+    var max=Math.max.apply(null,dados.map(function(d){return d.v;}))||1;
+    var svg=svgEl("svg",{viewBox:"0 0 "+W+" "+H,width:W,height:H,role:"img"});
+    svg.appendChild(svgEl("title",{})).textContent="Horas por colaborador";
+    dados.forEach(function(d,i){
+      var y=padT+linha*i,alt=Math.min(18,linha-12),cy=y+(linha-alt)/2,larg=(d.v/max)*plotW;
+      var g=svgEl("g",{class:"dash-bar-g"});
+      var nome=svgEl("text",{x:padL-10,y:y+linha/2+3.5,class:"dash-axis-txt","text-anchor":"end"});
+      nome.textContent=d.rotulo.length>26?d.rotulo.slice(0,25)+"…":d.rotulo;g.appendChild(nome);
+      if(larg>0){
+        var r=Math.min(4,alt/2,larg),d2="M"+padL+" "+cy+"h"+(larg-r)+"a"+r+" "+r+" 0 0 1 "+r+" "+r+"v"+(alt-2*r)+"a"+r+" "+r+" 0 0 1 "+(-r)+" "+r+"H"+padL+"Z";
+        g.appendChild(svgEl("path",{d:d2,class:"dash-bar"}));
+      }
+      var val=svgEl("text",{x:padL+larg+8,y:cy+alt/2+3.5,class:"dash-bar-lab"});val.textContent=histHorasTexto(d.seg);g.appendChild(val);
+      var hit=svgEl("rect",{x:0,y:y,width:W,height:linha,class:"dash-bar-hit"});
+      hit.addEventListener("mousemove",function(ev){dashTipShow(ev,d.rotulo,d.detalhe);});
+      hit.addEventListener("mouseleave",dashTipHide);
+      g.appendChild(hit);svg.appendChild(g);
+    });
+    svg.appendChild(svgEl("line",{x1:padL,x2:padL,y1:padT,y2:H-padB,class:"dash-grid-line"}));
+    host.appendChild(svg);
+  }
+  function dashKpi(host,rotulo,valor,sub){
+    var c=document.createElement("div");c.className="dash-kpi";
+    var l=document.createElement("div");l.className="dash-kpi-l";l.textContent=rotulo;
+    var v=document.createElement("strong");v.className="dash-kpi-v";v.textContent=valor;
+    var sN=document.createElement("span");sN.className="dash-kpi-s";sN.textContent=sub;
+    c.appendChild(l);c.appendChild(v);c.appendChild(sN);host.appendChild(c);
+  }
+  function dashTd(tr,texto,classe){var td=document.createElement("td");td.textContent=texto;if(classe)td.className=classe;tr.appendChild(td);return td;}
+  function dashPopulaFiltros(){
+    var pessoas={},pecas={};
+    histDays().forEach(function(d){pcpHist[d].e.forEach(function(en){
+      var chave=en.ch?(en.n+" · VW "+en.ch):en.n;pessoas[chave]=en.n;if(en.c)pecas[en.c]=en.p||en.c;});});
+    [["dashPerson",pessoas,dashState.person,"Todos"],["dashPart",pecas,dashState.part,"Todas"]].forEach(function(cfg){
+      var sel=el(cfg[0]);if(!sel)return;var atual=cfg[2];sel.replaceChildren();
+      var op0=document.createElement("option");op0.value="";op0.textContent=cfg[3];sel.appendChild(op0);
+      Object.keys(cfg[1]).sort(function(a,b){return String(cfg[1][a]).localeCompare(String(cfg[1][b]),"pt-BR",{sensitivity:"base"});}).forEach(function(k){
+        var op=document.createElement("option");op.value=k;op.textContent=cfg[0]==="dashPart"?(k+" · "+cfg[1][k]):cfg[1][k];sel.appendChild(op);});
+      sel.value=atual;if(sel.value!==atual){sel.value="";if(cfg[0]==="dashPerson")dashState.person="";else dashState.part="";}
+    });
+  }
+  function dashRender(){
+    if(!el("pgDash"))return;
+    dashPopulaFiltros();
+    var per=dashPeriodo(),linhas=histRows(per.ini,per.fim,dashState.person,dashState.part);
+    $all(".dash-range").forEach(function(b){b.classList.toggle("is-on",b.dataset.range===dashState.range);});
+    var hoje=new Date();
+    el("dashPeriod").textContent="Período: "+(per.ini?dashBR(per.ini):"início do histórico")+" até "+(per.fim?dashBR(per.fim):"hoje")
+      +" · Apurado em "+dashBR(dashISO(hoje))+" "+String(hoje.getHours()).padStart(2,"0")+":"+String(hoje.getMinutes()).padStart(2,"0")
+      +(dashState.person?(" · Colaborador: "+dashState.person):"")+(dashState.part?(" · Peça: "+dashState.part):"");
+
+    /* Sem nenhum histórico: só a orientação. Com histórico e filtro vazio: painel com zeros. */
+    var temHistorico=histDays().length>0;
+    el("dashEmpty").hidden=temHistorico;
+    el("dashBody").hidden=!temHistorico;
+    if(!temHistorico){el("dashKpis").replaceChildren();return;}
+
+    var totSeg=0,totPc=0,totBx=0,dias={},pes={},pcs={};
+    linhas.forEach(function(l){totSeg+=l.seg;totPc+=l.pc;totBx+=l.bx;dias[l.d]=true;if(l.n!=="Não identificado")pes[l.chave]=true;pcs[l.c]=true;});
+    var nDias=Object.keys(dias).length;
+    var kpis=el("dashKpis");kpis.replaceChildren();
+    dashKpi(kpis,"Horas de mão de obra",histHorasTexto(totSeg),histNum(histHoras(totSeg),1)+" h no período");
+    dashKpi(kpis,"Peças transbordadas",histNum(totPc),histNum(totBx)+" caixas");
+    dashKpi(kpis,"Colaboradores",histNum(Object.keys(pes).length),"com movimentação registrada");
+    dashKpi(kpis,"Dias com movimentação",histNum(nDias),nDias?("média de "+histHorasTexto(totSeg/nDias)+" por dia"):"—");
+    dashKpi(kpis,"Peças diferentes",histNum(Object.keys(pcs).length),"códigos transbordados");
+
+    /* Por dia */
+    var porDia=histGroup(linhas,"d").sort(function(a,b){return a.k<b.k?-1:1;});
+    dashColunas(el("dashDayChart"),porDia.map(function(g){return {k:g.k,v:histHoras(g.seg),seg:g.seg,titulo:dashBR(g.k),
+      detalhe:[histHorasTexto(g.seg)+" de mão de obra",histNum(g.pc)+" peças · "+histNum(g.bx)+" caixas",g.nPessoas+" colaborador(es) · "+g.nPecas+" peça(s)"]};}),dashDiaCurto);
+    el("dashDayNote").textContent=porDia.length?(porDia.length+" dia(s) · "+histHorasTexto(totSeg)+" no total"):"";
+
+    /* Por mês */
+    var porMes=histGroup(linhas,"mes").sort(function(a,b){return a.k<b.k?-1:1;});
+    dashColunas(el("dashMonthChart"),porMes.map(function(g){return {k:g.k,v:histHoras(g.seg),seg:g.seg,titulo:dashMesLabel(g.k),
+      detalhe:[histHorasTexto(g.seg)+" de mão de obra",histNum(g.pc)+" peças · "+histNum(g.bx)+" caixas",g.nDias+" dia(s) com movimentação"]};}),dashMesLabel);
+    el("dashMonthNote").textContent=porMes.length?(porMes.length+" mês(es) no período"):"";
+
+    /* Ranking de colaboradores */
+    var porPessoa=histGroup(linhas,"chave").sort(function(a,b){return b.seg-a.seg;});
+    var top=porPessoa.slice(0,12);
+    dashBarras(el("dashTopChart"),top.map(function(g){return {rotulo:g.rotulo,v:histHoras(g.seg),seg:g.seg,
+      detalhe:[histHorasTexto(g.seg)+" trabalhadas",histNum(g.pc)+" peças · "+histNum(g.bx)+" caixas",g.nDias+" dia(s) · "+g.nPecas+" peça(s) diferente(s)"]};}));
+    el("dashTopNote").textContent=porPessoa.length>top.length?("Top "+top.length+" de "+porPessoa.length):(porPessoa.length+" colaborador(es)");
+
+    /* Tabela por colaborador */
+    var tb=el("dashPeopleTable").querySelector("tbody");tb.replaceChildren();
+    porPessoa.forEach(function(g){
+      var tr=document.createElement("tr");tr.className="is-click";tr.tabIndex=0;
+      dashTd(tr,g.rotulo,"strong");dashTd(tr,(g.k.indexOf(" · VW ")>0?g.k.split(" · VW ")[1]:"—"),"dim");
+      dashTd(tr,histHorasTexto(g.seg),"num strong");dashTd(tr,histNum(g.nDias),"num");
+      dashTd(tr,histNum(g.pc),"num");dashTd(tr,histNum(g.bx),"num");dashTd(tr,histNum(g.nPecas),"num");
+      var abre=function(){dashAbreDetalhe(g.k,g.rotulo,per);};
+      tr.addEventListener("click",abre);
+      tr.addEventListener("keydown",function(ev){if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();abre();}});
+      tb.appendChild(tr);
+    });
+    if(porPessoa.length){
+      var trT=document.createElement("tr");trT.className="dash-total";
+      dashTd(trT,"Total do período");dashTd(trT,"—","dim");dashTd(trT,histHorasTexto(totSeg),"num");
+      dashTd(trT,histNum(nDias),"num");dashTd(trT,histNum(totPc),"num");dashTd(trT,histNum(totBx),"num");dashTd(trT,histNum(Object.keys(pcs).length),"num");
+      tb.appendChild(trT);
+    }
+
+    /* Tabela por peça */
+    var porPeca=histGroup(linhas,"c").sort(function(a,b){return b.pc-a.pc;});
+    var tp=el("dashPartsTable").querySelector("tbody");tp.replaceChildren();
+    porPeca.forEach(function(g){
+      var tr=document.createElement("tr");
+      dashTd(tr,g.k,"strong");dashTd(tr,g.rotulo===g.k?"—":g.rotulo,"dim");
+      dashTd(tr,histNum(g.pc),"num strong");dashTd(tr,histNum(g.bx),"num");
+      dashTd(tr,histHorasTexto(g.seg),"num");dashTd(tr,histNum(g.nPessoas),"num");dashTd(tr,histNum(g.nDias),"num");
+      tp.appendChild(tr);
+    });
+    if(porPeca.length){
+      var trP=document.createElement("tr");trP.className="dash-total";
+      dashTd(trP,"Total do período");dashTd(trP,"—","dim");dashTd(trP,histNum(totPc),"num");dashTd(trP,histNum(totBx),"num");
+      dashTd(trP,histHorasTexto(totSeg),"num");dashTd(trP,histNum(Object.keys(pes).length),"num");dashTd(trP,histNum(nDias),"num");
+      tp.appendChild(trP);
+    }
+  }
+  function dashAbreDetalhe(chave,rotulo,per){
+    var linhas=histRows(per.ini,per.fim,chave,dashState.part),m=el("dashDetail");if(!m)return;
+    var seg=0,pc=0,bx=0,dias={};linhas.forEach(function(l){seg+=l.seg;pc+=l.pc;bx+=l.bx;dias[l.d]=true;});
+    el("detTitle").textContent=rotulo;
+    el("detSub").textContent=(chave.indexOf(" · VW ")>0?("Chapa VW "+chave.split(" · VW ")[1]+" · "):"")
+      +histHorasTexto(seg)+" · "+histNum(pc)+" peças · "+histNum(bx)+" caixas · "+Object.keys(dias).length+" dia(s)";
+    var tp=el("detParts");tp.replaceChildren();
+    histGroup(linhas,"c").sort(function(a,b){return b.seg-a.seg;}).forEach(function(g){
+      var tr=document.createElement("tr");dashTd(tr,g.k,"strong");dashTd(tr,g.rotulo===g.k?"—":g.rotulo,"dim");
+      dashTd(tr,histHorasTexto(g.seg),"num");dashTd(tr,histNum(g.pc),"num");dashTd(tr,histNum(g.bx),"num");tp.appendChild(tr);
+    });
+    var td=el("detDays");td.replaceChildren();
+    histGroup(linhas,"d").sort(function(a,b){return a.k<b.k?1:-1;}).forEach(function(g){
+      var tr=document.createElement("tr");dashTd(tr,dashBR(g.k),"strong");
+      dashTd(tr,histHorasTexto(g.seg),"num");dashTd(tr,histNum(g.pc),"num");dashTd(tr,histNum(g.bx),"num");
+      dashTd(tr,Object.keys(g.pecas).join(", "),"dim");td.appendChild(tr);
+    });
+    m.hidden=false;
+  }
+  /* Exporta o período filtrado em três abas: por colaborador, por peça e por dia. */
+  async function dashExport(){
+    var per=dashPeriodo(),linhas=histRows(per.ini,per.fim,dashState.person,dashState.part);
+    if(!linhas.length){toast("Não há movimentações no período filtrado.");return;}
+    var abas=[
+      {nome:"Por colaborador",cab:["Colaborador","Chapa VW","Horas","Horas (decimal)","Dias","Peças","Caixas","Códigos"],
+       linhas:histGroup(linhas,"chave").sort(function(a,b){return b.seg-a.seg;}).map(function(g){
+         return [g.rotulo,(g.k.indexOf(" · VW ")>0?g.k.split(" · VW ")[1]:""),histHorasTexto(g.seg),histNum(histHoras(g.seg),2),g.nDias,Math.round(g.pc),Math.round(g.bx),g.nPecas];})},
+      {nome:"Por peça",cab:["Código","Descrição","Peças","Caixas","Horas","Horas (decimal)","Colaboradores","Dias"],
+       linhas:histGroup(linhas,"c").sort(function(a,b){return b.pc-a.pc;}).map(function(g){
+         return [g.k,g.rotulo===g.k?"":g.rotulo,Math.round(g.pc),Math.round(g.bx),histHorasTexto(g.seg),histNum(histHoras(g.seg),2),g.nPessoas,g.nDias];})},
+      {nome:"Por dia",cab:["Data","Colaborador","Chapa VW","Código","Descrição","Posto","Horas","Horas (decimal)","Peças","Caixas"],
+       linhas:linhas.slice().sort(function(a,b){return a.d<b.d?-1:a.d>b.d?1:0;}).map(function(l){
+         return [dashBR(l.d),l.n,l.ch,l.c,l.p,l.po,histHorasTexto(l.seg),histNum(histHoras(l.seg),2),histNum(l.pc,1),histNum(l.bx,2)];})}
+    ];
+    var zip=new JSZip(),tipos="",folhas="",rels="";
+    abas.forEach(function(aba,i){
+      var n=i+1,corpo=[aba.cab].concat(aba.linhas).map(function(linha,r){
+        var celulas=linha.map(function(v,c){
+          var ref=String.fromCharCode(65+c)+(r+1);
+          return '<c r="'+ref+'" t="inlineStr"><is><t>'+xmlEscape(v==null?"":v)+'</t></is></c>';
+        }).join("");
+        return '<row r="'+(r+1)+'">'+celulas+'</row>';
+      }).join("");
+      zip.file("xl/worksheets/sheet"+n+".xml",'<?xml version="1.0"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'+corpo+'</sheetData></worksheet>');
+      tipos+='<Override PartName="/xl/worksheets/sheet'+n+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+      folhas+='<sheet name="'+xmlEscape(aba.nome)+'" sheetId="'+n+'" r:id="rId'+n+'"/>';
+      rels+='<Relationship Id="rId'+n+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+n+'.xml"/>';
+    });
+    zip.file("[Content_Types].xml",'<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+tipos+'</Types>');
+    zip.file("_rels/.rels",'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>');
+    zip.file("xl/workbook.xml",'<?xml version="1.0"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+folhas+'</sheets></workbook>');
+    zip.file("xl/_rels/workbook.xml.rels",'<?xml version="1.0"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+rels+'</Relationships>');
+    var datas=linhas.map(function(l){return l.d;}).sort();
+    var nome="Movimentacoes_"+(per.ini||datas[0]||"").replace(/-/g,"")+"_"+(per.fim||datas[datas.length-1]||"").replace(/-/g,"")+".xlsx";
+    peopleDownload(await zip.generateAsync({type:"blob",compression:"DEFLATE"}),nome);
+    toast("Dashboard exportado · "+linhas.length+" movimentação(ões) no período.");
+  }
+  function dashBoot(){
+    histLoad();
+    if(!el("pgDash"))return;
+    $all(".dash-range").forEach(function(b){b.addEventListener("click",function(){
+      dashState.range=b.dataset.range;el("dashFrom").value="";el("dashTo").value="";dashState.from="";dashState.to="";dashRender();});});
+    ["dashFrom","dashTo"].forEach(function(id){el(id).addEventListener("change",function(){
+      dashState.from=el("dashFrom").value;dashState.to=el("dashTo").value;
+      if(dashState.from||dashState.to)dashState.range="livre";
+      dashRender();});});
+    el("dashPerson").addEventListener("change",function(){dashState.person=this.value;dashRender();});
+    el("dashPart").addEventListener("change",function(){dashState.part=this.value;dashRender();});
+    el("dashClear").addEventListener("click",function(){
+      dashState={range:"mes",from:"",to:"",person:"",part:""};
+      el("dashFrom").value="";el("dashTo").value="";el("dashPerson").value="";el("dashPart").value="";dashRender();});
+    el("dashBack").addEventListener("click",function(){setPage("pcp");});
+    el("dashExport").addEventListener("click",function(){dashExport().catch(function(){toast("Não foi possível exportar o Excel.");});});
+    $all("[data-det-close]").forEach(function(b){b.addEventListener("click",function(){el("dashDetail").hidden=true;});});
+    document.addEventListener("keydown",function(ev){if(ev.key==="Escape"&&el("dashDetail")&&!el("dashDetail").hidden){ev.preventDefault();el("dashDetail").hidden=true;}});
+    window.addEventListener("resize",function(){if(document.body.dataset.page==="dash"){clearTimeout(dashBoot._t);dashBoot._t=setTimeout(dashRender,180);}});
+    window.addEventListener("storage",function(e){if(e.key===HIST_KEY){histLoad();if(document.body.dataset.page==="dash")dashRender();}});
+  }
+
   /* A ordem do array é o SEQ. único, salvo e compartilhado com a TV. */
   function pcpIsPriority(row,item){return typeof row.priority==="boolean"?row.priority:!!(item&&item.priority===true);}
   function pcpMoveRow(row,tr,inp){
@@ -4007,7 +4585,7 @@ SOFTWARE.
   }
   function pcpMetaIntoInputs(){el("pcpDate").value=pcpPlan.date;el("pcpRef").value=pcpPlan.reference;el("pcpResponsible").value=pcpPlan.responsible;}
   function pcpBoot(){
-    peopleBoot();var raw;try{raw=JSON.parse(localStorage.getItem(PCP_KEY)||"null");}catch(e){}pcpPlan=pcpNormalize(raw);pcpReady=true;pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();
+    peopleBoot();dashBoot();var raw;try{raw=JSON.parse(localStorage.getItem(PCP_KEY)||"null");}catch(e){}pcpPlan=pcpNormalize(raw);pcpReady=true;pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();
     el("pcpAddTop").addEventListener("click",pcpAdd);el("pcpAddBottom").addEventListener("click",pcpAdd);
     [["pcpDate","date"],["pcpRef","reference"],["pcpResponsible","responsible"]].forEach(function(pair){el(pair[0]).addEventListener("input",function(){pcpPlan[pair[1]]=this.value;pcpQueueSave();});});
     el("pcpPdf").addEventListener("click",pcpDownloadPdf);
@@ -4194,6 +4772,7 @@ SOFTWARE.
   }
   function pcpPersistDraft(){
     if(!pcpPlan)return;var json=JSON.stringify(pcpPlan),localOK=false;
+    histRecord();
     try{localStorage.setItem(PCP_KEY,json);localOK=true;}catch(e){}
     if(localOK)pcpLocalStatus();
     return idbSet(PCP_KEY,json).then(function(){pcpLocalStatus();}).catch(function(){if(!localOK)el("pcpDraftStatus").textContent="Não foi possível salvar. Gere o PDF antes de fechar.";});

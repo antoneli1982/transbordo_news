@@ -491,7 +491,7 @@
   body[data-lay="tv"] .time-big .num{font-size:30px}
   .time-big .un{font-size:13px;font-weight:600;color:rgba(255,255,255,.72);line-height:1.25}
   body[data-lay="tv"] .time-big .un{font-size:17px}
-  .time-sub{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .time-sub{margin-top:12px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);border-radius:11px;padding:10px 13px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:4px 10px}
   .time-sub+.time-sub{margin-top:8px}
   .time-sub.tsx-plan{border-color:#80a8eb;background:#244e86}
   .time-sub.tsx-plan[hidden]{display:none!important}
@@ -499,9 +499,9 @@
   .time-sub.tsx-plan .bi-pt,.time-sub.tsx-plan .bi-en{white-space:normal}
   .tc-fit>.time-sub:first-child{margin-top:0}
   .time-sub.tsx-hl{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.34)}
-  .time-sub .ts-l{font-size:12px;color:rgba(255,255,255,.8);font-weight:600;line-height:1.3;min-width:0}
-  body[data-lay="tv"] .time-sub .ts-l{font-size:15px}
-  .time-sub .ts-v{font-size:18px;font-weight:800;line-height:1;white-space:nowrap;flex:0 0 auto}
+  .time-sub .ts-l{flex:1 1 auto;font-size:12px;color:rgba(255,255,255,.8);font-weight:600;line-height:1.3;min-width:90px}
+  body[data-lay="tv"] .time-sub .ts-l{font-size:15px;min-width:130px}
+  .time-sub .ts-v{font-size:18px;font-weight:800;line-height:1;white-space:nowrap;flex:0 0 auto;margin-left:auto}
   body[data-lay="tv"] .time-sub .ts-v{font-size:30px}
   .time-qr{display:none}
   /* Observação da quantidade de peças/caixa — só aparece na TV quando o cadastro tem texto */
@@ -1232,10 +1232,10 @@ body[data-demo="true"] .d-status i{background:#135cc3}
 body[data-lay="tv"] .time-card{padding:12px 14px;align-items:stretch;justify-content:flex-start}
 body[data-lay="tv"] .tc-fit{--tc-scale:1;display:flex;flex-direction:column;gap:calc(6px * var(--tc-scale));width:100%;min-width:0;min-height:0;flex:1 1 auto;transform:none!important;scrollbar-width:thin;scrollbar-color:#6285bb transparent}
 body[data-lay="tv"] .tc-fit>.time-sub{flex:1 0 auto;width:100%;min-width:0;margin:0;gap:calc(9px * var(--tc-scale));padding:calc(7px * var(--tc-scale)) calc(10px * var(--tc-scale))}
-body[data-lay="tv"] .tc-fit .ts-l{flex:1 1 0;font-size:calc(16px * var(--tc-scale));line-height:1.15}
+body[data-lay="tv"] .tc-fit .ts-l{flex:1 1 auto;font-size:calc(16px * var(--tc-scale));line-height:1.15;min-width:calc(120px * var(--tc-scale))}
 body[data-lay="tv"] .tc-fit .ts-v{font-size:calc(32px * var(--tc-scale));line-height:1.1}
 body[data-lay="tv"] .tc-fit .bi-pt,body[data-lay="tv"] .tc-fit .bi-en{white-space:normal;line-height:1.15}
-body[data-lay="tv"] .tc-fit .ts-l .bi-pt>span,body[data-lay="tv"] .tc-fit .ts-l .bi-en>span{min-width:0;overflow-wrap:anywhere}
+body[data-lay="tv"] .tc-fit .ts-l .bi-pt>span,body[data-lay="tv"] .tc-fit .ts-l .bi-en>span{overflow-wrap:normal;word-break:normal}
 body[data-lay="tv"] .tc-fit>.time-obs{flex:0 0 auto;width:100%;margin:0;padding:calc(9px * var(--tc-scale)) calc(10px * var(--tc-scale));gap:calc(8px * var(--tc-scale))}
 body[data-lay="tv"] .tc-fit .to-ico{width:calc(20px * var(--tc-scale));height:calc(20px * var(--tc-scale))}
 body[data-lay="tv"] .tc-fit .to-txt{flex:1;gap:calc(3px * var(--tc-scale))}
@@ -1779,6 +1779,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
           <button class="btn btn-ghost btn-sm" id="btnNextItem" title="Próximo item">Próximo<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
           <button class="btn btn-ghost btn-sm" id="btnGoLista"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Ver cadastradas</button>
           <button class="btn btn-primary btn-sm" id="btnAdd2"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Nova embalagem</button>
+          <button class="btn btn-ghost btn-sm" id="btnPreviewTv" title="Mostra esta peça no modo TV por 15 segundos"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>Visualizar</button>
         </div>
       </div>
       <div class="ed-wrap">
@@ -1815,7 +1816,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
                   <div class="photo-pick asset-upload">
                     <div class="multi-thumbs-row" id="mt-part"></div>
                     <div class="photo-ctl">
-                      <div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="part">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="part"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="part">Remover</button></div>
+                      <div class="pbtns"><button class="btn btn-ghost btn-sm" data-upload="part">Enviar imagem</button><button class="btn btn-ghost btn-sm btn-add-img" data-upload-add="part"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>+ Foto</button><button class="btn btn-ghost btn-sm" data-clear="part">Remover</button><button class="btn btn-ghost btn-sm" id="btnPreviewTv2" title="Mostra esta peça no modo TV por 15 segundos"><svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M1.5 12S5 5 12 5s10.5 7 10.5 7-3.5 7-10.5 7S1.5 12 1.5 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>Visualizar</button></div>
                       <input type="text" data-imgslot="part" data-img placeholder="…ou cole URL da imagem (acrescenta)">
                       <div class="hint">Use <b>+ Foto</b> para adicionar mais imagens — na TV cada uma exibe com temporizador.</div>
                     </div>
@@ -3694,8 +3695,29 @@ SOFTWARE.
     fitTimeCard();
   }
   function enterDisplay(){document.body.dataset.view="display";updateHeaderTexts();setLogo(state.settings.logo);reqFs();startClock();setTimeout(computeLay,60);startRotation();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);}
-  function exitDisplay(){document.body.dataset.view="editor";exitFs();stopRotation();stopClock();document.body.dataset.lay="flow";if(!document.body.dataset.page)document.body.dataset.page="lista";markTabs(document.body.dataset.page);renderEditorList();populateForm();}
+  function exitDisplay(){clearTimeout(previewTvTimer);previewTvTimer=null;document.body.dataset.view="editor";exitFs();stopRotation();stopClock();document.body.dataset.lay="flow";if(!document.body.dataset.page)document.body.dataset.page="lista";markTabs(document.body.dataset.page);renderEditorList();populateForm();}
   el("editFab").addEventListener("click",exitDisplay);
+  /* ===== Visualizar (preview rápido no modo TV a partir do cadastro) ===== */
+  var previewTvTimer=null;
+  function enterTvPreview(){
+    var it=currentItem();
+    if(!it){toast("Cadastre ou selecione uma peça antes de visualizar");return;}
+    clearTimeout(previewTvTimer);
+    document.body.dataset.view="display";
+    updateHeaderTexts();setLogo(state.settings.logo);reqFs();startClock();setTimeout(computeLay,60);
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fitTimeCard);setTimeout(fitTimeCard,300);
+    stopRotation();
+    showEmpty(false);
+    el("d-count").textContent="1";
+    var idxEl=el("d-idx");if(idxEl)idxEl.textContent="1 / 1";
+    var seqEl=el("d-seq");if(seqEl)seqEl.textContent=String(it.pcpSeq||1);
+    var lb=el("tvListBody");if(lb)lb.innerHTML="";
+    renderItem(it);startCardSS(it);
+    var pf=el("progFill");if(pf)pf.style.width="0%";
+    previewTvTimer=window.setTimeout(function(){previewTvTimer=null;exitDisplay();},15000);
+  }
+  var _btPreview=el("btnPreviewTv");if(_btPreview)_btPreview.addEventListener("click",enterTvPreview);
+  var _btPreview2=el("btnPreviewTv2");if(_btPreview2)_btPreview2.addEventListener("click",enterTvPreview);
   document.addEventListener("fullscreenchange",computeLay);document.addEventListener("webkitfullscreenchange",computeLay);window.addEventListener("resize",computeLay);window.addEventListener("load",fitTimeCard);
   document.addEventListener("keydown",function(e){if(!el("mtmModal").hidden){if(e.key==="Escape"){e.preventDefault();closeMtm();}return;}if(document.body.dataset.view!=="display")return;if(e.key==="Escape"&&!isFs())exitDisplay();else if(e.key==="ArrowRight")next();else if(e.key==="ArrowLeft")prev();else if(e.key===" "){e.preventDefault();togglePause();}});
 

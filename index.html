@@ -410,7 +410,16 @@
   .det-code:empty{display:none}
   .det-code::before{content:"·";margin:0 .35em;color:var(--muted-2);font-weight:600}
   .det-prod{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+  body[data-lay="flow"] .det-prod{flex-wrap:wrap}
   .det-info{min-width:0;flex:1 1 auto}
+  .det-prod>.det-top-meta{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:8px;margin-left:auto}
+  .det-prod .tctl-btn{width:28px;height:28px;border-radius:8px}
+  .det-prod .tctl-btn svg{width:13px;height:13px}
+  .det-prod .d-timer{font-size:12px;padding:4px 9px;gap:5px;min-width:0}
+  .det-prod .d-timer svg{width:12px;height:12px}
+  .det-top-meta .d-docinfo{justify-content:flex-end;text-align:right}
+  body[data-lay="flow"] .det-top-meta{align-items:flex-start;width:100%}
+  body[data-lay="flow"] .det-top-meta .d-docinfo{justify-content:flex-start;text-align:left}
   /* selo com o número de sequência do item (mesma posição definida no cadastro/transbordo) */
   .det-seqrow{display:flex;align-items:center;gap:14px}
   .det-seq{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;width:46px;height:46px;border-radius:13px;background:linear-gradient(155deg,var(--brand),var(--brand-700));color:#fff;box-shadow:0 12px 22px -12px rgba(43,79,230,.65)}
@@ -525,15 +534,18 @@
   body[data-lay="tv"] .time-qr .qtxt{font-size:14px}
 
   /* footer / rotation */
-  .d-footer{display:flex;align-items:center;gap:14px}
+  .d-footer{display:flex;align-items:center;gap:14px;border-radius:var(--r)}
   body[data-lay="tv"] .d-footer{flex:0 0 auto;margin-top:16px}
   body[data-lay="flow"] .d-footer{flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:13px;box-shadow:var(--sh1)}
   .d-controls{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+  .d-controls[hidden]{display:none}
+  .d-meta[hidden]{display:none}
+  body[data-lay="tv"] .d-footer{display:none}
   .ctl-btn{width:38px;height:38px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s,transform .12s}
   body[data-lay="tv"] .ctl-btn{width:46px;height:46px;border-radius:12px}
   .ctl-btn:hover{background:var(--brand-50)}.ctl-btn:active{transform:scale(.94)}
   .ctl-btn.play{color:#fff;background:var(--brand);border-color:var(--brand)}
-  .prog{flex:1 1 auto;height:7px;background:#dce2ee;border-radius:20px;overflow:hidden;min-width:80px}
+  .prog{display:none;flex:1 1 auto;height:7px;background:#dce2ee;border-radius:20px;overflow:hidden;min-width:80px}
   .d-timerctl{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px}
   .tctl-btn{appearance:none;border:1px solid var(--line);background:#fff;color:var(--ink-2);cursor:pointer;width:30px;height:30px;border-radius:9px;display:inline-flex;align-items:center;justify-content:center;transition:background .15s,border-color .15s,transform .1s;flex:0 0 auto;padding:0}
   .tctl-btn:hover{background:var(--brand-50);border-color:var(--brand-100);color:var(--brand)}
@@ -544,12 +556,12 @@
   .d-timer{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--brand);background:var(--brand-50);border:1px solid var(--brand-100);border-radius:999px;padding:5px 11px;font-size:13px;white-space:nowrap;line-height:1;min-width:60px;justify-content:center}
   .d-timer svg{width:14px;height:14px;flex:0 0 auto}
   body[data-lay="tv"] .d-timer{font-size:17px;padding:7px 14px;gap:7px}
-  body[data-lay="tv"] .d-timer svg{width:18px;height:18px}
+  body[data-lay="tv"] .d-timer svg{width:15px;height:15px}
   body[data-lay="tv"] .prog{height:9px}
   .prog-fill{height:100%;width:0;background:linear-gradient(90deg,var(--brand),var(--brand-600));border-radius:20px}
   .d-idx{font-size:13px;font-weight:700;color:var(--ink-2);flex:0 0 auto;white-space:nowrap}
   body[data-lay="tv"] .d-idx{font-size:16px}
-  .d-meta{font-size:11.5px;color:var(--muted);font-weight:500;flex:0 0 auto;text-align:right}
+  .d-meta{font-size:11.5px;color:var(--muted);font-weight:500;flex:0 0 auto;text-align:right;margin-left:auto}
   body[data-lay="tv"] .d-meta{font-size:14px}.d-meta b{color:var(--ink-2);font-weight:700}
   body[data-lay="flow"] .d-meta{flex:1 1 100%;text-align:left;margin-top:4px}
   .d-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:16px;text-align:center;padding:40px}
@@ -1219,7 +1231,7 @@ body[data-demo="true"] .d-status i{background:#135cc3}
   html[data-theme="dark"] .li{background:var(--card);color:var(--ink)}
   html[data-theme="dark"] .li.active,html[data-theme="dark"] .li:hover{background:#233c60;border-color:#4b6e9a}
   html[data-theme="dark"] .det-seq{background:#2458b9;color:#fff}
-  html[data-theme="dark"] :is(.d-timer,.d-footer){background:#1a2a43;border-color:var(--line)}
+  html[data-theme="dark"] .d-timer{background:#1a2a43;border-color:var(--line)}
   html[data-theme="dark"] .prog{background:#344760}
   html[data-theme="dark"] .ctl-btn.play{background:#2861ce;border-color:#4d87ed;color:#fff}
   html[data-theme="dark"] body[data-demo="true"] .d-status{background:#1b3558;border-color:#4b73a6;color:#d4e5ff}
@@ -1987,7 +1999,16 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
             </div>
             <div class="det-line" id="d-supplierRow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7h13l4 5v5a1 1 0 0 1-1 1h-1M3 7v10a1 1 0 0 0 1 1h1m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Fornecedor: <b id="d-supplier"></b></span></span><span class="bi-en"><i class="flag flag-us"></i><span>Supplier: <b id="d-supplier-en"></b></span></span></span></div>
           </div>
-
+          <div class="det-top-meta">
+            <div class="d-timerctl">
+              <button class="tctl-btn" id="btnTimerDown" title="Menos tempo" aria-label="Menos tempo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+              <span class="d-timer" id="d-timer" title="Tempo até a próxima tela · use − e + para ajustar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 2.8h9M7.5 21.2h9"/><path d="M8 2.8c0 4.6 4 5.6 4 8.9 0-3.3 4-4.3 4-8.9M8 21.2c0-4.6 4-5.6 4-8.9 0 3.3 4 4.3 4 8.9"/><path d="M9.3 4.3h5.4M9.3 19.7h5.4" stroke-width="1.3" opacity=".55"/></svg><span id="d-timerN">15</span>s</span>
+              <button class="tctl-btn" id="btnTimerUp" title="Mais tempo" aria-label="Mais tempo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="d-docinfo" id="dDocInfo">
+              <span>KSU Classe 10.4</span><i>|</i><span>F-05BR-SCA-234</span><i>|</i><span>Data de emissão / Issue date 20/08/2026</span><i>|</i><span>REV.0</span>
+            </div>
+          </div>
         </div>
 
         <div class="det-row">
@@ -2076,25 +2097,15 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
     </div>
 
     <footer class="d-footer" id="dFooter">
-      <div class="d-controls">
+      <div class="d-controls" hidden>
         <button class="ctl-btn" id="btnPrev" title="Anterior"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
         <button class="ctl-btn play" id="btnPause" title="Pausar/continuar"><svg id="iconPause" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
         <button class="ctl-btn" id="btnNext" title="Próximo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       </div>
-      <div class="d-timerctl">
-        <button class="tctl-btn" id="btnTimerDown" title="Menos tempo" aria-label="Menos tempo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-        <span class="d-timer" id="d-timer" title="Tempo até a próxima tela · use − e + para ajustar"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="2"/><path d="M12 9.5V13l2.4 1.6M9.5 2h5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span id="d-timerN">15</span>s</span>
-        <button class="tctl-btn" id="btnTimerUp" title="Mais tempo" aria-label="Mais tempo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-      </div>
       <div class="prog"><div class="prog-fill" id="progFill"></div></div>
       <span class="d-idx" id="d-idx">0 / 0</span>
-      <span class="d-meta bi"><span class="bi-pt"><i class="flag flag-br"></i><b id="d-updated"></b></span><span class="bi-en"><i class="flag flag-us"></i><b id="d-updated-en"></b></span></span>
+      <span class="d-meta bi" hidden><span class="bi-pt"><i class="flag flag-br"></i><b id="d-updated"></b></span><span class="bi-en"><i class="flag flag-us"></i><b id="d-updated-en"></b></span></span>
     </footer>
-
-    <!-- identificação do documento — edite os textos abaixo se mudar a revisão -->
-    <div class="d-docinfo" id="dDocInfo">
-      <span>KSU Classe 10.4</span><i>|</i><span>F-05BR-SCA-234</span><i>|</i><span>Data de emissão / Issue date 20/08/2026</span><i>|</i><span>REV.0</span>
-    </div>
   </div>
 </div>
 

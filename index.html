@@ -354,7 +354,7 @@
   body[data-lay="flow"] .d-hright{width:100%;flex-wrap:wrap;gap:8px}
   body[data-lay="flow"] .edit-fab{margin-left:auto}
   .d-count{font-size:12px;font-weight:600;color:var(--ink-2);white-space:nowrap;text-transform:uppercase;letter-spacing:.01em}
-  body[data-lay="tv"] .d-count{font-size:15px}.d-count b{color:var(--brand-700)}
+  body[data-lay="tv"] .d-count{display:none}.d-count b{color:var(--brand-700)}
   .d-status{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--ink-2);background:#fff;border:1px solid var(--line);padding:6px 11px;border-radius:30px;white-space:nowrap;text-transform:uppercase;letter-spacing:.01em}
   body[data-lay="tv"] .d-status{font-size:14px;padding:8px 14px}
   .d-status i{width:8px;height:8px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
@@ -431,6 +431,9 @@
   body[data-lay="tv"] .det-seq .num{font-size:32px}
   .det-line{margin-top:8px;display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:500}
   body[data-lay="tv"] .det-line{font-size:18px;margin-top:12px}
+  #d-supplierRow .bi{flex-direction:row;align-items:center;flex-wrap:wrap;gap:8px}
+  #d-supplierRow .bi-en{margin:0}
+  #d-supplierRow .bi-en::before{content:"|";margin-right:8px;color:var(--muted-2);opacity:.6;font-weight:400}
   .det-line svg{color:var(--brand);flex:0 0 auto}
   .det-line b{color:var(--ink-2);font-weight:700}
 
@@ -1997,7 +2000,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
                 <div class="det-name-en bi-data-en"><i class="flag flag-us"></i><span id="d-name-en"></span></div>
               </div>
             </div>
-            <div class="det-line" id="d-supplierRow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7h13l4 5v5a1 1 0 0 1-1 1h-1M3 7v10a1 1 0 0 0 1 1h1m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="bi"><span class="bi-pt"><i class="flag flag-br"></i><span>Fornecedor: <b id="d-supplier"></b></span></span><span class="bi-en"><i class="flag flag-us"></i><span>Supplier: <b id="d-supplier-en"></b></span></span></span></div>
+            <div class="det-line" id="d-supplierRow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7h13l4 5v5a1 1 0 0 1-1 1h-1M3 7v10a1 1 0 0 0 1 1h1m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="bi det-line-label"><span class="bi-pt"><i class="flag flag-br"></i><span>Fornecedor</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Supplier</span></span></span><span>: <b id="d-supplier"></b></span><span id="d-supplier-en" hidden></span></div>
           </div>
           <div class="det-top-meta">
             <div class="d-timerctl">

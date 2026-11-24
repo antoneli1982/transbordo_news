@@ -1531,7 +1531,9 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 .pcp-calculator{width:100%;max-width:200px;box-sizing:border-box;margin-top:12px;font-family:var(--sans)}
 .pcp-calculator strong{display:block;font-size:11px;margin-bottom:3px;color:var(--ink)}
 .pcp-calculator .calc-display{font-size:14px;padding:4px 6px;margin:0 0 4px;font-variant-numeric:tabular-nums}
-.pcp-calc-result{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px;margin-bottom:4px}
+.pcp-calc-result{position:relative;display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px;margin-bottom:4px}
+.pcp-send-tip{display:none;position:absolute;z-index:5;bottom:100%;left:0;width:190px;max-width:60vw;box-sizing:border-box;padding:8px 10px;border:1px solid #8095b4;border-radius:6px;background:#15243a;color:#fff;font:500 12px/1.4 var(--sans);text-align:left;white-space:normal;box-shadow:0 3px 10px #0004}
+.pcp-send:hover + .pcp-send-tip,.pcp-send:focus-visible + .pcp-send-tip,.pcp-send-tip:hover{display:block}
 .pcp-calc-result .calc-display{margin:0;cursor:text}
 .pcp-calculator .pcp-send{background:var(--brand);color:white;font-size:20px}
 .pcp-calculator .pcp-calc-target{display:block;width:100%;margin-bottom:4px}
@@ -4552,8 +4554,12 @@ SOFTWARE.
     var calculator=document.createElement("section");
     calculator.className="pcp-calculator";
     calculator.setAttribute("aria-label","Calculadora da linha "+(index+1));
-    calculator.innerHTML='<strong>Calculadora</strong><div class="pcp-calc-result"><button type="button" class="calc-key pcp-send" title="Enviar resultado para Caixas a transbordar" aria-label="Enviar resultado para Caixas a transbordar">←</button><div class="calc-display" role="status" tabindex="0" title="Clique para calcular pelo teclado">0</div></div><select class="pcp-calc-target" aria-label="Posto que receberá o resultado" hidden></select>';
+    calculator.innerHTML='<strong>Calculadora</strong><div class="pcp-calc-result"><button type="button" class="calc-key pcp-send" aria-label="Enviar resultado para Caixas a transbordar">←</button><span class="pcp-send-tip" role="tooltip"></span><div class="calc-display" role="status" tabindex="0" title="Clique para calcular pelo teclado">0</div></div><select class="pcp-calc-target" aria-label="Posto que receberá o resultado" hidden></select>';
     calculator.appendChild(el("calcPop").querySelector(".calc-grid").cloneNode(true));
+    var tip=calculator.querySelector(".pcp-send-tip");
+    tip.id="pcp-send-tip-"+row.id;
+    calculator.querySelector(".pcp-send").setAttribute("aria-describedby",tip.id);
+    calculator.querySelector(".pcp-calc-target").addEventListener("change",function(){pcpUpdateSendTip(this);});
     var display=calculator.querySelector(".calc-display");
     var controls=bindCalculator(calculator,display);
     calculator.querySelector(".pcp-send").addEventListener("click",function(){
@@ -4620,6 +4626,11 @@ SOFTWARE.
       });list.appendChild(node);
     });
     target.selectedIndex=previous>=0&&previous<stations.length?previous:0;
+    pcpUpdateSendTip(target);
+  }
+  function pcpUpdateSendTip(target){
+    var tip=target.closest(".pcp-calculator").querySelector(".pcp-send-tip");
+    tip.textContent="Clique para preencher “Caixas a transbordar” do Posto "+(target.selectedIndex+1)+" com o resultado da calculadora.";
   }
   function pcpUpdateRow(row,tr,index){
     if(index==null)index=pcpPlan.rows.indexOf(row);var r=pcpResolve(row),inputNames={code:"Código da peça",postCount:"Quantidade de postos",itemId:"Cadastro da peça"};

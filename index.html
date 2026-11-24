@@ -1527,6 +1527,15 @@ body[data-lay="tv"] .det-top2,body[data-lay="tv"] .d-flow,body[data-lay="tv"] .p
 body[data-lay="tv"] .d-footer{margin-top:10px}
 body[data-lay="tv"] .d-docinfo{margin-top:7px}
 </style>
+<style>
+.pcp-calculator{width:100%;max-width:200px;box-sizing:border-box;margin-top:12px;font-family:var(--sans)}
+.pcp-calculator strong{display:block;font-size:11px;margin-bottom:3px;color:var(--ink)}
+.pcp-calculator .calc-display{font-size:14px;padding:4px 6px;margin:0 0 4px;font-variant-numeric:tabular-nums}
+.pcp-calculator .calc-grid{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:25px;gap:3px}
+.pcp-calculator .calc-key{min-width:0;padding:0;font-size:13px;border-radius:5px}
+@media(max-width:760px){.pcp-table .pcp-total-cell{grid-column:1/-1}.pcp-calculator .calc-grid{grid-auto-rows:36px}}
+@media print{.pcp-calculator{display:none}}
+</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <div class="bg-fx"></div>
@@ -3266,9 +3275,7 @@ SOFTWARE.
 
   /* ===== calculadora rápida do topo (genérica, sem relação com os itens) =====
      Sem eval: soma um único operador pendente por vez, no padrão de calculadora de bolso. */
-  (function(){
-    var btn=el("btnCalc"),pop=el("calcPop"),disp=el("calcDisplay");
-    if(!btn||!pop||!disp)return;
+  function bindCalculator(pop,disp){
     var cs={display:"0",stored:null,op:null,waiting:false};
     function render(){disp.textContent=cs.display||"0";}
     function calcCompute(a,b,op){
@@ -3320,6 +3327,12 @@ SOFTWARE.
     var clearBtn=pop.querySelector("[data-calc-clear]");if(clearBtn)clearBtn.addEventListener("click",clearAll);
     var backBtn=pop.querySelector("[data-calc-back]");if(backBtn)backBtn.addEventListener("click",backspace);
     var eqBtn=pop.querySelector("[data-calc-eq]");if(eqBtn)eqBtn.addEventListener("click",equals);
+    return clearAll;
+  }
+  (function(){
+    var btn=el("btnCalc"),pop=el("calcPop"),disp=el("calcDisplay");
+    if(!btn||!pop||!disp)return;
+    var clearAll=bindCalculator(pop,disp);
     function openCalc(){pop.hidden=false;btn.setAttribute("aria-expanded","true");}
     function closeCalc(){pop.hidden=true;btn.setAttribute("aria-expanded","false");}
     btn.addEventListener("click",function(e){e.stopPropagation();if(pop.hidden){clearAll();openCalc();}else closeCalc();});
@@ -4511,6 +4524,13 @@ SOFTWARE.
       '<td class="pcp-cell pcp-total-cell"><span class="pcp-mobile-label">Tempo total</span><output class="pcp-readonly pcp-row-time" data-out="time">—</output><small data-out="timeHint">Aguardando dados</small></td>'+
       '<td class="pcp-cell pcp-priority-cell"><span class="pcp-mobile-label">Prioridade</span><button type="button" class="pcp-priority-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 21V4m0 0c5-4 9 4 14 0v10c-5 4-9-4-14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Prioridade</span></button><small class="pcp-priority-hint">Clique para marcar</small></td>'+
       '<td class="pcp-remove-cell"><button type="button" class="pcp-remove" title="Remover linha"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>';
+    var calculator=document.createElement("section");
+    calculator.className="pcp-calculator";
+    calculator.setAttribute("aria-label","Calculadora da linha "+(index+1));
+    calculator.innerHTML='<strong>Calculadora</strong><div class="calc-display" role="status">0</div>';
+    calculator.appendChild(el("calcPop").querySelector(".calc-grid").cloneNode(true));
+    bindCalculator(calculator,calculator.querySelector(".calc-display"));
+    tr.querySelector(".pcp-total-cell").appendChild(calculator);
     var seq=tr.querySelector(".pcp-seq-input");seq.id="pcp-"+row.id+"-seq";seq.parentElement.querySelector("label").htmlFor=seq.id;
     seq.addEventListener("change",function(){pcpMoveRow(row,tr,seq);});
     seq.addEventListener("keydown",function(e){

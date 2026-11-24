@@ -1531,6 +1531,12 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 .pcp-calculator{width:100%;max-width:200px;box-sizing:border-box;margin-top:12px;font-family:var(--sans)}
 .pcp-calculator strong{display:block;font-size:11px;margin-bottom:3px;color:var(--ink)}
 .pcp-calculator .calc-display{font-size:14px;padding:4px 6px;margin:0 0 4px;font-variant-numeric:tabular-nums}
+.pcp-calc-result{display:grid;grid-template-columns:30px minmax(0,1fr);gap:4px;margin-bottom:4px}
+.pcp-calc-result .calc-display{margin:0;cursor:text}
+.pcp-calculator .pcp-send{background:var(--brand);color:white;font-size:20px}
+.pcp-calculator .pcp-calc-target{display:block;width:100%;margin-bottom:4px}
+.pcp-calculator .pcp-calc-target[hidden]{display:none}
+.pcp-calculator :focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .pcp-calculator .calc-grid{grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:25px;gap:3px}
 .pcp-calculator .calc-key{min-width:0;padding:0;font-size:13px;border-radius:5px}
 @media(max-width:760px){.pcp-table .pcp-total-cell{grid-column:1/-1}.pcp-calculator .calc-grid{grid-auto-rows:36px}}
@@ -3331,15 +3337,30 @@ SOFTWARE.
     var clearBtn=pop.querySelector("[data-calc-clear]");if(clearBtn)clearBtn.addEventListener("click",clearAll);
     var backBtn=pop.querySelector("[data-calc-back]");if(backBtn)backBtn.addEventListener("click",backspace);
     var eqBtn=pop.querySelector("[data-calc-eq]");if(eqBtn)eqBtn.addEventListener("click",equals);
-    return clearAll;
+    pop.tabIndex=-1;
+    pop.addEventListener("keydown",function(event){
+      if(event.ctrlKey||event.metaKey||event.altKey||event.target.closest("select,input,textarea"))return;
+      var key=event.key;
+      if(key==="Enter"&&event.target.closest(".pcp-send,.calc-close"))return;
+      if(/^\d$/.test(key))inputDigit(key);
+      else if(key===","||key==="."||key==="Decimal")inputDot();
+      else if(["+","-","*","/"].includes(key))applyOp(key==="*"?"×":key==="/"?"÷":key);
+      else if(key==="Enter"||key==="=")equals();
+      else if(key==="Backspace")backspace();
+      else if(key==="Delete"||key.toLowerCase()==="c")clearAll();
+      else return;
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    return {clear:clearAll,equals:equals};
   }
   (function(){
     var btn=el("btnCalc"),pop=el("calcPop"),disp=el("calcDisplay");
     if(!btn||!pop||!disp)return;
-    var clearAll=bindCalculator(pop,disp);
+    var controls=bindCalculator(pop,disp);
     function openCalc(){pop.hidden=false;btn.setAttribute("aria-expanded","true");}
     function closeCalc(){pop.hidden=true;btn.setAttribute("aria-expanded","false");}
-    btn.addEventListener("click",function(e){e.stopPropagation();if(pop.hidden){clearAll();openCalc();}else closeCalc();});
+    btn.addEventListener("click",function(e){e.stopPropagation();if(pop.hidden){controls.clear();openCalc();pop.focus();}else closeCalc();});
     var closeBtn=el("calcClose");if(closeBtn)closeBtn.addEventListener("click",function(e){e.stopPropagation();closeCalc();});
     pop.addEventListener("click",function(e){e.stopPropagation();});
     document.addEventListener("click",function(){if(!pop.hidden)closeCalc();});
@@ -4531,9 +4552,26 @@ SOFTWARE.
     var calculator=document.createElement("section");
     calculator.className="pcp-calculator";
     calculator.setAttribute("aria-label","Calculadora da linha "+(index+1));
-    calculator.innerHTML='<strong>Calculadora</strong><div class="calc-display" role="status">0</div>';
+    calculator.innerHTML='<strong>Calculadora</strong><div class="pcp-calc-result"><button type="button" class="calc-key pcp-send" title="Enviar resultado para Caixas a transbordar" aria-label="Enviar resultado para Caixas a transbordar">←</button><div class="calc-display" role="status" tabindex="0" title="Clique para calcular pelo teclado">0</div></div><select class="pcp-calc-target" aria-label="Posto que receberá o resultado" hidden></select>';
     calculator.appendChild(el("calcPop").querySelector(".calc-grid").cloneNode(true));
-    bindCalculator(calculator,calculator.querySelector(".calc-display"));
+    var display=calculator.querySelector(".calc-display");
+    var controls=bindCalculator(calculator,display);
+    calculator.querySelector(".pcp-send").addEventListener("click",function(){
+      controls.equals();
+      if(!(pcpNumber(display.textContent)>0)){
+        toast("Calcule uma quantidade de caixas maior que zero.");
+        display.focus();
+        return;
+      }
+      var target=calculator.querySelector(".pcp-calc-target");
+      var boxes=tr.querySelectorAll('[data-station-field="boxes"]')[target.selectedIndex];
+      if(!boxes)return;
+      boxes.value=display.textContent;
+      boxes.dispatchEvent(new Event("input",{bubbles:true}));
+      boxes.focus();
+      boxes.select();
+      toast("Quantidade enviada ao Posto "+(target.selectedIndex+1)+".");
+    });
     tr.querySelector(".pcp-total-cell").appendChild(calculator);
     var seq=tr.querySelector(".pcp-seq-input");seq.id="pcp-"+row.id+"-seq";seq.parentElement.querySelector("label").htmlFor=seq.id;
     seq.addEventListener("change",function(){pcpMoveRow(row,tr,seq);});
@@ -4562,7 +4600,13 @@ SOFTWARE.
   }
   function pcpRenderStations(row,tr){
     var list=tr.querySelector(".pcp-stations-list");list.innerHTML="";
-    row.stations.slice(0,pcpStationCount(row)||1).forEach(function(st,stationIndex){
+    var target=tr.querySelector(".pcp-calc-target");
+    var previous=target.selectedIndex;
+    var stations=row.stations.slice(0,pcpStationCount(row)||1);
+    target.replaceChildren();
+    target.hidden=stations.length<2;
+    stations.forEach(function(st,stationIndex){
+      target.add(new Option("Posto "+(stationIndex+1),String(stationIndex)));
       var node=document.createElement("div");node.className="pcp-station";
       node.innerHTML='<div class="pcp-station-head"><b>Posto '+(stationIndex+1)+'</b><output>—</output></div><div><label>Caixas a transbordar</label><input data-station-field="boxes" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><small data-station-msg="boxes"></small></div><div><label>Quantidade de colaboradores</label><input data-station-field="workers" type="number" inputmode="numeric" min="1" max="99" step="1"><small data-station-msg="workers">Clique no número para abrir os nomes</small></div><div class="pcp-person-slots" hidden></div>';
       var slots=node.querySelector(".pcp-person-slots"),number=node.querySelector('[data-station-field="workers"]');
@@ -4575,6 +4619,7 @@ SOFTWARE.
         if(key==="boxes")input.addEventListener("blur",function(){st.boxes=st.boxes.trim();input.value=st.boxes;pcpQueueSave();});
       });list.appendChild(node);
     });
+    target.selectedIndex=previous>=0&&previous<stations.length?previous:0;
   }
   function pcpUpdateRow(row,tr,index){
     if(index==null)index=pcpPlan.rows.indexOf(row);var r=pcpResolve(row),inputNames={code:"Código da peça",postCount:"Quantidade de postos",itemId:"Cadastro da peça"};

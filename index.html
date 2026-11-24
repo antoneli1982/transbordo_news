@@ -3283,7 +3283,7 @@ SOFTWARE.
       if(op==="+")return a+b;
       if(op==="-")return a-b;
       if(op==="×")return a*b;
-      if(op==="÷")return b===0?0:a/b;
+      if(op==="÷")return a/b;
       return b;
     }
     function inputDigit(d){
@@ -3303,10 +3303,13 @@ SOFTWARE.
       if(cs.display==="-")cs.display="0";
       render();
     }
+    function showError(){clearAll();cs.display="Erro";cs.waiting=true;render();}
     function applyOp(nextOp){
+      if(cs.display==="Erro")return;
       var cur=parseBR(cs.display);if(!isFinite(cur))cur=0;
       if(cs.op&&!cs.waiting){
         var res=calcCompute(cs.stored,cur,cs.op);
+        if(!isFinite(res)){showError();return;}
         cs.stored=res;cs.display=formatBR(res,8)||"0";
       }else{
         cs.stored=cur;
@@ -3318,6 +3321,7 @@ SOFTWARE.
       if(!cs.op)return;
       var cur=parseBR(cs.display);if(!isFinite(cur))cur=0;
       var res=calcCompute(cs.stored,cur,cs.op);
+      if(!isFinite(res)){showError();return;}
       cs.display=formatBR(res,8)||"0";cs.stored=null;cs.op=null;cs.waiting=true;
       render();
     }

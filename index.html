@@ -448,6 +448,11 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .det-prod .tctl-btn svg{width:13px;height:13px}
   .det-prod .d-timer{font-size:12px;padding:4px 9px;gap:5px;min-width:0}
   .det-prod .d-timer svg{width:12px;height:12px}
+  .det-top-meta:has(.tv-transbordo-note:not([hidden])){max-width:54%;min-width:0}
+  .tv-transbordo-note{align-self:stretch;background:var(--card-2);color:var(--ink);border-inline-start:3px solid var(--brand);border-radius:5px;padding:6px 10px;min-width:0}
+  .tv-transbordo-note strong{display:block;font-size:12px;color:var(--brand-700)}
+  .tv-transbordo-note p{font-size:clamp(15px,1.15vw,21px);line-height:1.3;white-space:pre-line;overflow-wrap:anywhere}
+  body[data-lay="flow"] .det-top-meta:has(.tv-transbordo-note:not([hidden])){max-width:100%}
   .det-top-meta .d-docinfo{justify-content:flex-end;text-align:right}
   body[data-lay="flow"] .det-top-meta{align-items:flex-start;width:100%}
   body[data-lay="flow"] .det-top-meta .d-docinfo{justify-content:flex-start;text-align:left}
@@ -2133,6 +2138,9 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
               <label for="obsQtyPerBox">Observação sobre a quantidade</label>
               <textarea data-field="qtyPerBoxObs" id="obsQtyPerBox" rows="2" placeholder="Ex.: Última caixa com 8 peças"></textarea>
             </div>
+            <div class="field"><label for="cad-transbordoObs">Observação geral do transbordo</label>
+              <textarea data-field="transbordoObs" id="cad-transbordoObs" rows="2" placeholder="Ex.: Posicionar as peças com a etiqueta voltada para cima."></textarea>
+            </div>
             <div class="field ded-box">
               <div class="hint">Planeje caixas e colaboradores na aba PCP. A TV acompanha as linhas completas do planejamento.</div>
               <button class="btn btn-ghost btn-sm" type="button" id="btnCadastroPCP" style="margin-top:10px">Abrir PCP · Planejamento</button>
@@ -2210,6 +2218,7 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
             <div class="d-docinfo" id="dDocInfo">
               <span>KSU Classe 10.4</span><i>|</i><span>F-05BR-SCA-234</span><i>|</i><span>Data de emissão / Issue date 20/08/2026</span><i>|</i><span>REV.0</span>
             </div>
+            <aside class="tv-transbordo-note" id="d-general-note" hidden><strong>Observação do transbordo</strong><p id="d-general-note-text"></p></aside>
           </div>
         </div>
 
@@ -2569,7 +2578,7 @@ SOFTWARE.
   function fmtTime(ms){try{var d=new Date(ms),p=function(n){return (n<10?"0":"")+n;};return p(d.getHours())+":"+p(d.getMinutes());}catch(e){return "";}}
 
   function blankItem(){return {id:uid(),posto:"Posto",partName:"Nova peça",partCode:"",supplier:"",partImages:[],mtm:"",mtmName:"",
-    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyPerBoxObs:"",qtyBoxes:"",originQty:"",time:"00:00",workers:"1",status:"closed",openedAt:null,priority:false,updated:nowStr()};}
+    dividerType:"",dividerImages:[],origin:{name:"",images:[]},dest:{name:"",images:[]},qtyPerBox:"",qtyPerBoxObs:"",transbordoObs:"",qtyBoxes:"",originQty:"",time:"00:00",workers:"1",status:"closed",openedAt:null,priority:false,updated:nowStr()};}
   function itemFrom(o){o=o||{};var b=blankItem();b=Object.assign(b,o);b.origin=Object.assign({name:"",images:[]},o.origin||{});b.dest=Object.assign({name:"",images:[]},o.dest||{});if(!Array.isArray(b.partImages))b.partImages=(b.partImage&&String(b.partImage).trim())?[b.partImage]:[];if(!Array.isArray(b.dividerImages))b.dividerImages=(b.dividerImage&&String(b.dividerImage).trim())?[b.dividerImage]:[];if(!Array.isArray(b.origin.images))b.origin.images=(b.origin.image&&String(b.origin.image).trim())?[b.origin.image]:[];if(!Array.isArray(b.dest.images))b.dest.images=(b.dest.image&&String(b.dest.image).trim())?[b.dest.image]:[];b.partImages=b.partImages.filter(function(v){return typeof v==="string"&&v;});b.dividerImages=b.dividerImages.filter(function(v){return typeof v==="string"&&v;});b.origin.images=b.origin.images.filter(function(v){return typeof v==="string"&&v;});b.dest.images=b.dest.images.filter(function(v){return typeof v==="string"&&v;});if(!b.id)b.id=uid();if(!b.updated)b.updated=nowStr();b.status=(o.status==="closed")?"closed":"open";b.openedAt=(typeof o.openedAt==="number")?o.openedAt:null;b.priority=(o.priority===true);b.workers=String(nWorkers(o.workers));return b;}
 
   /* ===== COLABORADORES E DEDICAÇÃO =====
@@ -3745,6 +3754,9 @@ SOFTWARE.
   function renderItem(it){
     if(!it)return;
     shownItem=it;
+    var generalNote=String(it.transbordoObs||"").trim();
+    el("d-general-note-text").textContent=generalNote;
+    el("d-general-note").hidden=!generalNote;
     applyPriorityUI(it);
     var _mb=el("d-mtmBtn");if(_mb)_mb.hidden=!(it.mtm&&String(it.mtm).trim());
     renderMtmThumb(it);

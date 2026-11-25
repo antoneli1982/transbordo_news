@@ -1420,7 +1420,7 @@ html[data-theme="dark"] .imp-warn{background:#332b1d;border-color:#7c6240;color:
 .pcp-person-slots{grid-column:1/-1;border:1px solid #d7e2f0;padding:10px;border-radius:8px;background:#f7faff}
 .pcp-person-slots[hidden]{display:none}
 .pcp-person-slots:not([hidden]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
-.pcp-person-field{min-width:0}
+.pcp-person-field{min-width:0;position:relative}
 .pcp-person-field label{display:block;margin:0 0 4px;color:#60748e;font-size:10px;font-weight:650}
 .pcp-person-field input{width:100%;height:38px;padding:7px 9px;border:1px solid #cbd9ea;border-radius:7px;background:#fff;color:#1a2c45;font:500 12px var(--sans)}
 .pcp-person-field input:focus{outline:none;border-color:#0869f7;box-shadow:0 0 0 3px #0869f719}
@@ -1604,9 +1604,9 @@ html[data-theme="dark"] #pgPCP #pcpRows>.pcp-row.pcp-priority{border-inline-star
 #pgPCP .pcp-meta{background:#dfefe8;border:1px solid #8fb6a7;border-inline-start:5px solid #387d69}
 html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70;border-inline-start-color:#66b6a1}
 #pgPCP .pcp-meta-resp{position:relative}
-#pcpResponsibleResults:not([hidden]){position:absolute;z-index:12;inset-inline:0;top:100%;max-height:230px;overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--muted);border-radius:8px;padding:5px}
-#pcpResponsibleResults button{display:block;width:100%;text-align:left;padding:10px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
-#pcpResponsibleResults button:is(:hover,:focus-visible){background:var(--brand-50)}
+.pcp-people-results:not([hidden]){position:absolute;z-index:12;inset-inline:0;top:100%;max-height:230px;overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--muted);border-radius:8px;padding:5px}
+.pcp-people-results button{display:block;width:100%;text-align:left;padding:10px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
+.pcp-people-results button:is(:hover,:focus-visible){background:var(--brand-50)}
 #pgPCP td.pcp-qty-cell{grid-area:qty;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,125px),1fr));align-items:start;gap:12px}
 #pgPCP .pcp-qty-cell :is(input,select,button){width:100%;min-width:0}
 #pgPCP .pcp-source-send,#pgPCP .pcp-divide-box{margin-top:6px;white-space:normal}
@@ -1880,7 +1880,7 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
         <div class="pcp-meta">
           <div><label for="pcpDate">Data do planejamento</label><input type="date" id="pcpDate" required></div>
           <div><label for="pcpRef">Identificação <span>· opcional</span></label><input type="text" id="pcpRef" maxlength="100" placeholder="Ex.: Programação do 1º turno" autocomplete="off"></div>
-          <div class="pcp-meta-resp"><label for="pcpResponsible">Responsável <span>· opcional</span></label><input type="text" id="pcpResponsible" maxlength="100" placeholder="Pesquisar por nome ou chapa VW" autocomplete="off" aria-controls="pcpResponsibleResults"><div id="pcpResponsibleResults" hidden aria-label="Colaboradores encontrados"></div></div>
+          <div class="pcp-meta-resp"><label for="pcpResponsible">Responsável <span>· opcional</span></label><input type="text" id="pcpResponsible" maxlength="100" placeholder="Pesquisar por nome ou chapa VW" autocomplete="off" aria-controls="pcpResponsibleResults"><div id="pcpResponsibleResults" class="pcp-people-results" hidden aria-label="Colaboradores encontrados"></div></div>
         </div>
         <section class="pcp-sheet" aria-label="Linhas do planejamento">
           <div class="pcp-sheet-bar">
@@ -4855,7 +4855,28 @@ SOFTWARE.
       var node=document.createElement("div");node.className="pcp-station";
       node.innerHTML='<div class="pcp-station-head"><b>Posto '+(stationIndex+1)+'</b><output>—</output></div><div><label>Caixas a transbordar</label><input data-station-field="boxes" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><small data-station-msg="boxes"></small></div><div><label>Quantidade de colaboradores</label><input data-station-field="workers" type="number" inputmode="numeric" min="1" max="99" step="1"><small data-station-msg="workers">Clique no número para abrir os nomes</small></div><div class="pcp-person-slots" hidden></div>';
       var slots=node.querySelector(".pcp-person-slots"),number=node.querySelector('[data-station-field="workers"]');
-      function drawPeople(){var count=Number(st.workers);slots.replaceChildren();if(!Number.isInteger(count)||count<1||count>99)return;st.people=Array.isArray(st.people)?st.people:[];for(var i=0;i<count;i++){var field=document.createElement("div"),label=document.createElement("label"),input=document.createElement("input"),datalist=document.createElement("datalist"),full=document.createElement("div");field.className="pcp-person-field";full.className="pcp-person-full";var id="pcp-person-"+row.id+"-"+stationIndex+"-"+i;label.textContent="Colaborador "+(i+1);label.htmlFor=id;input.id=id;input.setAttribute("list",id+"-choices");input.placeholder=pcpPeople.length?"Nome ou chapa Volkswagen":"Cadastre colaboradores primeiro";var current=peopleFind(st.people[i]||"");input.value=current?current.name:peopleDisplayFromStored(st.people[i]||"");input.title=current?peopleOption(current):input.value;full.textContent=current?peopleOption(current):input.value;input.autocomplete="off";datalist.id=id+"-choices";pcpPeople.forEach(function(person){var option=document.createElement("option");option.value=person.name;option.label=person.chapa?("VW "+person.chapa):"Sem chapa";datalist.appendChild(option);});(function(slot,fullNode){input.addEventListener("change",function(){var match=peopleFind(input.value);if(input.value.trim()&&!match){toast("Selecione um colaborador cadastrado pelo nome ou chapa Volkswagen.");var previous=peopleFind(st.people[slot]||"");input.value=previous?previous.name:peopleDisplayFromStored(st.people[slot]||"");input.title=previous?peopleOption(previous):input.value;fullNode.textContent=previous?peopleOption(previous):input.value;return;}st.people[slot]=match?peopleOption(match):"";input.value=match?match.name:"";input.title=match?peopleOption(match):"";fullNode.textContent=match?peopleOption(match):"";peopleRefresh();pcpQueueSave();pcpRefreshTV();});})(i,full);field.appendChild(label);field.appendChild(input);field.appendChild(datalist);field.appendChild(full);slots.appendChild(field);}}
+      function drawPeople(){
+        var count=Number(st.workers);slots.replaceChildren();
+        if(!Number.isInteger(count)||count<1||count>99)return;
+        st.people=Array.isArray(st.people)?st.people:[];
+        for(let slot=0;slot<count;slot++){
+          const field=document.createElement("div"),label=document.createElement("label"),input=document.createElement("input");
+          const results=document.createElement("div"),full=document.createElement("div");
+          field.className="pcp-person-field";full.className="pcp-person-full";
+          input.id="pcp-person-"+row.id+"-"+stationIndex+"-"+slot;
+          label.textContent="Colaborador "+(slot+1);label.htmlFor=input.id;
+          input.placeholder="Pesquisar por nome ou chapa VW";input.autocomplete="off";
+          results.id=input.id+"-choices";results.className="pcp-people-results";results.hidden=true;
+          input.setAttribute("aria-controls",results.id);
+          function selectedName(){return peopleDisplayFromStored(st.people[slot]||"");}
+          function showSelection(){const person=peopleFind(st.people[slot]);full.textContent=person?peopleOption(person):selectedName();input.title=full.textContent;}
+          input.value=selectedName();showSelection();
+          field.append(label,input,results,full);slots.appendChild(field);
+          bindPeopleSearch(input,results,selectedName,function(person){
+            st.people[slot]=person?peopleOption(person):"";showSelection();peopleRefresh();pcpQueueSave();pcpRefreshTV();
+          });
+        }
+      }
       number.addEventListener("click",function(){slots.hidden=false;drawPeople();});
       number.addEventListener("focus",function(){slots.hidden=false;drawPeople();});
       node.querySelectorAll("input").forEach(function(input){
@@ -4954,24 +4975,24 @@ SOFTWARE.
   function pcpAdd(){
     var row=pcpBlankRow();pcpPlan.rows.push(row);var tr=pcpNodeRow(row,pcpPlan.rows.length-1);el("pcpRows").appendChild(tr);pcpRefresh();pcpQueueSave();tr.querySelector('[data-pcp="code"]').focus();tr.scrollIntoView({block:"nearest",behavior:"smooth"});
   }
-  function bindResponsibleSearch(){
-    var input=el("pcpResponsible"),results=el("pcpResponsibleResults"),wrap=input.parentElement;
+  function bindPeopleSearch(input,results,current,choose){
+    var wrap=input.parentElement;
     function fold(value){return peopleLower(value).normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
-    function close(){results.hidden=true;input.value=pcpPlan.responsible||"";}
+    function close(){results.hidden=true;input.value=current();}
     function render(){
       var term=fold(input.value);
       var matches=pcpPeople.filter(person=>fold(peopleOption(person)).includes(term));
       results.replaceChildren();results.hidden=false;
       matches.forEach(function(person){
         var button=document.createElement("button");button.type="button";button.textContent=peopleOption(person);
-        button.onclick=function(){pcpPlan.responsible=peopleOption(person);pcpQueueSave();input.focus();close();};
+        button.onclick=function(){choose(person);input.focus();close();};
         results.appendChild(button);
       });
       if(!matches.length)results.textContent="Nenhum colaborador encontrado.";
     }
     input.addEventListener("focus",function(){input.select();render();});
     input.addEventListener("click",render);
-    input.addEventListener("input",function(){if(!input.value){pcpPlan.responsible="";pcpQueueSave();}render();});
+    input.addEventListener("input",function(){if(!input.value)choose(null);render();});
     wrap.addEventListener("focusout",function(e){if(!wrap.contains(e.relatedTarget))close();});
     wrap.addEventListener("keydown",function(e){
       if(e.key==="Escape"){input.focus();close();return;}
@@ -5245,7 +5266,9 @@ SOFTWARE.
     peopleBoot();dashBoot();var raw;try{raw=JSON.parse(localStorage.getItem(PCP_KEY)||"null");}catch(e){}pcpPlan=pcpNormalize(raw);pcpReady=true;pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();
     el("pcpAddTop").addEventListener("click",pcpAdd);el("pcpAddBottom").addEventListener("click",pcpAdd);
     [["pcpDate","date"],["pcpRef","reference"]].forEach(function(pair){el(pair[0]).addEventListener("input",function(){pcpPlan[pair[1]]=this.value;pcpQueueSave();});});
-    bindResponsibleSearch();
+    bindPeopleSearch(el("pcpResponsible"),el("pcpResponsibleResults"),()=>pcpPlan.responsible||"",function(person){
+      pcpPlan.responsible=person?peopleOption(person):"";pcpQueueSave();
+    });
     el("pcpPdf").addEventListener("click",pcpDownloadPdf);
     idbGet(PCP_KEY).then(function(json){if(!json||pcpChanged)return;var p;try{p=JSON.parse(json);}catch(e){return;}if((Number(p.savedAt)||0)<=pcpPlan.savedAt)return;pcpPlan=pcpNormalize(p);pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();}).catch(function(){}).finally(function(){pcpHydrated=true;pcpConnectCloud();});
     window.addEventListener("firebase-ready",function(){if(pcpHydrated)pcpConnectCloud();},{once:true});

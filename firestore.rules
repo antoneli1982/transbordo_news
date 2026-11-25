@@ -68,7 +68,7 @@ service cloud.firestore {
         return p.keys().hasOnly(['login','email','role','active']) && validLogin(p.login)
           && p.email is string && p.email.size() <= 254 && p.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
           && p.role in ['senior','editor','viewer'] && p.active is bool
-          && getAfter(document('accessLogins',p.login)).data.uid == uid
+          && (!p.active || getAfter(document('accessLogins',p.login)).data.uid == uid)
           && (!primary(uid) || (p.active && p.role == 'senior' && p.login == 'ivan.antoneli'));
       }
       allow get: if signed() && (request.auth.uid == uid || senior());

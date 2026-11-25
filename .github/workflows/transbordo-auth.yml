@@ -8,7 +8,7 @@ permissions:
   contents: read
 jobs:
   validar:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +22,6 @@ jobs:
       - name: Instalar dependências de teste
         run: npm install --no-save --no-audit --no-fund firebase@11.10.0 @firebase/rules-unit-testing@4.0.1 firebase-tools@13.35.1 firebase-admin@13.4.0 esbuild@0.25.9 playwright@1.55.0
       - name: Preparar Chromium
-        run: npx --no-install playwright install --with-deps chromium
+        run: npx --no-install playwright install chromium
       - name: Testar em projeto local isolado
         run: npx --no-install firebase emulators:exec --only auth,firestore --project demo-transbordo 'node --experimental-default-type=module --test --test-concurrency=1 qa/*.test.mjs'

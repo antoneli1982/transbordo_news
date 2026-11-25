@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function profilePath() { return /databases/$(database)/documents/accessUsers/$(request.auth.uid); }
+    function active() { return signedIn() && exists(profilePath()) && get(profilePath()).data.active == true && get(profilePath()).data.role in ['senior','editor','viewer']; }
+    function senior() { return active() && get(profilePath()).data.role == 'senior'; }
+    function editor() { return active() && get(profilePath()).data.role in ['senior','editor']; }
+    match /paineis/{id} {
+      allow read: if active();
+      allow create, update, delete: if editor();
+    }
+    match /accessUsers/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || senior());
+      allow list: if senior();
+      allow write: if false;
+    }
+    match /accessLogins/{alias} { allow read, write: if false; }
+    match /accessAudit/{id} { allow read: if senior(); allow write: if false; }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

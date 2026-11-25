@@ -31,7 +31,10 @@ export function auditedDatabase(F, db, actor) {
         if (equal(before, after)) continue;
         const kind = !current.exists() ? 'create' : w.op === 'delete' ? 'delete' : 'update';
         const log = F.doc(F.collection(db, 'accessAudit'));
-        staged.push(w, {op:'set', ref:log, data:{area, target:w.ref.id, actor:actor(), kind, at:F.serverTimestamp()}},
+        const fields=[...new Set([...Object.keys(before||{}),...Object.keys(after||{})])].filter(k=>!equal(before?.[k],after?.[k])).sort();
+        const data={area,target:w.ref.id,actor:actor(),kind,fields,at:F.serverTimestamp()};
+        if(area==='accessUsers'){data.before=before||null;data.after=after||null;}
+        staged.push(w, {op:'set', ref:log, data},
           {op:'set', ref:F.doc(db,'accessChanges',area,'targets',w.ref.id), data:{event:log.id}});
       }
       for (const w of staged) {

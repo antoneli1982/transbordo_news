@@ -58,6 +58,8 @@ test('Primeiro Sênior, consulta, edição, revogação e auditoria',async()=>{
   await service.save({...user,role:'viewer',active:false},{...user,role:'viewer'});
   await assertFails(F.getDoc(panel(oper.db)));
   const logs=await service.audit();assert(logs.some(d=>d.data().actor==='editor'&&d.data().target==='pcp'));
+  const roleChange=logs.find(d=>d.data().before?.role==='editor'&&d.data().after?.role==='viewer');
+  assert(roleChange);assert(roleChange.data().fields.includes('role'));
   await assertFails(F.deleteDoc(logs[0].ref));
 });
 test('TV anônima depende de autorização e só consulta os documentos de exibição',async()=>{

@@ -40,14 +40,23 @@ service cloud.firestore {
         || (log.kind == 'update' && exists(path) && existsAfter(path)
           && get(path).data != getAfter(path).data);
     }
+    function accurateFields(log) {
+      let path = document(log.area, log.target);
+      let before = exists(path) ? get(path).data : {};
+      let after = existsAfter(path) ? getAfter(path).data : {};
+      return log.fields is list && log.fields.size() <= 100
+        && log.fields.toSet() == after.diff(before).affectedKeys()
+        && (log.area == 'accessUsers' ? (log.before == (exists(path) ? before : null)
+          && log.after == (existsAfter(path) ? after : null)) : !log.keys().hasAny(['before','after']));
+    }
     match /accessAudit/{id} {
       allow get, list: if senior();
-      allow create: if request.resource.data.keys().hasOnly(['actor','at','area','target','kind'])
+      allow create: if request.resource.data.keys().hasOnly(['actor','at','area','target','kind','fields','before','after'])
         && request.resource.data.target is string && !request.resource.data.target.matches('.*/.*')
         && mayRecord(request.resource.data.area, request.resource.data.target)
         && request.resource.data.actor == request.auth.uid && request.resource.data.at == request.time
         && getAfter(head(request.resource.data.area, request.resource.data.target)).data.event == id
-        && actualChange(request.resource.data);
+        && actualChange(request.resource.data) && accurateFields(request.resource.data);
     }
     match /accessChanges/{area}/targets/{target} {
       allow create, update: if mayRecord(area, target)

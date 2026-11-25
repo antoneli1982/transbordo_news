@@ -13,13 +13,13 @@ import {OWNER} from '../auth/accounts.js';
 
 const project='demo-transbordo', ownerEmail='owner.ui@example.invalid';
 const email=role=>role+'.ui@example.invalid';
-const pcp={date:'2026-11-25',reference:'QA original',rows:[{id:'qa-ui',code:'QA-01',itemId:'p1',postCount:'1',stations:[{workers:'1',boxes:'3',people:[]}]}],revision:'qa',savedAt:1};
+const pcp={date:'2026-11-25',reference:'QA ORIGINAL',rows:[{id:'qa-ui',code:'QA-01',itemId:'p1',postCount:'1',stations:[{workers:'1',boxes:'3',people:[]}]}],revision:'qa',savedAt:1};
 const catalog={settings:{panelTitle:'Teste de homologação',intervalSec:15},
   items:[{id:'p1',partCode:'QA-01',partName:'Peça de homologação',time:'00:00:12,00',qtyPerBox:'10',status:'open'}]};
 const bundle=`
-import * as apps from 'firebase/app';
-import * as a from 'firebase/auth';
-import * as f from 'firebase/firestore';
+import * as apps from 'qa-firebase/app';
+import * as a from 'qa-firebase/auth';
+import * as f from 'qa-firebase/firestore';
 export {apps};
 export const config={apiKey:'emulator',authDomain:'localhost',projectId:'demo-transbordo',appId:'qa'};
 export const auth={...a,initializeAuth(app,opts){const auth=a.initializeAuth(app,opts);a.connectAuthEmulator(auth,'http://127.0.0.1:9099',{disableWarnings:true});return auth;}};
@@ -31,7 +31,7 @@ async function preview(){
     const pathname=new URL(req.url,'http://localhost').pathname.slice(1)||'index.html';
     if(!/^(?:auth\/)?[\w.-]+$/.test(pathname)){res.writeHead(404).end();return;}
     const data=pathname==='auth/firebase.js'?built.outputFiles[0].contents:await fs.readFile(path.resolve(pathname));
-    const mime={'.js':'text/javascript','.html':'text/html','.css':'text/css'};
+    const mime={'.js':'text/javascript','.mjs':'text/javascript','.html':'text/html','.css':'text/css'};
     res.writeHead(200,{'content-type':(mime[path.extname(pathname)]||'text/plain')+'; charset=utf-8','Content-Security-Policy':"connect-src 'self' http://127.0.0.1:* ws://127.0.0.1:*; font-src 'self' data:; style-src 'self' 'unsafe-inline'"});res.end(data);
   }catch{res.writeHead(404).end();}});
   await new Promise(ok=>server.listen(0,'127.0.0.1',ok));return {server,url:'http://127.0.0.1:'+server.address().port};
@@ -52,7 +52,7 @@ test('Fluxo completo da interface, troca de senha, PCP, TV, revogação e modo o
     const ctx=await browser.newContext({viewport});contexts.push(ctx);
 
     const p=await ctx.newPage();p.setDefaultTimeout(12000);
-    p.on('console',msg=>{if(msg.type()==='error'||msg.type()==='warning')console.log('Console QA:',msg.text().slice(0,400));});
+    p.on('console',msg=>{if((msg.type()==='error'||msg.type()==='warning')&&!/Content Security Policy|security policy|violates the following|favicon\.ico/i.test(msg.text()))console.log('Console QA:',msg.text().slice(0,300));});
     p.on('pageerror',e=>{errors.push(e.message);console.error('Erro de interface:',e.message);});return p;
   }
   const button=(p,name)=>p.getByRole('button',{name,exact:true});
@@ -74,13 +74,13 @@ test('Fluxo completo da interface, troca de senha, PCP, TV, revogação e modo o
     }
     console.log('Gestão de usuários pela conta Sênior confirmada');
     const edit=await page({width:1100,height:800});await edit.goto(url,{waitUntil:'domcontentloaded'});await login(edit,'EdItOr.UI',password);
-    assert.equal(await button(edit,'Gestão de acessos').count(),0);
-    await until(()=>edit.locator('#pcpRef').inputValue().then(v=>v==='QA original'),'PCP original não abriu').catch(async e=>{console.error('Estado PCP:',await edit.locator('#pcpRef').inputValue(),await edit.locator('#pcpDraftStatus').textContent(),await edit.locator('#sync-badge').allTextContents());throw e;});
-    await edit.locator('#pcpRef').fill('QA revisado');await edit.locator('#pcpRef').press('Tab');
-    await until(async()=>JSON.parse((await db.doc('paineis/pcp').get()).data().plan).reference==='QA revisado','PCP não sincronizou');
-    await edit.locator('.pcp-run-btn').first().click();
+    assert.equal(await button(edit,'Gestão de acessos').count(),0);await edit.locator('.ed-tab[data-page=pcp]').click();
+    await until(()=>edit.locator('#pcpRef').inputValue().then(v=>v==='QA ORIGINAL'),'PCP original não abriu').catch(async e=>{console.error('Estado PCP:',await edit.locator('#pcpRef').inputValue(),await edit.locator('#pcpDraftStatus').textContent(),await edit.locator('#sync-badge').allTextContents());throw e;});
+    await edit.locator('#pcpRef').fill('QA REVISADO');await edit.locator('#pcpRef').press('Tab');
+    await until(async()=>JSON.parse((await db.doc('paineis/pcp').get()).data().plan).reference==='QA REVISADO','PCP não sincronizou');
+    await edit.locator('#pgPCP .pcp-run-btn:visible').first().click();
     await until(async()=>(await db.doc('paineis/runLock_qa-ui').get()).exists,'Start sem registro');
-    await edit.locator('.pcp-run-btn').first().click();
+    await edit.locator('#pgPCP .pcp-run-btn[data-running=true]:visible').first().click();
     const stop=edit.locator('#stopDialog');await stop.waitFor();await stop.locator('[value=manual]').check();
     await stop.locator('[name=boxes]').fill('2');await stop.locator('[value=no]').check();await button(stop,'Confirmar encerramento').click();
     await until(async()=>!(await db.doc('paineis/runLock_qa-ui').get()).exists,'Stop não concluiu');
@@ -110,7 +110,7 @@ test('Fluxo completo da interface, troca de senha, PCP, TV, revogação e modo o
     await button(admin,'Auditoria').click();await admin.getByText(/Alteração · Operação · pcp/).first().waitFor();console.log('Revogação e auditoria confirmadas');
     await edit.evaluate(()=>navigator.serviceWorker.ready);
     await edit.context().setOffline(true);await edit.reload({waitUntil:'domcontentloaded'});await login(edit,'EDITOR.UI',password);
-    await until(()=>edit.locator('#pcpRef').inputValue().then(v=>v==='QA revisado'),'Cópia privada não foi recuperada offline');
+    await until(()=>edit.locator('#pcpRef').inputValue().then(v=>v==='QA REVISADO'),'Cópia privada não foi recuperada offline');
     assert(await edit.evaluate(()=>!Object.keys(localStorage).some(k=>k.includes('plan_v')||k.includes('transbordo_v'))));
     console.log('Consulta ao PCP após recarga offline confirmada');assert.deepEqual(errors,[]);
   }finally{await browser.close();server.close();await db.terminate();await deleteApp(app);}

@@ -65,7 +65,13 @@ export async function openAdministration(service,actor) {
         for(const snap of docs){const e=snap.data(),user=people.find(u=>u.uid===e.actor);
           const context={accessUsers:'Usuário',accessScreens:'TV',paineis:'Operação'}[e.area]||e.area;
           const target=e.area==='accessUsers'?(people.find(u=>u.uid===e.target)?.login||e.target):e.target;
-          body.append(row(node('time',e.at.toDate().toLocaleString('pt-BR')),node('strong',user?.login||e.actor),node('span',labels[e.kind]+' · '+context+' · '+target)));}
+          const info=node('span',labels[e.kind]+' · '+context+' · '+target);
+          const names={role:'perfil',login:'login',email:'e-mail',active:'situação',plan:'planejamento',state:'cadastro de embalagens',mode:'modo da TV',rows:'colaboradores',boxes:'caixas',start:'início',end:'fim',lunchSeconds:'intervalo',d:'conteúdo do anexo'};
+          const fields=(e.fields||[]).filter(k=>!['updatedAt','updatedBy'].includes(k)).map(k=>names[k]||k);
+          if(e.before&&e.after&&e.before.role!==e.after.role)info.append(node('small',roles[e.before.role]+' → '+roles[e.after.role]));
+          if(e.before&&e.after&&e.before.active!==e.after.active)info.append(node('small',e.after.active?'Acesso reativado':'Acesso desativado'));
+          if(fields.length)info.append(node('small',fields.join(', ')));
+          body.append(row(node('time',e.at.toDate().toLocaleString('pt-BR')),node('strong',user?.login||e.actor),info));}
         if(!docs.length&&!after)body.append(node('p','Nenhuma alteração registrada.'));
         after=docs.at(-1);if(docs.length===40)body.append(more);
       }finally{more.disabled=false;}}

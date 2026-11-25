@@ -27,6 +27,7 @@ export function accounts({apps,A,F,config,auth,db,logged}) {
     const t=await ticket(login,password);return {id:t.id,payload:await t.encode(email)};
   }
   async function signIn(identity,password) {
+    identity=canonical(identity);
     let email=identity,aliasTicket=null;
     if(!identity.includes('@')){
       aliasTicket=await ticket(identity,password);
@@ -84,6 +85,7 @@ export function accounts({apps,A,F,config,auth,db,logged}) {
         tx.set(p,profile);
       });
     }
+    if(typeof form.password!=='string'||form.password.length<8)throw Error('A senha inicial precisa ter pelo menos 8 caracteres.');
     const t=await makeTicket(profile.login,profile.email,form.password);
     return identity(profile.email,form.password,async uid=>{
       await logged.runTransaction(db,async tx=>{

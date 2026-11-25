@@ -1614,6 +1614,10 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
   #pgCadastro .field label{font-size:15px;font-weight:650}
   #pgCadastro .photo-ctl .cad-link-label{margin:12px 0 4px;font-size:14px}
   #pgCadastro .cad-link-label+input{margin-top:0}
+  #itemForm .step-data .field:not(.sub-block),#itemForm .row2>.field{
+    padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--card-2)
+  }
+  #itemForm .step-data .field:focus-within,#itemForm .row2>.field:focus-within{border-color:var(--brand)}
   #cad-time-help{display:block;margin-top:6px}
 </style>
 </head>
@@ -2979,7 +2983,24 @@ SOFTWARE.
   })();
   /* monta o cartao de um item; seq>0 desenha o numero da sequencia */
   function selectItem(id){currentId=id;renderEditorList();populateForm();}
-  function addItem(){var it=upperItem(blankItem());state.items.push(it);currentId=it.id;renderEditorList();populateForm();queueSave();setPage("cadastro");}
+  function addItem(){
+    function openNewItem(){
+      var it=blankItem();
+      it.partName="";
+      it.time="";
+      state.items.push(upperItem(it));
+      currentId=it.id;
+      renderEditorList();
+      goToPage("cadastro");
+      el("cad-partName").focus();
+      queueSave();
+    }
+    if(cadastroUnlocked){openNewItem();return;}
+    authorizeDestructive("acessar o cadastro de embalagem",function(){
+      cadastroUnlocked=true;
+      openNewItem();
+    });
+  }
   /* ===== 3 páginas: cadastro de embalagem • embalagens cadastradas • modo TV ===== */
   function markTabs(pg){$all(".ed-tab").forEach(function(b){b.classList.toggle("on",b.getAttribute("data-page")===pg);});}
   function setPage(pg){

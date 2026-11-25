@@ -1055,7 +1055,7 @@ body[data-page="historico"] #pgHistorico{display:block;padding:clamp(12px,3vw,32
 #stopForm fieldset{min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px}
 #stopForm legend{padding:0 6px;font-weight:700}
 #stopForm label{display:block;padding:8px}
-#stopForm input[name="boxes"]{display:block;width:100%;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+#stopForm input:is([name="boxes"],[name="breakMinutes"]){display:block;width:100%;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
 #stopForm [hidden],#stopError:empty{display:none}
 #stopError{color:#e65b55}
 .stop-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
@@ -1751,6 +1751,34 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
 </style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
+      <dialog id="stopDialog" aria-labelledby="stopTitle">
+        <form id="stopForm">
+          <h2 id="stopTitle">Encerrar transbordo</h2>
+          <p id="stopPiece"></p>
+          <fieldset>
+            <legend>Como registrar o total de caixas?</legend>
+            <label><input type="radio" name="source" value="manual" required> Tenho a contagem real</label>
+            <label><input type="radio" name="source" value="method" required> Estimar pelo tempo MTM</label>
+          </fieldset>
+          <label id="stopCountField" hidden>Total de caixas transbordadas
+            <input name="boxes" inputmode="decimal" placeholder="Ex.: 12,5" disabled>
+          </label>
+          <fieldset id="stopLunchField">
+            <legend>Houve intervalo durante o transbordo?</legend>
+            <label><input type="radio" name="lunch" value="no" required> Não</label>
+            <label><input type="radio" name="lunch" value="yes" required> Sim</label>
+            <label id="stopBreakDuration" hidden>Duração total do intervalo em minutos
+              <input type="number" name="breakMinutes" min="1" step="1" value="60" required disabled>
+            </label>
+          </fieldset>
+          <p id="stopError" role="alert"></p>
+          <div class="stop-actions">
+            <button type="button" class="btn btn-ghost" id="stopCancel">Cancelar</button>
+            <button class="btn btn-primary" type="submit">Confirmar encerramento</button>
+          </div>
+        </form>
+      </dialog>
+
 <div class="bg-fx"></div>
 
 <!-- ============ EDITOR ============ -->
@@ -1852,30 +1880,6 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
     <!-- ====== DASHBOARD DE MOVIMENTAÇÕES ====== -->
     <section class="pg" id="pgHistorico" aria-label="Histórico de transbordos">
         <section class="pcp-runs"><h2>Histórico de transbordos</h2><p id="pcpRunStatus" role="status">Aguardando conexão para registrar transbordos.</p><div id="pcpRuns"></div></section>
-      <dialog id="stopDialog" aria-labelledby="stopTitle">
-        <form id="stopForm">
-          <h2 id="stopTitle">Encerrar transbordo</h2>
-          <p id="stopPiece"></p>
-          <fieldset>
-            <legend>Como registrar o total de caixas?</legend>
-            <label><input type="radio" name="source" value="manual" required> Tenho a contagem real</label>
-            <label><input type="radio" name="source" value="method" required> Estimar pelo tempo MTM</label>
-          </fieldset>
-          <label id="stopCountField" hidden>Total de caixas transbordadas
-            <input name="boxes" inputmode="decimal" placeholder="Ex.: 12,5" disabled>
-          </label>
-          <fieldset id="stopLunchField" hidden disabled>
-            <legend>Houve intervalo de almoço durante o transbordo?</legend>
-            <label><input type="radio" name="lunch" value="no" required> Não</label>
-            <label><input type="radio" name="lunch" value="yes" required> Sim, descontar 1 hora</label>
-          </fieldset>
-          <p id="stopError" role="alert"></p>
-          <div class="stop-actions">
-            <button type="button" class="btn btn-ghost" id="stopCancel">Cancelar</button>
-            <button class="btn btn-primary" type="submit">Confirmar encerramento</button>
-          </div>
-        </form>
-      </dialog>
       <dialog id="historyEdit"><form id="historyForm">
         <h2>Editar transbordo</h2><p id="historyCode"></p>
         <label>Descrição da peça<input name="description" required></label>
@@ -3271,7 +3275,7 @@ SOFTWARE.
     if(pg==="historico"&&location.hash!=="#historico")history.pushState(null,"","#historico");
     else if(pg!=="historico"&&location.hash==="#historico")history.replaceState(null,"",location.pathname+location.search);
     document.body.dataset.view="editor";document.body.dataset.page=pg;markTabs(pg);
-    if(pg==="pcp"){pcpRefresh();}else if(pg==="lista"||pg==="obsoletas"){el("edSearch").value="";el("edSearchClear").hidden=true;renderEditorList();}else if(pg==="cadastro"){populateForm();}else if(pg==="dash"){dashRender();}
+    if(pg==="pcp"){pcpRefresh();}else if(pg==="lista"||pg==="obsoletas"){el("edSearch").value="";el("edSearchClear").hidden=true;renderEditorList();}else if(pg==="cadastro"){populateForm();}else if(pg==="dash"){dashRender();}else if(pg==="historico"){paintRunHistory();}
     var sc=el(pg==="pcp"?"pgPCP":(pg==="lista"||pg==="obsoletas")?"pgLista":pg==="colaboradores"?"pgColaboradores":pg==="dash"?"pgDash":pg==="historico"?"pgHistorico":"pgCadastro");if(sc)sc.scrollTop=0;
   }
   /* cabeçalho da página de cadastro: qual embalagem está aberta + setas anterior/próximo */
@@ -5231,10 +5235,11 @@ SOFTWARE.
       if(r.end){
         next.end=new Date(f.end.value).getTime();
         if(!(next.end>=next.start))throw Error("O fim precisa ser igual ou posterior ao início.");
+        if(next.end-next.start<(next.lunchSeconds||0)*1000)throw Error("O período precisa comportar o intervalo registrado.");
         var raw=f.boxes.value.trim(),value=pcpNumber(raw);
         if(raw!== (Number.isFinite(r.boxes)?String(r.boxes).replace(".",","):"")){
           if(!Number.isFinite(value))throw Error("Informe o total de caixas. Use vírgula para frações.");
-          next.boxes=value;next.boxSource="manual";next.lunchSeconds=0;
+          next.boxes=value;next.boxSource="manual";
         }else if(r.boxSource==="method"&&r.method&&(next.start!==r.start||next.end!==r.end)){
           next.boxes=productiveSeconds(next)/r.method.secondsPerPiece/r.method.piecesPerBox;
         }
@@ -5317,6 +5322,10 @@ SOFTWARE.
     if(r.sequence)facts.append(historyFact("Ordem",r.sequence));
     if(r.reference)facts.append(historyFact("Identificação",r.reference));
     if(r.responsible)facts.append(historyFact("Responsável",r.responsible));
+    if(r.end){
+      if(r.lunchSeconds!=null)facts.append(historyFact("Intervalo",r.lunchSeconds?pcpFormat(r.lunchSeconds/60)+" min":"Sem intervalo"));
+      facts.append(historyFact("Tempo de produção",tbClock(productiveSeconds(r))));
+    }
     if(r.perBox)facts.append(historyFact("Peças por caixa",r.perBox));
     body.append(histElement("h4","","Planejamento"),facts);
     if(r.stations?.length){
@@ -5328,11 +5337,11 @@ SOFTWARE.
         body.append(station);
       });
     }
-    if(r.boxSource==="method"&&r.method)body.append(histElement("h4","","Estimativa pelo método"),histElement("p","",pcpFormat(productiveSeconds(r))+" s de produção"+(r.lunchSeconds?" (1 hora de almoço descontada)":"")+" ÷ "+pcpFormat(r.method.secondsPerPiece)+" s/peça ÷ "+pcpFormat(r.method.piecesPerBox)+" peças/caixa."));
+    if(r.boxSource==="method"&&r.method)body.append(histElement("h4","","Estimativa pelo método"),histElement("p","",pcpFormat(productiveSeconds(r))+" s de produção"+(r.lunchSeconds?" ("+pcpFormat(r.lunchSeconds/60)+" min de intervalo descontados)":"")+" ÷ "+pcpFormat(r.method.secondsPerPiece)+" s/peça ÷ "+pcpFormat(r.method.piecesPerBox)+" peças/caixa."));
     return body;
   }
   function execStopButton(run){
-    var button=histElement("button","pcp-run-btn","Stop · Encerrar");
+    var button=histElement("button","pcp-run-btn",execBusy.has(run.rowId)?"Salvando…":"Stop · Encerrar");
     button.type="button";
     button.dataset.running="true";
     button.setAttribute("aria-label","Stop · Encerrar transbordo de "+run.code);
@@ -5367,11 +5376,14 @@ SOFTWARE.
       var rowId=tr.dataset.rowId,active=execActive(rowId);
       var button=tr.querySelector(".pcp-run-btn");
       if(!button)return;
-      button.textContent=active?"Stop · Encerrar":"Start · Iniciar";
+      button.textContent=execBusy.has(rowId)?"Salvando…":active?"Stop · Encerrar":"Start · Iniciar";
       button.disabled=!(execReady||runLocalReady)||execBusy.has(rowId);
       button.dataset.running=String(!!active);
       tr.querySelector(".pcp-run-state").textContent=active?active.code+" · Em andamento desde "+execTime(active.start):"";
     });
+    if(document.body.dataset.page==="historico")paintRunHistory();
+  }
+  function paintRunHistory(){
     var list=el("pcpRuns"),opened=new Set(Array.from(list.querySelectorAll("details[open]"),n=>n.dataset.runId)),day="";
     list.replaceChildren();
     if(!execRecords.length&&(execReady||runLocalReady))list.append(histElement("p","history-empty","Nenhum transbordo registrado."));
@@ -5411,26 +5423,36 @@ SOFTWARE.
     if(dialog.open)return Promise.resolve(null);
     form.reset();
     el("stopPiece").textContent=[active.code,active.description].filter(Boolean).join(" · ");
-    var count=el("stopCountField"),lunch=el("stopLunchField"),error=el("stopError");
+    var count=el("stopCountField"),duration=el("stopBreakDuration"),error=el("stopError");
     function update(){
       var source=fields.source.value;
       count.hidden=fields.boxes.disabled=source!=="manual";
       fields.boxes.required=source==="manual";
-      lunch.hidden=lunch.disabled=source!=="method";
+      duration.hidden=fields.breakMinutes.disabled=fields.lunch.value!=="yes";
       error.textContent="";
     }
     form.onchange=update;
     update();
     return new Promise(function(resolve){
       var result=null;
-      el("stopCancel").onclick=function(){dialog.close();};
-      dialog.onclose=function(){resolve(result);};
+      function finish(value){
+        dialog.close();
+        resolve(value);
+      }
+      el("stopCancel").onclick=function(){finish(null);};
+      dialog.oncancel=function(event){event.preventDefault();finish(null);};
       form.onsubmit=function(event){
         event.preventDefault();
+        var lunchSeconds=fields.lunch.value==="yes"?fields.breakMinutes.valueAsNumber*60:0;
+        if(lunchSeconds*1000>end-active.start){
+          error.textContent="O intervalo informado é maior que o tempo entre Start e Stop. Confira os minutos.";
+          fields.breakMinutes.focus();
+          return;
+        }
         if(fields.source.value==="manual"){
           var boxes=pcpNumber(fields.boxes.value);
           if(!Number.isFinite(boxes)){error.textContent="Informe uma quantidade válida. Para meia caixa, digite 0,5.";return;}
-          result={end:end,boxSource:"manual",boxes:boxes,lunchSeconds:0};
+          result={end:end,boxSource:"manual",boxes:boxes,lunchSeconds:lunchSeconds};
         }else{
           var method=active.method;
           if(!method){
@@ -5438,11 +5460,10 @@ SOFTWARE.
             if(matches.length===1)method=execBoxMethod(matches[0],pcpNumber(active.perBox)>0?active.perBox:matches[0].qtyPerBox);
           }
           if(!method){error.textContent="Sem dados MTM para estimar. Informe a contagem real ou cadastre o tempo e as peças por caixa.";return;}
-          var lunchSeconds=fields.lunch.value==="yes"?3600:0;
           var seconds=productiveSeconds({start:active.start,end:end,lunchSeconds:lunchSeconds});
           result={end:end,boxSource:"method",method:method,lunchSeconds:lunchSeconds,boxes:seconds/method.secondsPerPiece/method.piecesPerBox};
         }
-        dialog.close();
+        finish(result);
       };
       dialog.showModal();
     });

@@ -1603,6 +1603,13 @@ html[data-theme="dark"] #pgPCP #pcpRows>.pcp-row.pcp-priority{border-inline-star
 #pgPCP .pcp-desc-cell .pcp-readonly.pcp-desc{display:block;width:100%;max-width:none;height:auto;padding:0;font-size:clamp(26px,2.4vw,38px);font-weight:700;line-height:1.18;white-space:normal;overflow-wrap:anywhere}
 #pgPCP .pcp-meta{background:#dfefe8;border:1px solid #8fb6a7;border-inline-start:5px solid #387d69}
 html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70;border-inline-start-color:#66b6a1}
+@keyframes pcp-contorno-ativo{0%,100%{box-shadow:inset 0 0 0 3px #16a47d}50%{box-shadow:inset 0 0 0 1px transparent}}
+@media screen{
+  body.pcp-em-andamento :is(#pgPCP .pcp-meta,.ed-tab[data-page="pcp"]){animation:pcp-contorno-ativo 2s ease-in-out infinite}
+}
+@media screen and (prefers-reduced-motion:reduce){
+  body.pcp-em-andamento :is(#pgPCP .pcp-meta,.ed-tab[data-page="pcp"]){animation:none;box-shadow:inset 0 0 0 3px #16a47d}
+}
 #pgPCP .pcp-meta-resp{position:relative}
 .pcp-people-results:not([hidden]){position:absolute;z-index:12;inset-inline:0;top:100%;max-height:230px;overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--muted);border-radius:8px;padding:5px}
 .pcp-people-results button{display:block;width:100%;text-align:left;padding:10px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
@@ -5157,6 +5164,7 @@ SOFTWARE.
     return qty>0?pcpFormat(run.pieces/qty)+" caixas equivalentes ("+pcpFormat(run.pieces)+" peças registradas)":pcpFormat(run.pieces)+" peças (registro anterior)";
   }
   function execPaint(){
+    document.body.classList.toggle("pcp-em-andamento",execRecords.some(run=>!run.end));
     document.querySelectorAll("#pcpRows .pcp-row").forEach(function(tr){
       var rowId=tr.dataset.rowId,active=execActive(rowId);
       var button=tr.querySelector(".pcp-run-btn");

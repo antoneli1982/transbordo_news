@@ -1544,6 +1544,53 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 @media(max-width:760px){.pcp-table .pcp-total-cell{grid-column:1/-1}.pcp-calculator .calc-grid{grid-auto-rows:36px}}
 @media print{.pcp-calculator{display:none}}
 </style>
+<style>
+@media screen{
+#pgPCP .pcp-table-wrap{overflow:visible;padding:clamp(8px,1.5vw,22px)}
+#pgPCP .pcp-table{display:block;min-width:0;width:100%}
+#pgPCP .pcp-table :is(colgroup,thead){display:none}
+#pgPCP #pcpRows{display:grid;gap:22px}
+#pgPCP .pcp-row{display:grid;grid-template-columns:90px minmax(150px,.9fr) minmax(175px,1.5fr) minmax(215px,.95fr);grid-template-areas:"ord code descr qty" "stations stations stations total" "priority priority actions actions";align-items:start;gap:20px;padding:clamp(14px,2vw,28px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
+#pgPCP .pcp-row.pcp-priority{border-inline-start:5px solid #d84c43}
+#pgPCP .pcp-row td{position:static;display:block;min-width:0;padding:0;text-align:left;border:0}
+#pgPCP td.pcp-row-no{grid-area:ord}
+#pgPCP .pcp-code-cell{grid-area:code}
+#pgPCP .pcp-desc-cell{grid-area:descr}
+#pgPCP .pcp-qty-cell{grid-area:qty}
+#pgPCP .pcp-stations-cell{grid-area:stations;border-top:1px solid var(--line);padding-top:16px}
+#pgPCP td.pcp-total-cell{grid-area:total;padding:14px!important;background:var(--card-2);border:1px solid var(--line)!important;border-radius:10px}
+#pgPCP .pcp-priority-cell{grid-area:priority;padding:0!important}
+#pgPCP .pcp-remove-cell{grid-area:actions;justify-self:end;align-self:center}
+#pgPCP .pcp-remove{width:auto;height:44px;padding:0 10px;gap:7px;font:600 15px var(--sans);color:var(--muted)}
+#pgPCP .pcp-priority-btn{width:auto;font-size:15px;padding-inline:12px;min-height:44px}
+#pgPCP .pcp-priority-cell :is(.pcp-priority-hint,.pcp-mobile-label){display:none}
+#pgPCP .pcp-mobile-label,#pgPCP .pcp-station label,#pgPCP .pcp-post-count label,#pgPCP .pcp-meta label{display:block;margin-bottom:6px;color:var(--ink-2);font:600 16px/1.35 var(--sans);text-transform:none;letter-spacing:normal}
+#pgPCP .pcp-cell input,#pgPCP .pcp-cell select,#pgPCP .pcp-meta input{font-size:18px;min-height:46px}
+#pgPCP .pcp-cell .pcp-readonly{font-size:19px;min-height:0;white-space:normal;overflow-wrap:anywhere}
+#pgPCP .pcp-cell small,#pgPCP .pcp-station small{font-size:14px;line-height:1.4}
+#pgPCP .pcp-station{padding:14px;gap:12px;grid-template-columns:repeat(2,minmax(0,1fr))}
+#pgPCP .pcp-station-head{font-size:18px}
+#pgPCP .pcp-stations-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,330px),1fr))}
+#pgPCP .pcp-post-count{flex:0 1 auto}
+#pgPCP .pcp-calculator{max-width:330px;border-top:1px solid var(--line);padding-top:12px}
+#pgPCP .pcp-calculator strong,#pgPCP .pcp-sheet-title{font-size:18px}
+#pgPCP .pcp-calc-result{grid-template-columns:auto minmax(0,1fr);margin:8px 0}
+#pgPCP .pcp-send{min-height:44px;gap:4px;padding-inline:8px}
+#pgPCP .pcp-send span{font-size:14px}
+#pgPCP .calc-display{font-size:20px;align-content:center}
+#pgPCP .calc-grid{grid-auto-rows:44px;gap:5px}
+#pgPCP .calc-key{font-size:18px}
+#pgPCP .pcp-heading p{max-width:64ch;font-size:16px}
+@media(max-width:940px){
+#pgPCP .pcp-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"ord code" "descr qty" "stations total" "priority actions"}
+}
+@media(max-width:680px){
+#pgPCP .pcp-row{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);grid-template-areas:"ord code" "descr descr" "qty qty" "stations stations" "total total" "priority actions";gap:16px}
+#pgPCP .pcp-station{grid-template-columns:minmax(0,1fr)}
+#pgPCP .pcp-summary{position:static}
+}
+}
+</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <div class="bg-fx"></div>
@@ -1719,7 +1766,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
           <div>
             <div class="pcp-eyebrow">Planejamento e controle da produção</div>
             <h1 id="pcpTitle">Planejamento de transbordo</h1>
-            <p>Altere o SEQ. para mudar a ordem e use Prioridade para destacar um item. As linhas completas aparecem automaticamente na TV.</p>
+            <p>Escolha a peça e informe quantas caixas e quantos colaboradores haverá em cada posto. O tempo é calculado automaticamente.</p>
           </div>
           <div class="pcp-heading-actions">
             <button type="button" class="btn btn-ghost" id="pcpAddTop"><svg class="pcp-btn-icon" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Adicionar linha</button>
@@ -4543,18 +4590,18 @@ SOFTWARE.
   }
   function pcpNodeRow(row,index){
     var tr=document.createElement("tr");tr.className="pcp-row";tr.dataset.rowId=row.id;
-    tr.innerHTML='<td class="pcp-cell pcp-row-no"><label class="pcp-mobile-label">SEQ.</label><input class="pcp-seq-input" type="number" inputmode="numeric" min="1" step="1" required autocomplete="off"><small>Editar ordem</small></td>'+
+    tr.innerHTML='<td class="pcp-cell pcp-row-no"><label class="pcp-mobile-label">Ordem</label><input class="pcp-seq-input" type="number" inputmode="numeric" min="1" step="1" required autocomplete="off"><small>Editar ordem</small></td>'+
       '<td class="pcp-cell pcp-code-cell"><label class="pcp-mobile-label">Código da peça</label><input class="pcp-code-input" data-pcp="code" type="text" list="pcpCodes" autocomplete="off" spellcheck="false" placeholder="Digite o código"><small data-msg="code">Selecione no cadastro</small></td>'+
       '<td class="pcp-cell pcp-desc-cell"><span class="pcp-mobile-label">Descrição da peça</span><span class="pcp-readonly pcp-desc" data-out="description">—</span><small data-out="base">Preenchida pelo código</small><select data-pcp="itemId" hidden></select></td>'+
-      '<td class="pcp-cell"><span class="pcp-mobile-label">Peças / caixa</span><span class="pcp-readonly" data-out="qty">—</span><small>Do cadastro</small></td>'+
+      '<td class="pcp-cell pcp-qty-cell"><span class="pcp-mobile-label">Peças por caixa</span><span class="pcp-readonly" data-out="qty">—</span><small>Do cadastro</small></td>'+
       '<td class="pcp-cell pcp-stations-cell" colspan="2"><div class="pcp-station-controls"><div class="pcp-post-count"><label>Quantidade de postos</label><input data-pcp="postCount" type="number" inputmode="numeric" min="1" max="99" step="1" required><small data-msg="postCount"></small></div><span class="pcp-simultaneous" aria-live="polite">1 posto</span></div><small class="pcp-mode-hint"></small><div class="pcp-stations-list"></div></td>'+
       '<td class="pcp-cell pcp-total-cell"><span class="pcp-mobile-label">Tempo total</span><output class="pcp-readonly pcp-row-time" data-out="time">—</output><small data-out="timeHint">Aguardando dados</small></td>'+
       '<td class="pcp-cell pcp-priority-cell"><span class="pcp-mobile-label">Prioridade</span><button type="button" class="pcp-priority-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 21V4m0 0c5-4 9 4 14 0v10c-5 4-9-4-14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Prioridade</span></button><small class="pcp-priority-hint">Clique para marcar</small></td>'+
-      '<td class="pcp-remove-cell"><button type="button" class="pcp-remove" title="Remover linha"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></td>';
+      '<td class="pcp-remove-cell"><button type="button" class="pcp-remove" title="Remover linha"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Remover</button></td>';
     var calculator=document.createElement("section");
     calculator.className="pcp-calculator";
     calculator.setAttribute("aria-label","Calculadora da linha "+(index+1));
-    calculator.innerHTML='<strong>Calculadora</strong><div class="pcp-calc-result"><button type="button" class="calc-key pcp-send" aria-label="Enviar resultado para Caixas a transbordar">←</button><span class="pcp-send-tip" role="tooltip"></span><div class="calc-display" role="status" tabindex="0" title="Clique para calcular pelo teclado">0</div></div><select class="pcp-calc-target" aria-label="Posto que receberá o resultado" hidden></select>';
+    calculator.innerHTML='<strong>Calculadora</strong><div class="pcp-calc-result"><button type="button" class="calc-key pcp-send" aria-label="Enviar resultado para Caixas a transbordar">← <span>Usar nas caixas</span></button><span class="pcp-send-tip" role="tooltip"></span><div class="calc-display" role="status" tabindex="0" title="Clique para calcular pelo teclado">0</div></div><select class="pcp-calc-target" aria-label="Posto que receberá o resultado" hidden></select>';
     calculator.appendChild(el("calcPop").querySelector(".calc-grid").cloneNode(true));
     var tip=calculator.querySelector(".pcp-send-tip");
     tip.id="pcp-send-tip-"+row.id;
@@ -4640,6 +4687,7 @@ SOFTWARE.
     tr.classList.toggle("pcp-priority",priority);button.setAttribute("aria-pressed",String(priority));
     button.setAttribute("aria-label",(priority?"Remover prioridade da":"Marcar prioridade na")+" linha "+(index+1));
     button.title=priority?"Remover prioridade":"Marcar como prioridade";
+    button.querySelector("span").textContent=priority?"Prioridade marcada":"Marcar prioridade";
     tr.querySelector(".pcp-priority-hint").textContent=priority?"Prioridade ativa":"Clique para marcar";
     tr.querySelector(".pcp-remove").setAttribute("aria-label","Remover linha "+(index+1));
     Object.keys(inputNames).forEach(function(k){tr.querySelector('[data-pcp="'+k+'"]').setAttribute("aria-label",inputNames[k]+", linha "+(index+1));});

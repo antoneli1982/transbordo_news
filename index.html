@@ -33,12 +33,12 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     if (!navigator.onLine || connecting || window.__FB) return;
     connecting = true;
     try {
-    const [appSDK, firestore, storageSDK] = await Promise.all(["app","firestore","storage"].map(
+    const [appSDK, firestore] = await Promise.all(["app","firestore"].map(
       name => import("https://www.gstatic.com/firebasejs/10.13.0/firebase-"+name+".js")
     ));
     const {initializeApp} = appSDK;
     const {getFirestore,doc,setDoc,onSnapshot,getDoc,collection,query,where,documentId,runTransaction} = firestore;
-    const {getStorage,ref,uploadBytes,getDownloadURL} = storageSDK;
+
   const firebaseConfig = {
     apiKey: "AIzaSyAo_gNiMOatevfbT5zdhCuizp_yFKTlfCA",
     authDomain: "transbordonews.firebaseapp.com",
@@ -50,11 +50,11 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
-  const storage = getStorage(app);
+
 
   // expõe pra dentro da IIFE principal
   window.__FB = { db, doc, setDoc, onSnapshot, getDoc, collection, query, where, documentId, runTransaction };
-  window.__FBS = { storage, ref, uploadBytes, getDownloadURL };
+
   window.dispatchEvent(new Event("firebase-ready"));
     } catch (e) {
       if(navigator.onLine)setTimeout(connectSDK,30000);

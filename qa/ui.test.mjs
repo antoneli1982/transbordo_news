@@ -73,7 +73,16 @@ test('Fluxo completo da interface, troca de senha, PCP, TV, revogação e modo o
       await admin.getByText(email(role),{exact:true}).waitFor();
     }
     console.log('Gestão de usuários pela conta Sênior confirmada');
-    const edit=await page({width:1100,height:800});await edit.goto(url,{waitUntil:'domcontentloaded'});await login(edit,'EdItOr.UI',password);
+    const edit=await page({width:1100,height:800});await edit.goto(url,{waitUntil:'domcontentloaded'});
+    await edit.evaluate(async()=>{
+      localStorage.setItem('sese_pcp_people_v1',JSON.stringify([{name:'Operador da homologação',chapa:'QA001'}]));
+      const cache=await caches.open('transbordo-images-v1');
+      await cache.put('/imagem-da-homologacao',new Response('imagem privada de teste',{headers:{'content-type':'image/png'}}));
+    });
+    await login(edit,'EdItOr.UI',password);
+    assert(await edit.evaluate(async()=>!localStorage.getItem('sese_pcp_people_v1')&&!(await caches.has('transbordo-images-v1'))));
+    await until(async()=>JSON.parse((await db.doc('paineis/workforce').get()).data()?.rows||'[]').length===1,'A lista migrada não chegou ao PCP');
+    console.log('Migração de colaboradores e de anexo legado confirmada');
     assert.equal(await button(edit,'Gestão de acessos').count(),0);await edit.locator('.ed-tab[data-page=pcp]').click();
     await until(()=>edit.locator('#pcpRef').inputValue().then(v=>v==='QA ORIGINAL'),'PCP original não abriu').catch(async e=>{console.error('Estado PCP:',await edit.locator('#pcpRef').inputValue(),await edit.locator('#pcpDraftStatus').textContent(),await edit.locator('#sync-badge').allTextContents());throw e;});
     await edit.locator('#pcpRef').fill('QA REVISADO');await edit.locator('#pcpRef').press('Tab');
@@ -103,15 +112,28 @@ test('Fluxo completo da interface, troca de senha, PCP, TV, revogação e modo o
     const code=codes.oobCodes.find(c=>c.email===email('viewer')&&c.requestType==='PASSWORD_RESET');assert(code);
     assert((await fetch('http://'+process.env.FIREBASE_AUTH_EMULATOR_HOST+'/identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=emulator',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({oobCode:code.oobCode,newPassword:nextPassword})})).ok);
     await button(reset,'Voltar para o login').click();await login(reset,email('viewer'),nextPassword);
+    const recovered=await page({width:440,height:740});await recovered.goto(url,{waitUntil:'domcontentloaded'});await login(recovered,'ViEwEr.UI',nextPassword);
     console.log('Redefinição por e-mail e recuperação do login confirmadas');
     await button(admin,'Usuários').click();const vr=admin.locator('.tn-row').filter({hasText:email('viewer')});
     await button(vr,'Editar').click();await admin.getByLabel('Acesso ativo').uncheck();await button(admin,'Salvar usuário').click();
     await viewer.locator('.tn-login').waitFor();assert(await viewer.locator('#editor').isHidden());
     await button(admin,'Auditoria').click();await admin.getByText(/Alteração · Operação · pcp/).first().waitFor();console.log('Revogação e auditoria confirmadas');
     await edit.evaluate(()=>navigator.serviceWorker.ready);
-    await edit.context().setOffline(true);await edit.reload({waitUntil:'domcontentloaded'});await login(edit,'EDITOR.UI',password);
+    await edit.context().setOffline(true);await edit.reload({waitUntil:'domcontentloaded'});
+    const offline=edit.locator('.tn-login');await offline.getByLabel('Login ou e-mail').fill('EDITOR.UI');
+    await offline.locator('#tn-senha').fill('senha-errada-de-teste');await button(offline,'Entrar').click();
+    await offline.getByText(/Confira seus dados/).waitFor();assert(await edit.locator('#editor').isHidden());
+    await login(edit,'EDITOR.UI',password);
     await until(()=>edit.locator('#pcpRef').inputValue().then(v=>v==='QA REVISADO'),'Cópia privada não foi recuperada offline');
     assert(await edit.evaluate(()=>!Object.keys(localStorage).some(k=>k.includes('plan_v')||k.includes('transbordo_v'))));
-    console.log('Consulta ao PCP após recarga offline confirmada');assert.deepEqual(errors,[]);
+    console.log('Consulta ao PCP após recarga offline confirmada');
+    await button(admin,'Usuários').click();
+    const edRow=admin.locator('.tn-row').filter({hasText:email('editor')});
+    await button(edRow,'Editar').click();await admin.getByLabel('E-mail',{exact:true}).fill('nova.conta.ui@example.invalid');
+    await admin.getByLabel('Login',{exact:true}).fill('editor.novo');await admin.getByLabel('Senha inicial').fill(nextPassword);
+    await button(admin,'Salvar usuário').click();await admin.getByText('nova.conta.ui@example.invalid',{exact:true}).waitFor();
+    const changed=await page({width:1024,height:740});await changed.goto(url,{waitUntil:'domcontentloaded'});await login(changed,'EDITOR.NOVO',nextPassword);
+    assert.equal(await changed.locator('html').getAttribute('data-role'),'editor');
+    console.log('Alteração de e-mail e login confirmada');assert.deepEqual(errors,[]);
   }finally{await browser.close();server.close();await db.terminate();await deleteApp(app);}
 });

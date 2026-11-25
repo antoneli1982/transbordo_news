@@ -3,7 +3,7 @@ on:
   push:
     branches: [seguranca-autenticacao]
   pull_request:
-    paths: ['auth/**', 'firestore.rules', 'storage.rules', 'index.html', 'offline-sw.js', 'qa/**']
+    paths: ['auth/**', 'scripts/**', 'firebase.json', 'firestore.rules', 'storage.rules', 'index.html', 'offline-sw.js', 'qa/**']
 permissions:
   contents: read
 jobs:

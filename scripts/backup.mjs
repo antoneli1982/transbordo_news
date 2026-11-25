@@ -11,7 +11,7 @@ import {config} from '../auth/project.mjs';
 const project='transbordonews', owner='dAgYSGswrIOhVYxiB7VXAzqVOhk1';
 const root='https://firestore.googleapis.com/v1/projects/'+project+'/databases/(default)/documents';
 const hash=data=>createHash('sha256').update(data).digest('hex');
-async function prompt(label,hidden=false){
+export async function prompt(label,hidden=false){
   if(!process.stdin.isTTY)throw Error('Execute em um terminal interativo. A senha nunca deve ser passada na linha de comando.');
   process.stdout.write(label);
   const out=hidden?new Writable({write(_chunk,_encoding,cb){cb();}}):process.stdout;
@@ -39,7 +39,7 @@ export function decode(bytes,password){
   const p=JSON.parse(data);if(p.documents.length!==hdr.count||p.project!==project)throw Error('A contagem de documentos diverge.');
   return p;
 }
-function inspect(docs){
+export function inspect(docs){
   const byId=new Map(docs.map(d=>[d.name.split('/').at(-1),d]));
   if(byId.size!==docs.length||!byId.has('principal')||!byId.has('pcp'))throw Error('Faltam documentos do catálogo ou do PCP.');
   const catalog=JSON.parse(byId.get('principal').fields.state.stringValue);
@@ -67,10 +67,12 @@ async function main(){
   }
   if(mode)throw Error('Opção de backup desconhecida.');
   const email=(await prompt('E-mail da primeira conta Sênior: ')).trim();
-  const password=await prompt('Senha da conta (também protege este backup): ',true);
+  const password=await prompt('Senha da conta Sênior: ',true);
   const user=await post('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key='+config.apiKey,{email,password,returnSecureToken:true});
   if(user.localId!==owner)throw Error('Use a conta autorizada para a implantação.');
   const token=user.idToken;
+  const backupPassword=await prompt('Crie uma senha de pelo menos 12 caracteres para esta cópia: ',true);
+  if(backupPassword.length<12||backupPassword!==await prompt('Confirme a senha desta cópia: ',true))throw Error('Confira a senha de proteção da cópia.');
   const {transaction}=await post(root+':beginTransaction',{options:{readOnly:{}}},token);
   let records;
   try{records=await post(root+':runQuery',{structuredQuery:{from:[{collectionId:'paineis'}]},transaction},token);}
@@ -81,8 +83,8 @@ async function main(){
   const summary=inspect(documents);
   const folder=path.join(os.homedir(),'TransbordoNews-Backups');await fs.mkdir(folder,{recursive:true,mode:0o700});
   const dest=path.join(folder,'TransbordoNews_'+new Date().toISOString().replace(/[:.]/g,'-')+'.tnbackup');
-  await fs.writeFile(dest,encode(payload,password),{flag:'wx',mode:0o600});
-  const restored=decode(await fs.readFile(dest),password);inspect(restored.documents);
+  await fs.writeFile(dest,encode(payload,backupPassword),{flag:'wx',mode:0o600});
+  const restored=decode(await fs.readFile(dest),backupPassword);inspect(restored.documents);
   console.log('Backup gravado e restauração conferida.',summary,'\n'+dest);
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href)main().catch(e=>{console.error(e.message);process.exitCode=1;});

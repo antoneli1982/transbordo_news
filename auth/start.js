@@ -20,6 +20,10 @@ async function online() {
     const auth=A.initializeAuth(app,{persistence:isTV?A.indexedDBLocalPersistence:A.inMemoryPersistence});
     auth.languageCode='pt';
     const db=F.getFirestore(app),logged=auditedDatabase(F,db,()=>auth.currentUser?.uid);
+    await auth.authStateReady();
+    // Esta leitura usa um identificador vazio de dados. A versão autenticada exige a política publicada.
+    try{await F.getDocFromServer(F.doc(db,'paineis','_verificacao_de_acesso'));throw Error('A proteção do projeto está pendente.');}
+    catch(error){if(error.code!=='permission-denied')throw error;}
     const service=accounts({apps,A,F,config,db,auth,logged});return {A,F,auth,db,logged,service};
   })().catch(e=>{services=null;throw e;});
   return services;
@@ -30,7 +34,8 @@ async function credentials(alias,password) {
     ({profile,raw,expires}=await unlockOffline(alias,password));
   } else {
     remote=await online();
-    profile=await remote.service.signIn(alias,password);
+    try{profile=await remote.service.signIn(alias,password);}
+    catch(error){if(error.code==='access/inactive')await revokeLease(error.profile).catch(()=>{});throw error;}
     raw=await vaultKey(remote.F,remote.db,profile.uid);
 
   }
@@ -71,7 +76,7 @@ function viewsOnly(){
   const allowed=['.ed-tab','.tn-session button','.calc-wrap button','#edSearch','#edSearchClear','#btnExport',
     '#btnPrevItem','#btnNextItem','#btnGoLista','#btnPreviewTv','#btnPreviewTv2','.catalog-edit','#btnCadastroPCP',
     '#pcpPdf','#dashExport','#dashBack','#dashFrom','#dashTo','#dashPerson','#dashPart','#dashClear','.dash-range',
-    '#pcpClosePeople','#pcpExportPeople','#pcpExportPeopleTop','[data-theme-choice]','[data-det-close]','#btnObsToggle'].join(',');
+    '#pcpClosePeople','#pcpExportPeople','#pcpExportPeopleTop','[data-theme-choice]','[data-det-close]'].join(',');
   const host=document.getElementById('editor');
   const selector='input,select,textarea,button,[contenteditable=true]';
   function protect(el){if(el.matches(allowed))return;

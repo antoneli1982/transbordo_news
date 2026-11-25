@@ -51,7 +51,10 @@ export function accounts({apps,A,F,config,auth,db,logged}) {
         profile=(await F.getDocFromServer(p)).data();
       }
       if(!profile?.active || !Object.hasOwn(roles,profile.role) || canonical(user.email)!==profile.email ||
-         (aliasTicket && profile.login!==identity))throw Error('Acesso indisponível.');
+         (aliasTicket && profile.login!==identity)){
+        const error=Error('Acesso indisponível.');error.code='access/inactive';
+        error.profile={login:profile?.login||identity,email:canonical(user.email)};throw error;
+      }
       if(!aliasTicket) {
         const t=await makeTicket(profile.login,profile.email,password);
         if((await read('accessLogins',profile.login)).data()?.ticket!==t.id)

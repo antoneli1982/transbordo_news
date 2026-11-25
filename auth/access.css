@@ -15,3 +15,6 @@ html[data-locked] body{background:#152541;overflow:auto}
 .tn-account-form input[type=checkbox]{width:20px;height:20px;min-height:0}
 html[data-role=viewer] #btnImport,html[data-role=viewer] #btnReset{display:none}
 @media(max-width:600px){.tn-session{width:100%;justify-content:flex-end}.tn-admin header h2{font-size:20px}}
+
+#access-storage-warning{position:fixed;z-index:10000;bottom:0;left:0;right:0;background:#781b21;color:#fff;padding:10px 18px;font:600 14px/1.4 system-ui}
+html[data-role=screen] #editFab,html:is([data-role=screen],[data-role=viewer]) :is(#btnTimerDown,#btnTimerUp){display:none!important}

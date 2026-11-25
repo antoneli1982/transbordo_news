@@ -63,7 +63,7 @@ export function accounts({apps,A,F,config,auth,db,logged}) {
     if(typeof password!=='string'||password.length<8)throw Error('A senha inicial precisa ter pelo menos 8 caracteres.');
     const app=apps.initializeApp(config,'provision-'+crypto.randomUUID());
     const secondary=A.initializeAuth(app,{persistence:A.inMemoryPersistence});
-    if(auth.emulatorConfig)A.connectAuthEmulator(secondary,auth.emulatorConfig.url||'http://127.0.0.1:9099',{disableWarnings:true});
+    if(auth.emulatorConfig&&!secondary.emulatorConfig)A.connectAuthEmulator(secondary,auth.emulatorConfig.url||'http://127.0.0.1:9099',{disableWarnings:true});
     let user,created=false;
     try {
       try {user=(await A.createUserWithEmailAndPassword(secondary,email,password)).user;created=true;}

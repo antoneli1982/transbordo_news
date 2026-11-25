@@ -67,7 +67,7 @@ export function solicitarAcesso({ entrar, recuperar }) {
       try {
         if (redefinir) {
           await recuperar(identidade.value.trim());
-          status.textContent = 'Se o e-mail estiver cadastrado, você receberá o link para redefinir sua senha.';
+          status.textContent = 'Se o e-mail estiver cadastrado, você receberá o link. Depois de redefinir a senha, entre uma vez pelo e-mail para reativar seu login.';
         } else {
           const perfil = await entrar(identidade.value.trim().toLowerCase(), senha.value);
           senha.value = '';

@@ -146,7 +146,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   .ed-body{flex:1 1 auto;min-height:0;position:relative;z-index:2}
   .pg{position:absolute;inset:0;overflow-y:auto;display:none}
   body[data-page="cadastro"] #pgCadastro{display:block}
-  body[data-page="lista"] #pgLista{display:block}
+  body:is([data-page="lista"],[data-page="obsoletas"]) #pgLista{display:block}
 
   /* barra fixa da página de cadastro: mostra qual item está sendo editado */
   .pg-bar{position:sticky;top:0;z-index:4;display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 24px;background:rgba(246,248,253,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
@@ -1746,6 +1746,7 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
       <button type="button" class="ed-tab" data-page="historico">Histórico</button>
       <button type="button" class="ed-tab" data-page="dash"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 19V11M10 19V5M15 19v-6M20 19v-9" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>Dashboard</button><button type="button" class="ed-tab" data-page="cadastro"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M4 5.5h16M4 12h16M4 18.5h9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Cadastro <span class="lb-full">de embalagem</span></button>
       <button type="button" class="ed-tab" data-page="lista"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="4" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="12.5" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/><rect x="13.5" y="12.5" width="7.5" height="7.5" rx="1.6" stroke="currentColor" stroke-width="1.8"/></svg>Embalagens <span class="lb-full">cadastradas</span><span class="tc" id="navCount">0</span></button>
+      <button type="button" class="ed-tab" data-page="obsoletas">Peças obsoletas</button>
       <button type="button" class="ed-tab" data-page="tv" id="btnTv"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><rect x="2.5" y="4.5" width="19" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 20.5h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Modo TV</button>
     </nav>
     <div class="ed-actions">
@@ -1983,7 +1984,7 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
     <!-- ====== PÁGINA 2 — EMBALAGENS CADASTRADAS ====== -->
     <div class="pg" id="pgLista">
       <div class="pg-head">
-        <div class="pg-title">Embalagens cadastradas<span class="c" id="edCount">0</span></div>
+        <div class="pg-title"><span id="catalogTitle">Embalagens cadastradas</span><span class="c" id="edCount">0</span></div>
         <div class="ed-search">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
           <input type="text" id="edSearch" placeholder="Buscar por código ou nome" autocomplete="off" data-sem-maiuscula>
@@ -1991,7 +1992,7 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
         </div>
         <button class="btn btn-primary btn-sm" id="btnAdd"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Nova embalagem</button>
       </div>
-      <p class="catalog-note">A programação exibida na TV é definida na aba <b>PCP · Planejamento</b>.</p>
+      <p class="catalog-note" id="catalogNote">A programação exibida na TV é definida na aba <b>PCP · Planejamento</b>.</p>
       <div class="lista-cols">
         <section class="lista-col col-closed"><div class="ed-items" id="edClosed"></div></section>
         <section class="lista-col col-flow"><div class="ed-items" id="edItems"></div></section>
@@ -3087,9 +3088,20 @@ SOFTWARE.
   /* Cadastro é catálogo; a sequência da TV é definida exclusivamente no PCP. */
   function renderEditorList(){
     var host=el("edClosed"),old=el("edItems");host.innerHTML="";old.innerHTML="";
-    var term=(el("edSearch")&&el("edSearch").value)||"",items=state.items.filter(function(it){return itemBate(it,term);});
-    el("edCount").textContent=String(state.items.length);el("navCount").textContent=String(state.items.length);
-    if(!items.length){var msg=document.createElement("div");msg.className="ed-empty-hint";msg.textContent=state.items.length?"Nenhuma embalagem encontrada para a busca.":"Nenhuma embalagem cadastrada. Use Nova embalagem para começar.";host.appendChild(msg);return;}
+    var obsolete=document.body.dataset.page==="obsoletas";
+    var records=state.items.filter(function(it){return (it.obsolete===true)===obsolete;});
+    var term=el("edSearch").value,items=records.filter(function(it){return itemBate(it,term);});
+    el("catalogTitle").textContent=obsolete?"Peças obsoletas":"Embalagens cadastradas";
+    el("btnAdd").hidden=obsolete;
+    el("catalogNote").hidden=obsolete;
+    el("edCount").textContent=String(records.length);
+    el("navCount").textContent=String(state.items.filter(function(it){return it.obsolete!==true;}).length);
+    if(!items.length){
+      var msg=document.createElement("div");
+      msg.className="ed-empty-hint";
+      msg.textContent=records.length?"Nenhuma embalagem encontrada para a busca.":obsolete?"Nenhuma peça obsoleta.":"Nenhuma embalagem ativa cadastrada.";
+      host.appendChild(msg);return;
+    }
     var grid=document.createElement("div");grid.className="ed-grid catalog-grid";
     items.forEach(function(it){grid.appendChild(edItemRow(it));});host.appendChild(grid);
   }
@@ -3110,7 +3122,7 @@ SOFTWARE.
     info.appendChild(head);info.appendChild(name);info.appendChild(sub);info.appendChild(facts);
     var foot=document.createElement("div");foot.className="ei-foot";
     var edit=document.createElement("button");edit.type="button";edit.className="btn btn-ghost btn-sm catalog-edit";edit.textContent="Editar cadastro";edit.addEventListener("click",function(e){e.stopPropagation();selectItem(it.id);setPage("cadastro");});foot.appendChild(edit);
-    var obsolete=document.createElement("button");obsolete.type="button";obsolete.className="btn btn-ghost btn-sm obsolete-toggle";obsolete.textContent="Obsoleto";obsolete.setAttribute("aria-pressed",String(it.obsolete===true));obsolete.title="Marcar ou desmarcar como obsoleto";obsolete.addEventListener("click",function(e){e.stopPropagation();toggleObsolete(it.id);});foot.appendChild(obsolete);
+    var obsolete=document.createElement("button");obsolete.type="button";obsolete.className="btn btn-ghost btn-sm obsolete-toggle";obsolete.textContent=it.obsolete===true?"Reativar":"Obsoleto";obsolete.setAttribute("aria-pressed",String(it.obsolete===true));obsolete.title="Marcar ou desmarcar como obsoleto";obsolete.addEventListener("click",function(e){e.stopPropagation();toggleObsolete(it.id);});foot.appendChild(obsolete);
     var del=document.createElement("button");del.type="button";del.className="ei-del";del.title="Excluir cadastro";del.setAttribute("aria-label","Excluir cadastro de "+(it.partCode||it.partName));del.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';del.addEventListener("click",function(e){e.stopPropagation();removeItem(it.id);});
     row.appendChild(info);row.appendChild(thumb);row.appendChild(foot);row.appendChild(del);return row;
   }
@@ -3211,8 +3223,8 @@ SOFTWARE.
     if(pg==="historico"&&location.hash!=="#historico")history.pushState(null,"","#historico");
     else if(pg!=="historico"&&location.hash==="#historico")history.replaceState(null,"",location.pathname+location.search);
     document.body.dataset.view="editor";document.body.dataset.page=pg;markTabs(pg);
-    if(pg==="pcp"){pcpRefresh();}else if(pg==="lista"){renderEditorList();}else if(pg==="cadastro"){populateForm();}else if(pg==="dash"){dashRender();}
-    var sc=el(pg==="pcp"?"pgPCP":pg==="lista"?"pgLista":pg==="colaboradores"?"pgColaboradores":pg==="dash"?"pgDash":pg==="historico"?"pgHistorico":"pgCadastro");if(sc)sc.scrollTop=0;
+    if(pg==="pcp"){pcpRefresh();}else if(pg==="lista"||pg==="obsoletas"){el("edSearch").value="";el("edSearchClear").hidden=true;renderEditorList();}else if(pg==="cadastro"){populateForm();}else if(pg==="dash"){dashRender();}
+    var sc=el(pg==="pcp"?"pgPCP":(pg==="lista"||pg==="obsoletas")?"pgLista":pg==="colaboradores"?"pgColaboradores":pg==="dash"?"pgDash":pg==="historico"?"pgHistorico":"pgCadastro");if(sc)sc.scrollTop=0;
   }
   /* cabeçalho da página de cadastro: qual embalagem está aberta + setas anterior/próximo */
   function updateEdHeader(){

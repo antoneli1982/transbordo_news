@@ -14,7 +14,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import {
-    getFirestore, doc, setDoc, onSnapshot, getDoc
+    getFirestore, doc, setDoc, onSnapshot, getDoc, collection, query, where, documentId, runTransaction
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
   import {
     getStorage, ref, uploadBytes, getDownloadURL
@@ -34,7 +34,7 @@
   const storage = getStorage(app);
 
   // expõe pra dentro da IIFE principal
-  window.__FB = { db, doc, setDoc, onSnapshot, getDoc };
+  window.__FB = { db, doc, setDoc, onSnapshot, getDoc, collection, query, where, documentId, runTransaction };
   window.__FBS = { storage, ref, uploadBytes, getDownloadURL };
   window.dispatchEvent(new Event("firebase-ready"));
 </script>
@@ -1592,6 +1592,18 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 }
 }
 </style>
+<style>
+#pgPCP .pcp-run-btn{background:#166442;color:#fff;border:0;padding:10px 16px;min-height:44px;border-radius:7px;font:600 16px var(--sans);cursor:pointer}
+#pgPCP .pcp-run-btn[data-running=true]{background:#a83232}
+#pgPCP .pcp-run-btn:disabled{opacity:.55;cursor:default}
+#pgPCP .pcp-run-state:not(:empty){display:block;margin:6px 0;font-size:15px}
+#pgPCP .pcp-run-btn{margin:0 8px 6px 0}
+#pgPCP .pcp-runs{border:1px solid var(--line);border-radius:12px;padding:16px;margin:18px 0;color:var(--ink);background:var(--card)}
+#pgPCP .pcp-runs h2{font-size:20px;margin:0 0 8px}
+#pgPCP .pcp-runs details{border-top:1px solid var(--line);padding:10px 0}
+#pgPCP .pcp-runs summary{cursor:pointer;font-weight:600}
+#pgPCP .pcp-runs details p{white-space:pre-line;line-height:1.6}
+</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <div class="bg-fx"></div>
@@ -1804,6 +1816,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
           </div>
           <button type="button" class="pcp-add-row" id="pcpAddBottom"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Adicionar outra peça</button>
         </section>
+        <section class="pcp-runs"><h2>Histórico de transbordos</h2><p id="pcpRunStatus" role="status">Aguardando conexão para registrar transbordos.</p><div id="pcpRuns"></div></section>
         <div class="pcp-under-table">
           <details class="pcp-rule"><summary><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.7"/><path d="M12 11v6m0-10v.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Como o tempo é calculado</summary><p><b>Tempo de cada posto = (tempo médio por caixa × caixas do posto) ÷ [1 + 0,8 × (colaboradores do posto − 1)].</b><br>O primeiro colaborador de cada posto corresponde a 100% de dedicação; cada adicional acrescenta 80%. Informe as caixas e os colaboradores em cada posto. Com mais de um posto na sequência, a execução é <b>simultânea automaticamente</b> e o tempo decorrido da peça é o maior tempo dos postos. O total do planejamento soma o <b>uso da mão de obra</b> (tempo de cada posto × colaboradores daquele posto). Caixas fracionadas podem ser informadas com vírgula.</p></details>
           <span class="pcp-draft-status" id="pcpDraftStatus" role="status">Planejamento salvo neste navegador</span>
@@ -4650,6 +4663,10 @@ SOFTWARE.
       var idx=pcpPlan.rows.indexOf(row);if(idx<0)return;pcpPlan.rows.splice(idx,1);if(!pcpPlan.rows.length)pcpPlan.rows.push(pcpBlankRow());pcpRenderRows();pcpQueueSave();
       var focus=el("pcpRows").children[Math.min(idx,pcpPlan.rows.length-1)];if(focus)focus.querySelector('[data-pcp="code"]').focus();
     });
+    var run=document.createElement("button");run.type="button";run.className="pcp-run-btn";run.textContent="Start · Iniciar";run.disabled=!execReady;
+    run.onclick=function(){execAction(row.id,execActive(row.id));};
+    var info=document.createElement("span");info.className="pcp-run-state";
+    tr.querySelector(".pcp-priority-cell").prepend(run,info);
     return tr;
   }
   function pcpRenderStations(row,tr){
@@ -4731,7 +4748,7 @@ SOFTWARE.
   }
   function pcpRenderRows(){
     if(!pcpPlan)return;var body=el("pcpRows");body.innerHTML="";
-    pcpPlan.rows.forEach(function(row,index){var tr=pcpNodeRow(row,index);body.appendChild(tr);pcpUpdateRow(row,tr,index);});pcpUpdateTotals();
+    pcpPlan.rows.forEach(function(row,index){var tr=pcpNodeRow(row,index);body.appendChild(tr);pcpUpdateRow(row,tr,index);});execPaint();pcpUpdateTotals();
   }
   function pcpUpdateTotals(){
     if(!pcpPlan)return;var t=pcpTotals();el("pcpCount").textContent=String(t.valid.length);el("pcpBoxesTotal").textContent=pcpFormat(t.boxes);el("pcpPiecesTotal").textContent=pcpFormat(t.pieces);el("pcpGrandTotal").textContent=tbClock(t.cs/100);
@@ -4754,7 +4771,79 @@ SOFTWARE.
     var row=pcpBlankRow();pcpPlan.rows.push(row);var tr=pcpNodeRow(row,pcpPlan.rows.length-1);el("pcpRows").appendChild(tr);pcpRefresh();pcpQueueSave();tr.querySelector('[data-pcp="code"]').focus();tr.scrollIntoView({block:"nearest",behavior:"smooth"});
   }
   function pcpMetaIntoInputs(){el("pcpDate").value=pcpPlan.date;el("pcpRef").value=pcpPlan.reference;el("pcpResponsible").value=pcpPlan.responsible;}
+  var execRecords=[],execReady=false,execBusy=new Set();
+  function execTime(ms){
+    return new Date(ms).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo",hour12:false});
+  }
+  function execActive(rowId){return execRecords.find(function(r){return r.rowId===rowId&&!r.end;});}
+  function execPaint(){
+    document.querySelectorAll("#pcpRows .pcp-row").forEach(function(tr){
+      var rowId=tr.dataset.rowId,active=execActive(rowId);
+      var button=tr.querySelector(".pcp-run-btn");
+      if(!button)return;
+      button.textContent=active?"Stop · Encerrar":"Start · Iniciar";
+      button.disabled=!execReady||execBusy.has(rowId);
+      button.dataset.running=String(!!active);
+      tr.querySelector(".pcp-run-state").textContent=active?active.code+" · Em andamento desde "+execTime(active.start):"";
+    });
+    var list=el("pcpRuns");list.replaceChildren();
+    execRecords.slice().sort(function(a,b){return b.start-a.start;}).forEach(function(r){
+      var entry=document.createElement("details"),title=document.createElement("summary"),detail=document.createElement("p");
+      title.textContent=r.code+" · "+r.description+" | "+(r.end?r.pieces+" peças":"Em andamento")+" | "+execTime(r.start);
+      detail.textContent="Início: "+execTime(r.start)+" · Fim: "+(r.end?execTime(r.end):"Em andamento")+" · Total realizado: "+(r.end?r.pieces+" peças":"pendente")+
+        "\nPlanejamento: "+r.date+" · Ordem "+r.sequence+(r.reference?" · "+r.reference:"")+(r.responsible?" · Responsável: "+r.responsible:"")+
+        "\nPeças por caixa: "+(r.perBox||"não informado");
+      (r.stations||[]).forEach(function(st,i){detail.textContent+="\nPosto "+(i+1)+": "+(st.boxes||"0")+" caixas planejadas · "+st.workers+" colaborador(es)"+(st.people.length?" · "+st.people.join(", "):"");});
+      entry.append(title,detail);
+      if(!r.end){
+        var stop=document.createElement("button");stop.type="button";stop.className="pcp-run-btn";stop.dataset.running="true";stop.textContent="Stop · Encerrar";stop.disabled=!execReady||execBusy.has(r.rowId);
+        stop.onclick=function(){execAction(r.rowId,r);};entry.appendChild(stop);
+      }
+      list.appendChild(entry);
+    });
+    el("pcpRunStatus").textContent=!execReady?"Aguardando conexão para registrar transbordos.":execRecords.length?"":"Nenhum transbordo registrado.";
+  }
+  async function execAction(rowId,active){
+    if(!execReady||execBusy.has(rowId))return;
+    var FB=window.__FB,lock=FB.doc(FB.db,"paineis","runLock_"+rowId),record,actual,when=Date.now();
+    if(active){
+      var answer=window.prompt("Total de peças realmente transbordadas de "+active.code+" (informe 0 se nenhuma peça foi concluída):","");
+      if(answer===null)return;
+      if(!/^\d+$/.test(answer.trim())||!Number.isSafeInteger(Number(answer))){toast("Informe um número inteiro de peças, igual ou maior que zero.");return;}
+      actual=Number(answer);
+    }else{
+      var row=pcpPlan.rows.find(function(r){return r.id===rowId;});if(!row)return;
+      var r=pcpResolve(row);
+      if(!r.item||!String(r.item.partName||"").trim()){toast("Selecione uma peça cadastrada com descrição antes de iniciar.");return;}
+      record={id:"run_"+FB.doc(FB.collection(FB.db,"paineis")).id,rowId:rowId,code:r.item.partCode,description:r.item.partName,start:when,end:null,pieces:null,date:pcpPlan.date,reference:pcpPlan.reference||"",responsible:pcpPlan.responsible||"",sequence:pcpPlan.rows.indexOf(row)+1,perBox:r.item.qtyPerBox||"",priority:pcpIsPriority(row,r.item),stations:r.stations.map(function(x){return {boxes:x.station.boxes,workers:x.station.workers,people:(x.station.people||[]).slice(0,x.workers).filter(Boolean)};})};
+    }
+    execBusy.add(rowId);execPaint();
+    try{
+      await FB.runTransaction(FB.db,async function(tx){
+        var current=await tx.get(lock),held=current.exists()?current.data().runId:null;
+        if(active){
+          if(held!==active.id)throw new Error("estado");
+          tx.update(FB.doc(FB.db,"paineis",active.id),{end:Math.max(active.start,when),pieces:actual});tx.delete(lock);
+        }else{
+          if(held)throw new Error("estado");
+          tx.set(lock,{runId:record.id});tx.set(FB.doc(FB.db,"paineis",record.id),record);
+        }
+      });
+      toast(active?"Transbordo encerrado e total registrado.":"Início do transbordo registrado.");
+    }catch(e){toast(e.message==="estado"?"A situação deste transbordo já mudou em outro computador.":"Falha ao registrar. Confira a conexão e tente novamente.");}
+    finally{execBusy.delete(rowId);execPaint();}
+  }
+  function execConnect(){
+    var FB=window.__FB;
+    if(!FB){window.addEventListener("firebase-ready",execConnect,{once:true});return;}
+    var key=FB.documentId(),q=FB.query(FB.collection(FB.db,"paineis"),FB.where(key,">=","run_"),FB.where(key,"<","run\u0060"));
+    FB.onSnapshot(q,{includeMetadataChanges:true},function(snapshot){
+      execRecords=snapshot.docs.map(function(doc){return doc.data();});
+      execReady=!snapshot.metadata.fromCache;execPaint();
+    },function(){execReady=false;execPaint();el("pcpRunStatus").textContent="Não foi possível acessar os registros no Firebase.";});
+  }
   function pcpBoot(){
+    execConnect();
     peopleBoot();dashBoot();var raw;try{raw=JSON.parse(localStorage.getItem(PCP_KEY)||"null");}catch(e){}pcpPlan=pcpNormalize(raw);pcpReady=true;pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();
     el("pcpAddTop").addEventListener("click",pcpAdd);el("pcpAddBottom").addEventListener("click",pcpAdd);
     [["pcpDate","date"],["pcpRef","reference"],["pcpResponsible","responsible"]].forEach(function(pair){el(pair[0]).addEventListener("input",function(){pcpPlan[pair[1]]=this.value;pcpQueueSave();});});

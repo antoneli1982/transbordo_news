@@ -1705,6 +1705,15 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
 <style>
 #pgPCP .pcp-run-btn{background:#166442;color:#fff;border:0;padding:10px 16px;min-height:44px;border-radius:7px;font:600 16px var(--sans);cursor:pointer}
 #pgPCP .pcp-run-btn[data-running=true]{background:#a83232}
+.pcp-active{margin-bottom:20px;padding:14px 18px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-inline-start:5px solid var(--pcp-amber);border-radius:10px}
+.pcp-active h2{margin:0 0 6px;font-size:19px}
+.pcp-active-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;padding:8px 0}
+.pcp-active-row+.pcp-active-row{border-top:1px solid var(--line)}
+.pcp-active-piece{flex:1 1 260px;min-width:0;overflow-wrap:anywhere}
+.pcp-active-piece strong,.pcp-active-piece span{display:block}
+.pcp-active-piece span{margin-top:4px;color:var(--ink-2);font-size:15px}
+#pgPCP .pcp-active-row .pcp-run-btn{margin:0}
+@media print{.pcp-active{display:none}}
 #pgPCP .pcp-run-btn:disabled{opacity:.55;cursor:default}
 #pgPCP .pcp-run-state:not(:empty){display:block;margin:6px 0;font-size:15px}
 #pgPCP .pcp-run-btn{margin:0 8px 6px 0}
@@ -1950,6 +1959,10 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
     <!-- ====== PCP — PLANEJAMENTO DE TRANSBORDO ====== -->
     <section class="pg" id="pgPCP" aria-labelledby="pcpTitle">
       <div class="pcp-main">
+        <section class="pcp-active" id="pcpActive" aria-labelledby="pcpActiveTitle" hidden>
+          <h2 id="pcpActiveTitle">Transbordos em andamento</h2>
+          <div id="pcpActiveList"></div>
+        </section>
         <div class="pcp-heading">
           <div>
             <div class="pcp-eyebrow">Planejamento e controle da produção</div>
@@ -5318,8 +5331,38 @@ SOFTWARE.
     if(r.boxSource==="method"&&r.method)body.append(histElement("h4","","Estimativa pelo método"),histElement("p","",pcpFormat(productiveSeconds(r))+" s de produção"+(r.lunchSeconds?" (1 hora de almoço descontada)":"")+" ÷ "+pcpFormat(r.method.secondsPerPiece)+" s/peça ÷ "+pcpFormat(r.method.piecesPerBox)+" peças/caixa."));
     return body;
   }
+  function execStopButton(run){
+    var button=histElement("button","pcp-run-btn","Stop · Encerrar");
+    button.type="button";
+    button.dataset.running="true";
+    button.setAttribute("aria-label","Stop · Encerrar transbordo de "+run.code);
+    button.disabled=!(execReady||runLocalReady)||execBusy.has(run.rowId);
+    button.onclick=function(){execAction(run.rowId,run);};
+    return button;
+  }
+  function paintActiveRuns(runs){
+    var list=el("pcpActiveList");
+    list.replaceChildren();
+    el("pcpActive").hidden=!runs.length;
+    runs.forEach(function(run){
+      var row=histElement("div","pcp-active-row");
+      var piece=histElement("div","pcp-active-piece");
+      piece.append(histElement("strong","",[run.code,run.description].filter(Boolean).join(" · ")));
+      var timing="Início "+execTime(run.start);
+      if(run.sequence)timing+=" · Ordem "+run.sequence;
+      piece.append(histElement("span","",timing));
+      (run.stations||[]).forEach(function(st,i){
+        var boxes=String(st.boxes??"").trim();
+        piece.append(histElement("span","","Posto "+(i+1)+(boxes?" · "+boxes+" caixa"+(pcpNumber(boxes)===1?" planejada":"s planejadas"):"")));
+      });
+      row.append(piece,execStopButton(run));
+      list.appendChild(row);
+    });
+  }
   function execPaint(){
-    document.body.classList.toggle("pcp-em-andamento",execRecords.some(run=>!run.end));
+    var activeRuns=execRecords.filter(run=>!run.end).sort((a,b)=>a.start-b.start);
+    document.body.classList.toggle("pcp-em-andamento",!!activeRuns.length);
+    paintActiveRuns(activeRuns);
     document.querySelectorAll("#pcpRows .pcp-row").forEach(function(tr){
       var rowId=tr.dataset.rowId,active=execActive(rowId);
       var button=tr.querySelector(".pcp-run-btn");
@@ -5354,8 +5397,7 @@ SOFTWARE.
       del.onclick=()=>{if(confirm("Excluir o transbordo de "+r.code+" iniciado em "+execTime(r.start)+"?"))historyChange(r,null).catch(e=>toast(e.message));};
       actions.append(edit,del);entry.appendChild(actions);
       if(!r.end){
-        var stop=document.createElement("button");stop.type="button";stop.className="pcp-run-btn";stop.dataset.running="true";stop.textContent="Stop · Encerrar";stop.disabled=!(execReady||runLocalReady)||execBusy.has(r.rowId);
-        stop.onclick=function(){execAction(r.rowId,r);};actions.appendChild(stop);
+        actions.appendChild(execStopButton(r));
       }
       list.appendChild(entry);
     });

@@ -1601,6 +1601,12 @@ html[data-theme="dark"] #pgPCP #pcpRows>.pcp-row.pcp-priority{border-inline-star
 #pgPCP .pcp-code-cell{grid-area:code}
 #pgPCP .pcp-desc-cell{grid-area:descr;padding-bottom:12px;border-bottom:1px solid var(--line)}
 #pgPCP .pcp-desc-cell .pcp-readonly.pcp-desc{display:block;width:100%;max-width:none;height:auto;padding:0;font-size:clamp(26px,2.4vw,38px);font-weight:700;line-height:1.18;white-space:normal;overflow-wrap:anywhere}
+#pgPCP .pcp-meta{background:#dfefe8;border:1px solid #8fb6a7;border-inline-start:5px solid #387d69}
+html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70;border-inline-start-color:#66b6a1}
+#pgPCP .pcp-meta-resp{position:relative}
+#pcpResponsibleResults:not([hidden]){position:absolute;z-index:12;inset-inline:0;top:100%;max-height:230px;overflow:auto;background:var(--card);color:var(--ink);border:1px solid var(--muted);border-radius:8px;padding:5px}
+#pcpResponsibleResults button{display:block;width:100%;text-align:left;padding:10px;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer}
+#pcpResponsibleResults button:is(:hover,:focus-visible){background:var(--brand-50)}
 #pgPCP td.pcp-qty-cell{grid-area:qty;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,125px),1fr));align-items:start;gap:12px}
 #pgPCP .pcp-qty-cell :is(input,select,button){width:100%;min-width:0}
 #pgPCP .pcp-source-send,#pgPCP .pcp-divide-box{margin-top:6px;white-space:normal}
@@ -1874,7 +1880,7 @@ html[data-theme="dark"] #pgPCP #pcpRows>.pcp-row.pcp-priority{border-inline-star
         <div class="pcp-meta">
           <div><label for="pcpDate">Data do planejamento</label><input type="date" id="pcpDate" required></div>
           <div><label for="pcpRef">Identificação <span>· opcional</span></label><input type="text" id="pcpRef" maxlength="100" placeholder="Ex.: Programação do 1º turno" autocomplete="off"></div>
-          <div class="pcp-meta-resp"><label for="pcpResponsible">Responsável <span>· opcional</span></label><input type="text" id="pcpResponsible" maxlength="100" placeholder="Nome do responsável" autocomplete="off"></div>
+          <div class="pcp-meta-resp"><label for="pcpResponsible">Responsável <span>· opcional</span></label><input type="text" id="pcpResponsible" maxlength="100" placeholder="Pesquisar por nome ou chapa VW" autocomplete="off" aria-controls="pcpResponsibleResults"><div id="pcpResponsibleResults" hidden aria-label="Colaboradores encontrados"></div></div>
         </div>
         <section class="pcp-sheet" aria-label="Linhas do planejamento">
           <div class="pcp-sheet-bar">
@@ -4948,6 +4954,34 @@ SOFTWARE.
   function pcpAdd(){
     var row=pcpBlankRow();pcpPlan.rows.push(row);var tr=pcpNodeRow(row,pcpPlan.rows.length-1);el("pcpRows").appendChild(tr);pcpRefresh();pcpQueueSave();tr.querySelector('[data-pcp="code"]').focus();tr.scrollIntoView({block:"nearest",behavior:"smooth"});
   }
+  function bindResponsibleSearch(){
+    var input=el("pcpResponsible"),results=el("pcpResponsibleResults"),wrap=input.parentElement;
+    function fold(value){return peopleLower(value).normalize("NFD").replace(/[\u0300-\u036f]/g,"");}
+    function close(){results.hidden=true;input.value=pcpPlan.responsible||"";}
+    function render(){
+      var term=fold(input.value);
+      var matches=pcpPeople.filter(person=>fold(peopleOption(person)).includes(term));
+      results.replaceChildren();results.hidden=false;
+      matches.forEach(function(person){
+        var button=document.createElement("button");button.type="button";button.textContent=peopleOption(person);
+        button.onclick=function(){pcpPlan.responsible=peopleOption(person);pcpQueueSave();input.focus();close();};
+        results.appendChild(button);
+      });
+      if(!matches.length)results.textContent="Nenhum colaborador encontrado.";
+    }
+    input.addEventListener("focus",function(){input.select();render();});
+    input.addEventListener("click",render);
+    input.addEventListener("input",function(){if(!input.value){pcpPlan.responsible="";pcpQueueSave();}render();});
+    wrap.addEventListener("focusout",function(e){if(!wrap.contains(e.relatedTarget))close();});
+    wrap.addEventListener("keydown",function(e){
+      if(e.key==="Escape"){input.focus();close();return;}
+      var buttons=Array.from(results.querySelectorAll("button")),index=buttons.indexOf(e.target);
+      if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+        if(results.hidden){render();buttons=Array.from(results.querySelectorAll("button"));}
+        e.preventDefault();buttons[Math.max(0,Math.min(buttons.length-1,index+(e.key==="ArrowDown"?1:-1)))]?.focus();
+      }else if(e.key==="Enter"&&e.target===input&&!results.hidden&&buttons.length===1){e.preventDefault();buttons[0].click();}
+    });
+  }
   function pcpMetaIntoInputs(){el("pcpDate").value=pcpPlan.date;el("pcpRef").value=pcpPlan.reference;el("pcpResponsible").value=pcpPlan.responsible;}
   var execRecords=[],execReady=false,execBusy=new Set();
   var runCacheKey="pcp-offline-runs-v1",runQueue={},runSynced=[],runLocalReady=false,runSending=false;
@@ -5210,7 +5244,8 @@ SOFTWARE.
     window.addEventListener("online",runFlush);
     peopleBoot();dashBoot();var raw;try{raw=JSON.parse(localStorage.getItem(PCP_KEY)||"null");}catch(e){}pcpPlan=pcpNormalize(raw);pcpReady=true;pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();
     el("pcpAddTop").addEventListener("click",pcpAdd);el("pcpAddBottom").addEventListener("click",pcpAdd);
-    [["pcpDate","date"],["pcpRef","reference"],["pcpResponsible","responsible"]].forEach(function(pair){el(pair[0]).addEventListener("input",function(){pcpPlan[pair[1]]=this.value;pcpQueueSave();});});
+    [["pcpDate","date"],["pcpRef","reference"]].forEach(function(pair){el(pair[0]).addEventListener("input",function(){pcpPlan[pair[1]]=this.value;pcpQueueSave();});});
+    bindResponsibleSearch();
     el("pcpPdf").addEventListener("click",pcpDownloadPdf);
     idbGet(PCP_KEY).then(function(json){if(!json||pcpChanged)return;var p;try{p=JSON.parse(json);}catch(e){return;}if((Number(p.savedAt)||0)<=pcpPlan.savedAt)return;pcpPlan=pcpNormalize(p);pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();}).catch(function(){}).finally(function(){pcpHydrated=true;pcpConnectCloud();});
     window.addEventListener("firebase-ready",function(){if(pcpHydrated)pcpConnectCloud();},{once:true});

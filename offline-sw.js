@@ -1,4 +1,4 @@
-const CACHE='transbordo-shell-auth-20261125-1';
+const CACHE='transbordo-shell-auth-20261125-2';
 const base=new URL(self.registration.scope);
 const paths=['index.html','auth/start.js','auth/login-dialog.js','auth/access.css','auth/accounts.js','auth/database.js','auth/firebase.js','auth/project.mjs','auth/vault.js','auth/crypto.js','auth/admin.js'];
 const shell=new Set(paths.map(p=>new URL(p,base).href));

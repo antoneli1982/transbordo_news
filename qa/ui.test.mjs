@@ -104,7 +104,8 @@ test('Fluxo completo da interface, troca de senha, PCP, TV, revogação e modo o
     await button(admin,'TVs').click();await button(admin,'Autorizar').click();await tv.locator('html[data-role=screen]:not([data-locked])').waitFor();
     assert.equal(await tv.locator('body').getAttribute('data-view'),'display');
     await tv.reload({waitUntil:'domcontentloaded'});await tv.locator('html[data-role=screen]:not([data-locked])').waitFor();
-    console.log('TV autorizada voltou após recarga');
+    await until(()=>tv.locator('#d-code').textContent().then(v=>v==='QA-01'),'A TV autorizada não mostrou a peça do PCP');
+    assert.equal(await tv.locator('#d-count').textContent(),'1');console.log('TV autorizada exibiu a peça prevista após recarga');
     const reset=await page({width:360,height:740});await reset.goto(url,{waitUntil:'domcontentloaded'});
     await button(reset,'Esqueci minha senha').click();await reset.getByLabel('E-mail cadastrado').fill(email('viewer'));
     await button(reset,'Enviar link de recuperação').click();await reset.getByText(/você receberá o link/).waitFor();

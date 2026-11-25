@@ -53,8 +53,11 @@ export function inspect(docs){
     if(!Number.isSafeInteger(total)||total<1)throw Error('Quantidade inválida de partes: '+id);
     for(let i=1;i<total;i++)if(!byId.get(id+'_c'+i)?.fields?.d?.stringValue)throw Error('Anexo com parte ausente: '+id);
   }
+  const runs=[...byId].filter(([id])=>id.startsWith('run_'));
+  const closed=runs.filter(([,d])=>Number(d.fields?.end?.integerValue||d.fields?.end?.doubleValue||0)>0).length;
   return {documentos:docs.length,embalagens:catalog.items.length,linhasPCP:plan.rows.length,
-    execucoes:[...byId.keys()].filter(k=>k.startsWith('run_')).length,anexosReferenciados:refs.size};
+    execucoes:runs.length,emAndamento:runs.length-closed,encerradas:closed,
+    travasAtivas:[...byId.keys()].filter(k=>k.startsWith('runLock_')).length,anexosReferenciados:refs.size};
 }
 async function main(){
   const [mode,input,output]=process.argv.slice(2);

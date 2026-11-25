@@ -4776,6 +4776,18 @@ SOFTWARE.
     return new Date(ms).toLocaleString("pt-BR",{timeZone:"America/Sao_Paulo",hour12:false});
   }
   function execActive(rowId){return execRecords.find(function(r){return r.rowId===rowId&&!r.end;});}
+  function execBoxMethod(item,perBox){
+    var qty=pcpNumber(perBox);
+    if(!item||!(qty>0)||!/^(?:\d+(?:[,.]\d+)?|\d+:\d{1,2}(?:[,.]\d{1,2})?|\d+:\d{1,2}:\d{1,2}(?:[,.]\d{1,2})?)$/.test(String(item.time||"").trim()))return null;
+    var seconds=tbSecs(item.time);
+    return seconds>0?{secondsPerPiece:seconds/qty,piecesPerBox:qty}:null;
+  }
+  function execBoxTotal(run){
+    if(!run.end)return "Em andamento";
+    if(Number.isFinite(run.boxes))return pcpFormat(run.boxes)+" caixas · "+(run.boxSource==="method"?"Estimado por método":"Informado pelo operador");
+    var qty=pcpNumber(run.perBox);
+    return qty>0?pcpFormat(run.pieces/qty)+" caixas equivalentes ("+pcpFormat(run.pieces)+" peças registradas)":pcpFormat(run.pieces)+" peças (registro anterior)";
+  }
   function execPaint(){
     document.querySelectorAll("#pcpRows .pcp-row").forEach(function(tr){
       var rowId=tr.dataset.rowId,active=execActive(rowId);
@@ -4789,10 +4801,13 @@ SOFTWARE.
     var list=el("pcpRuns");list.replaceChildren();
     execRecords.slice().sort(function(a,b){return b.start-a.start;}).forEach(function(r){
       var entry=document.createElement("details"),title=document.createElement("summary"),detail=document.createElement("p");
-      title.textContent=r.code+" · "+r.description+" | "+(r.end?r.pieces+" peças":"Em andamento")+" | "+execTime(r.start);
-      detail.textContent="Início: "+execTime(r.start)+" · Fim: "+(r.end?execTime(r.end):"Em andamento")+" · Total realizado: "+(r.end?r.pieces+" peças":"pendente")+
+      title.textContent=r.code+" · "+r.description+" | "+execBoxTotal(r)+" | "+execTime(r.start);
+      detail.textContent="Início: "+execTime(r.start)+" · Fim: "+(r.end?execTime(r.end):"Em andamento")+" · Quantidade: "+(r.end?execBoxTotal(r):"pendente")+
         "\nPlanejamento: "+r.date+" · Ordem "+r.sequence+(r.reference?" · "+r.reference:"")+(r.responsible?" · Responsável: "+r.responsible:"")+
         "\nPeças por caixa: "+(r.perBox||"não informado");
+      if(r.boxSource==="method"&&r.method){
+        detail.textContent+="\nEstimado por método: "+pcpFormat((r.end-r.start)/1000)+" s decorridos ÷ "+pcpFormat(r.method.secondsPerPiece)+" s/peça ÷ "+pcpFormat(r.method.piecesPerBox)+" peças/caixa.";
+      }
       (r.stations||[]).forEach(function(st,i){detail.textContent+="\nPosto "+(i+1)+": "+(st.boxes||"0")+" caixas planejadas · "+st.workers+" colaborador(es)"+(st.people.length?" · "+st.people.join(", "):"");});
       entry.append(title,detail);
       if(!r.end){
@@ -4807,15 +4822,27 @@ SOFTWARE.
     if(!execReady||execBusy.has(rowId))return;
     var FB=window.__FB,lock=FB.doc(FB.db,"paineis","runLock_"+rowId),record,actual,when=Date.now();
     if(active){
-      var answer=window.prompt("Total de peças realmente transbordadas de "+active.code+" (informe 0 se nenhuma peça foi concluída):","");
+      var answer=window.prompt("Quantas caixas foram transbordadas de "+active.code+"? Use vírgula para caixa parcial. Deixe em branco para estimar pelo tempo ou digite 0 para registrar zero.","");
       if(answer===null)return;
-      if(!/^\d+$/.test(answer.trim())||!Number.isSafeInteger(Number(answer))){toast("Informe um número inteiro de peças, igual ou maior que zero.");return;}
-      actual=Number(answer);
+      actual={end:Math.max(active.start,when),boxSource:"manual"};
+      if(answer.trim()){
+        actual.boxes=pcpNumber(answer.trim());
+        if(!Number.isFinite(actual.boxes)){toast("Informe uma quantidade válida de caixas. Para meia caixa, digite 0,5.");return;}
+      }else{
+        var method=active.method;
+        if(!method){
+          var matches=state.items.filter(function(it){return active.catalogId?it.id===active.catalogId:pcpCode(it.partCode)===pcpCode(active.code);});
+          if(matches.length===1)method=execBoxMethod(matches[0],pcpNumber(active.perBox)>0?active.perBox:matches[0].qtyPerBox);
+        }
+        if(!method){toast("Para estimar, cadastre tempo por caixa e peças por caixa ou informe o total de caixas no Stop. O transbordo continua aberto.");return;}
+        actual.method=method;actual.boxSource="method";
+        actual.boxes=(actual.end-active.start)/1000/method.secondsPerPiece/method.piecesPerBox;
+      }
     }else{
       var row=pcpPlan.rows.find(function(r){return r.id===rowId;});if(!row)return;
       var r=pcpResolve(row);
       if(!r.item||!String(r.item.partName||"").trim()){toast("Selecione uma peça cadastrada com descrição antes de iniciar.");return;}
-      record={id:"run_"+FB.doc(FB.collection(FB.db,"paineis")).id,rowId:rowId,code:r.item.partCode,description:r.item.partName,start:when,end:null,pieces:null,date:pcpPlan.date,reference:pcpPlan.reference||"",responsible:pcpPlan.responsible||"",sequence:pcpPlan.rows.indexOf(row)+1,perBox:r.item.qtyPerBox||"",priority:pcpIsPriority(row,r.item),stations:r.stations.map(function(x){return {boxes:x.station.boxes,workers:x.station.workers,people:(x.station.people||[]).slice(0,x.workers).filter(Boolean)};})};
+      record={id:"run_"+FB.doc(FB.collection(FB.db,"paineis")).id,rowId:rowId,code:r.item.partCode,description:r.item.partName,start:when,end:null,boxes:null,catalogId:r.item.id,method:execBoxMethod(r.item,r.item.qtyPerBox),date:pcpPlan.date,reference:pcpPlan.reference||"",responsible:pcpPlan.responsible||"",sequence:pcpPlan.rows.indexOf(row)+1,perBox:r.item.qtyPerBox||"",priority:pcpIsPriority(row,r.item),stations:r.stations.map(function(x){return {boxes:x.station.boxes,workers:x.station.workers,people:(x.station.people||[]).slice(0,x.workers).filter(Boolean)};})};
     }
     execBusy.add(rowId);execPaint();
     try{
@@ -4823,7 +4850,7 @@ SOFTWARE.
         var current=await tx.get(lock),held=current.exists()?current.data().runId:null;
         if(active){
           if(held!==active.id)throw new Error("estado");
-          tx.update(FB.doc(FB.db,"paineis",active.id),{end:Math.max(active.start,when),pieces:actual});tx.delete(lock);
+          tx.update(FB.doc(FB.db,"paineis",active.id),actual);tx.delete(lock);
         }else{
           if(held)throw new Error("estado");
           tx.set(lock,{runId:record.id});tx.set(FB.doc(FB.db,"paineis",record.id),record);

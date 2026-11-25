@@ -1049,7 +1049,32 @@ body[data-page="historico"] #pgHistorico{display:block;padding:clamp(12px,3vw,32
 #historyForm label{display:grid;gap:4px;font-weight:600}
 #historyForm input{min-width:0;width:100%;padding:9px;border:1px solid var(--muted);border-radius:6px;color:var(--ink);background:var(--card-2);font:inherit}
 #historyError{color:var(--bad)}
-.history-actions{display:flex;gap:8px;padding:8px 0}
+#pgHistorico .pcp-runs{padding-bottom:28px}
+#pgHistorico h2{font-size:clamp(23px,3vw,32px);color:var(--ink)}
+#pcpRunStatus{margin-top:6px;color:var(--muted);font-size:14px}
+#pcpRuns{display:grid;gap:14px;color:var(--ink)}
+.history-day{font-size:16px;margin:18px 0 0;border-bottom:1px solid var(--line);padding-bottom:9px}
+.history-day::first-letter{text-transform:uppercase}
+.history-entry,.history-empty{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:0;box-shadow:var(--sh1)}
+.history-empty{padding:20px;margin-top:16px}
+.history-entry summary{cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto auto;grid-template-areas:"identity status toggle" "timing volume toggle" "sync sync sync";gap:8px 16px;align-items:center;padding:18px 20px;list-style:none;overflow-wrap:anywhere}
+.history-entry summary::-webkit-details-marker{display:none}
+.history-entry summary:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:12px}
+.history-identity{grid-area:identity;display:grid;gap:3px}.history-identity strong{font-size:18px}.history-identity span{color:var(--ink-2)}
+.history-state{grid-area:status;justify-self:start;border:1px solid var(--line);border-radius:20px;padding:3px 10px;font-size:13px;font-weight:600;background:var(--card-2)}
+.history-state.running{background:#dcf4e9;color:#15563f;border-color:#8cbda6}
+.history-timing{grid-area:timing;display:flex;gap:6px 16px;flex-wrap:wrap;color:var(--muted);font-size:14px}
+.history-volume{grid-area:volume;font-weight:600;font-size:14px}
+.history-toggle{grid-area:toggle;font-size:13px;color:var(--brand-700)}.history-toggle::after{content:" ▾"}.history-entry[open] .history-toggle::after{content:" ▴"}
+.history-sync{grid-area:sync;color:var(--muted);font-size:13px}
+.history-detail{border-top:1px solid var(--line);background:var(--card-2);padding:16px 20px;overflow-wrap:anywhere}
+.history-detail h4{font-size:15px;margin-bottom:8px}.history-detail h4:not(:first-child){margin-top:18px}
+.history-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(150px,100%),1fr));gap:12px}
+.history-fact dt{font-size:13px;color:var(--muted)}.history-fact dd{margin:3px 0 0}
+.history-station{display:grid;gap:4px;padding:8px 0}.history-station+.history-station{border-top:1px solid var(--line)}
+.history-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-top:1px solid var(--line);padding:12px 20px}
+@media(max-width:680px){.history-entry summary{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"identity status" "timing timing" "volume toggle" "sync sync";padding:14px}.history-detail,.history-actions{padding:14px}}
+
 </style>
 <style id="pcpStyles">
 /* PCP - planejamento de transbordo integrado ao cadastro existente */
@@ -5163,6 +5188,35 @@ SOFTWARE.
     var qty=pcpNumber(run.perBox);
     return qty>0?pcpFormat(run.pieces/qty)+" caixas equivalentes ("+pcpFormat(run.pieces)+" peças registradas)":pcpFormat(run.pieces)+" peças (registro anterior)";
   }
+  var historyDay=new Intl.DateTimeFormat("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric",timeZone:"America/Sao_Paulo"});
+  var historyClock=new Intl.DateTimeFormat("pt-BR",{hour:"2-digit",minute:"2-digit",second:"2-digit",timeZone:"America/Sao_Paulo"});
+  function histElement(tag,cls,value){
+    var node=document.createElement(tag);if(cls)node.className=cls;
+    if(value!=null)node.textContent=String(value);return node;
+  }
+  function historyFact(label,value){
+    var block=histElement("div","history-fact");block.append(histElement("dt","",label),histElement("dd","",value));return block;
+  }
+  function historyDetails(r){
+    var body=histElement("div","history-detail"),facts=histElement("dl","history-facts");
+    if(r.date)facts.append(historyFact("Data do planejamento",dashBR(r.date)));
+    if(r.sequence)facts.append(historyFact("Ordem",r.sequence));
+    if(r.reference)facts.append(historyFact("Identificação",r.reference));
+    if(r.responsible)facts.append(historyFact("Responsável",r.responsible));
+    if(r.perBox)facts.append(historyFact("Peças por caixa",r.perBox));
+    body.append(histElement("h4","","Planejamento"),facts);
+    if(r.stations?.length){
+      body.append(histElement("h4","","Postos e colaboradores"));
+      r.stations.forEach(function(st,i){
+        var station=histElement("div","history-station");
+        station.append(histElement("strong","","Posto "+(i+1)),histElement("span","",(st.boxes||"0")+" caixas planejadas · "+st.workers+" colaborador(es)"));
+        if(st.people?.length)station.append(histElement("span","",st.people.join(", ")));
+        body.append(station);
+      });
+    }
+    if(r.boxSource==="method"&&r.method)body.append(histElement("h4","","Estimativa pelo método"),histElement("p","",pcpFormat((r.end-r.start)/1000)+" s decorridos ÷ "+pcpFormat(r.method.secondsPerPiece)+" s/peça ÷ "+pcpFormat(r.method.piecesPerBox)+" peças/caixa."));
+    return body;
+  }
   function execPaint(){
     document.body.classList.toggle("pcp-em-andamento",execRecords.some(run=>!run.end));
     document.querySelectorAll("#pcpRows .pcp-row").forEach(function(tr){
@@ -5174,20 +5228,23 @@ SOFTWARE.
       button.dataset.running=String(!!active);
       tr.querySelector(".pcp-run-state").textContent=active?active.code+" · Em andamento desde "+execTime(active.start):"";
     });
-    var list=el("pcpRuns");list.replaceChildren();
+    var list=el("pcpRuns"),opened=new Set(Array.from(list.querySelectorAll("details[open]"),n=>n.dataset.runId)),day="";
+    list.replaceChildren();
+    if(!execRecords.length&&(execReady||runLocalReady))list.append(histElement("p","history-empty","Nenhum transbordo registrado."));
     execRecords.slice().sort(function(a,b){return b.start-a.start;}).forEach(function(r){
-      var entry=document.createElement("details"),title=document.createElement("summary"),detail=document.createElement("p");
-      title.textContent=r.code+" · "+r.description+" | "+execBoxTotal(r)+" | "+execTime(r.start);
-      detail.textContent="Início: "+execTime(r.start)+" · Fim: "+(r.end?execTime(r.end):"Em andamento")+" · Quantidade: "+(r.end?execBoxTotal(r):"pendente")+
-        "\nPlanejamento: "+r.date+" · Ordem "+r.sequence+(r.reference?" · "+r.reference:"")+(r.responsible?" · Responsável: "+r.responsible:"")+
-        "\nPeças por caixa: "+(r.perBox||"não informado");
-      if(r.boxSource==="method"&&r.method){
-        detail.textContent+="\nEstimado por método: "+pcpFormat((r.end-r.start)/1000)+" s decorridos ÷ "+pcpFormat(r.method.secondsPerPiece)+" s/peça ÷ "+pcpFormat(r.method.piecesPerBox)+" peças/caixa.";
-      }
-      (r.stations||[]).forEach(function(st,i){detail.textContent+="\nPosto "+(i+1)+": "+(st.boxes||"0")+" caixas planejadas · "+st.workers+" colaborador(es)"+(st.people.length?" · "+st.people.join(", "):"");});
+      var startDay=historyDay.format(r.start);
+      if(day!==startDay){list.append(histElement("h3","history-day",startDay));day=startDay;}
+      var entry=histElement("details","history-entry"),title=histElement("summary"),identity=histElement("span","history-identity");
+      entry.dataset.runId=r.id;entry.open=opened.has(r.id);
+      identity.append(histElement("strong","",r.code),histElement("span","",r.description));
+      var status=histElement("span",r.end?"history-state":"history-state running",r.end?"Encerrado":"Em andamento");
+      var timing=histElement("span","history-timing","Início "+historyClock.format(r.start));
+      if(r.end)timing.append(histElement("span","","Fim "+(historyDay.format(r.end)===startDay?historyClock.format(r.end):execTime(r.end))));
+      var quantity=histElement("span","history-volume",r.end?execBoxTotal(r):"Caixas pendentes");
+      title.append(identity,status,timing,quantity,histElement("span","history-toggle","Detalhes"));
       var op=runQueue[r.id];
-      if(op)title.textContent+=op.conflict?" · Conflito com outro posto, preservado neste aparelho":" · Aguardando sincronização";
-      entry.append(title,detail);
+      if(op)title.append(histElement("span","history-sync",op.conflict?"Conflito de sincronização · salvo neste aparelho":"Aguardando sincronização"));
+      entry.append(title,historyDetails(r));
       var actions=document.createElement("div");actions.className="history-actions";
       var edit=document.createElement("button"),del=document.createElement("button");
       edit.type=del.type="button";edit.className=del.className="btn btn-ghost btn-sm";
@@ -5197,11 +5254,11 @@ SOFTWARE.
       actions.append(edit,del);entry.appendChild(actions);
       if(!r.end){
         var stop=document.createElement("button");stop.type="button";stop.className="pcp-run-btn";stop.dataset.running="true";stop.textContent="Stop · Encerrar";stop.disabled=!(execReady||runLocalReady)||execBusy.has(r.rowId);
-        stop.onclick=function(){execAction(r.rowId,r);};entry.appendChild(stop);
+        stop.onclick=function(){execAction(r.rowId,r);};actions.appendChild(stop);
       }
       list.appendChild(entry);
     });
-    el("pcpRunStatus").textContent=!execReady?(runLocalReady?"Modo local · Start e Stop disponíveis neste aparelho":"Carregando registros locais…"):Object.keys(runQueue).length?"Registros locais pendentes: "+Object.keys(runQueue).length:execRecords.length?"":"Nenhum transbordo registrado.";
+    el("pcpRunStatus").textContent=!execReady?(runLocalReady?"Modo local · Start e Stop disponíveis neste aparelho":"Carregando registros locais…"):Object.keys(runQueue).length?"Registros locais pendentes: "+Object.keys(runQueue).length:"";
   }
   async function execAction(rowId,active){
     if(!(execReady||runLocalReady)||execBusy.has(rowId))return;

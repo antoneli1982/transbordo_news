@@ -1592,7 +1592,10 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 #pgPCP .pcp-table :is(colgroup,thead){display:none}
 #pgPCP #pcpRows{display:grid;gap:22px}
 #pgPCP .pcp-row{display:grid;grid-template-columns:90px minmax(150px,.9fr) minmax(175px,1.5fr) minmax(215px,.95fr);grid-template-areas:"ord code qty qty" "descr descr descr descr" "stations stations stations total" "priority priority actions actions";align-items:start;gap:20px;padding:clamp(14px,2vw,28px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
-#pgPCP .pcp-row.pcp-priority{border-inline-start:5px solid #d84c43}
+#pgPCP #pcpRows>.pcp-row:nth-child(even){background:#e1edfb;border-color:#a5bfdc}
+html[data-theme="dark"] #pgPCP #pcpRows>.pcp-row:nth-child(even){background:#243951;border-color:#516d8a}
+#pgPCP #pcpRows>.pcp-row.pcp-priority{border-inline-start:5px solid #d84c43}
+html[data-theme="dark"] #pgPCP #pcpRows>.pcp-row.pcp-priority{border-inline-start-color:#ff8279}
 #pgPCP .pcp-row td{position:static;display:block;min-width:0;padding:0;text-align:left;border:0}
 #pgPCP td.pcp-row-no{grid-area:ord}
 #pgPCP .pcp-code-cell{grid-area:code}

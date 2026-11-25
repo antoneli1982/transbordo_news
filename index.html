@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-access="locked">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -60,8 +60,10 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
       if(navigator.onLine)setTimeout(connectSDK,30000);
     } finally { connecting=false; }
   }
-  window.addEventListener("online",connectSDK);
-  connectSDK();
+  window.transbordoAccess.then(function () {
+    window.addEventListener("online",connectSDK);
+    connectSDK();
+  });
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./offline-sw.js").then(()=>navigator.serviceWorker.ready).then(()=>{
       window.transbordoOfflineReady=true;
@@ -1749,8 +1751,80 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
   html[data-theme="dark"] #pgCadastro.is-obsolete :is(input,textarea,select,.btn,.sec-title,.pg-item,.pg-item-name,label,h2,.ph),html[data-theme="dark"] .catalog-item.is-obsolete :is(.ei-code,.ei-name,.ei-sub,.catalog-facts span,.catalog-facts strong,.btn){color:#fecaca!important}
   #pgCadastro.is-obsolete .obsolete-toggle[aria-pressed="true"],.catalog-item.is-obsolete .obsolete-toggle[aria-pressed="true"]{color:#fff!important}
 </style>
+<style>
+html[data-access="locked"] body > :not(#accessGate) { display: none !important; }
+#accessGate {
+  position: fixed; inset: 0; z-index: 2147483647; overflow: auto;
+  display: grid; place-items: center; padding: 20px;
+  background: var(--bg, #0d1421); color: var(--ink, #e8eef8);
+}
+#accessGate form {
+  box-sizing: border-box; width: min(100%, 360px); padding: 28px;
+  display: grid; gap: 12px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 16px; box-shadow: 0 12px 30px rgb(0 0 0 / 12%);
+}
+#accessGate h1 { margin: 0 0 6px; font-size: 1.5rem; line-height: 1.25; }
+#accessGate label { font-size: .95rem; font-weight: 600; }
+#accessGate input, #accessGate button { box-sizing: border-box; width: 100%; min-height: 46px; border-radius: 8px; font: inherit; }
+#accessGate input { background: var(--bg); color: var(--ink); padding: 8px 12px; border: 1px solid var(--line); }
+#accessGate input:focus-visible, #accessGate button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+#accessGate button { background: #244bc1; color: white; border: 0; cursor: pointer; font-weight: 600; }
+#accessError { margin: 0; color: var(--ink); font-size: .9rem; }
+#accessError:empty { display: none; }
+</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
+<main id="accessGate" aria-labelledby="accessTitle">
+  <form id="accessForm">
+    <h1 id="accessTitle">Transbordo</h1>
+    <label for="accessPassword">Senha de acesso</label>
+    <input id="accessPassword" type="password" inputmode="numeric" autocomplete="current-password" aria-describedby="accessError" required autofocus>
+    <p id="accessError" role="alert"></p>
+    <button type="submit">Entrar</button>
+  </form>
+</main>
+<script>
+window.transbordoAccess = new Promise(function (unlock) {
+  const form = document.getElementById("accessForm");
+  const password = document.getElementById("accessPassword");
+  const error = document.getElementById("accessError");
+  const sessionKey = "transbordo.access.v1";
+  function openApp() {
+    document.getElementById("accessGate").remove();
+    delete document.documentElement.dataset.access;
+    unlock();
+  }
+  try {
+    if (sessionStorage.getItem(sessionKey) === "ok") {
+      openApp();
+      return;
+    }
+  } catch (_) { /* A sessão continua em memória quando o armazenamento está bloqueado. */ }
+  form.addEventListener("submit", async function (event) {
+    event.preventDefault();
+    try {
+      const bytes = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password.value));
+      const digest = Array.from(new Uint8Array(bytes), b => b.toString(16).padStart(2, "0")).join("");
+      if (digest !== "158a323a7ba44870f23d96f1516dd70aa48e9a72db4ebb026b0a89e212a208ab") {
+        error.textContent = "Senha incorreta. Tente novamente.";
+        password.setAttribute("aria-invalid", "true");
+        password.focus();
+        password.select();
+        return;
+      }
+    } catch (_) {
+      error.textContent = "Não foi possível conferir a senha. Reabra o site em HTTPS.";
+      return;
+    }
+    try { sessionStorage.setItem(sessionKey, "ok"); } catch (_) {}
+    openApp();
+  });
+  password.addEventListener("input", function () {
+    password.removeAttribute("aria-invalid");
+    error.textContent = "";
+  });
+});
+</script>
       <dialog id="stopDialog" aria-labelledby="stopTitle">
         <form id="stopForm">
           <h2 id="stopTitle">Encerrar transbordo</h2>
@@ -2518,7 +2592,7 @@ SOFTWARE.
 
 </script>
 <script>
-(function(){
+window.transbordoAccess.then(function startTransbordo(){
   "use strict";
   var LOGO_DEFAULT="data:image/png;base64,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";
   var PART_ICON='<svg width="W" height="W" viewBox="0 0 24 24" fill="none"><path d="M12 2.6 21 7.5v9L12 21.4 3 16.5v-9L12 2.6Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M3.3 7.6 12 12.4l8.7-4.8M12 12.4v9" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>';
@@ -6023,7 +6097,8 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
   window.addEventListener("offline-shell-error",function(){setSyncStatus("Não foi possível preparar a abertura offline","warn");});
   window.addEventListener("online",function(){if(localDirty&&initialSyncDone)saveToFirebase(lastSavedAt);});
   if(!navigator.onLine)showOffline();
-})();
+  if(document.readyState === "complete")autoGrowAll();
+});
 </script>
 </body>
 </html>

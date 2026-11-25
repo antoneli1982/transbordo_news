@@ -1550,14 +1550,17 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 #pgPCP .pcp-table{display:block;min-width:0;width:100%}
 #pgPCP .pcp-table :is(colgroup,thead){display:none}
 #pgPCP #pcpRows{display:grid;gap:22px}
-#pgPCP .pcp-row{display:grid;grid-template-columns:90px minmax(150px,.9fr) minmax(175px,1.5fr) minmax(215px,.95fr);grid-template-areas:"ord code code qty" "descr descr descr descr" "stations stations stations total" "priority priority actions actions";align-items:start;gap:20px;padding:clamp(14px,2vw,28px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
+#pgPCP .pcp-row{display:grid;grid-template-columns:90px minmax(150px,.9fr) minmax(175px,1.5fr) minmax(215px,.95fr);grid-template-areas:"ord code qty qty" "descr descr descr descr" "stations stations stations total" "priority priority actions actions";align-items:start;gap:20px;padding:clamp(14px,2vw,28px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
 #pgPCP .pcp-row.pcp-priority{border-inline-start:5px solid #d84c43}
 #pgPCP .pcp-row td{position:static;display:block;min-width:0;padding:0;text-align:left;border:0}
 #pgPCP td.pcp-row-no{grid-area:ord}
 #pgPCP .pcp-code-cell{grid-area:code}
 #pgPCP .pcp-desc-cell{grid-area:descr;padding-bottom:12px;border-bottom:1px solid var(--line)}
 #pgPCP .pcp-desc-cell .pcp-readonly.pcp-desc{display:block;width:100%;max-width:none;height:auto;padding:0;font-size:clamp(26px,2.4vw,38px);font-weight:700;line-height:1.18;white-space:normal;overflow-wrap:anywhere}
-#pgPCP .pcp-qty-cell{grid-area:qty}
+#pgPCP td.pcp-qty-cell{grid-area:qty;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,125px),1fr));align-items:start;gap:12px}
+#pgPCP .pcp-qty-cell :is(input,select,button){width:100%;min-width:0}
+#pgPCP .pcp-source-send,#pgPCP .pcp-divide-box{margin-top:6px;white-space:normal}
+#pgPCP .pcp-divide-box{width:100%}
 #pgPCP .pcp-stations-cell{grid-area:stations;border-top:1px solid var(--line);padding-top:16px}
 #pgPCP td.pcp-total-cell{grid-area:total;padding:14px!important;background:var(--card-2);border:1px solid var(--line)!important;border-radius:10px}
 #pgPCP .pcp-priority-cell{grid-area:priority;padding:0!important}
@@ -3404,7 +3407,7 @@ SOFTWARE.
     pop.addEventListener("keydown",function(event){
       if(event.ctrlKey||event.metaKey||event.altKey||event.target.closest("select,input,textarea"))return;
       var key=event.key;
-      if(key==="Enter"&&event.target.closest(".pcp-send,.calc-close"))return;
+      if(key==="Enter"&&event.target.closest(".pcp-send,.pcp-divide-box,.calc-close"))return;
       if(/^\d$/.test(key))inputDigit(key);
       else if(key===","||key==="."||key==="Decimal")inputDot();
       else if(["+","-","*","/"].includes(key))applyOp(key==="*"?"×":key==="/"?"÷":key);
@@ -3415,7 +3418,15 @@ SOFTWARE.
       event.preventDefault();
       event.stopPropagation();
     });
-    return {clear:clearAll,equals:equals};
+    function divideByBox(qty){
+      if(!(qty>0)||!Number.isFinite(qty))return;
+      equals();
+      if(cs.display==="Erro")return;
+      var boxes=parseBR(cs.display)/qty;
+      if(!Number.isFinite(boxes)){showError();return;}
+      cs.display=formatBR(boxes,8);cs.waiting=true;render();
+    }
+    return {clear:clearAll,equals:equals,divideByBox:divideByBox};
   }
   (function(){
     var btn=el("btnCalc"),pop=el("calcPop"),disp=el("calcDisplay");
@@ -4151,7 +4162,7 @@ SOFTWARE.
   /* ===== PCP: usa o mesmo cadastro e a mesma função de tempo do painel ===== */
   var PCP_KEY="sese_pcp_plan_v1", pcpPlan=null, pcpSaveTimer=null, pcpChanged=false, pcpCatalogSignature="", pcpReady=false;
   function pcpToday(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-  function pcpBlankRow(){return {id:uid(),code:"",itemId:"",postCount:"1",stations:[{boxes:"",workers:"1",people:[]}],simultaneous:false,priority:false};}
+  function pcpBlankRow(){return {id:uid(),code:"",itemId:"",sourcePieces:"",postCount:"1",stations:[{boxes:"",workers:"1",people:[]}],simultaneous:false,priority:false};}
   function pcpCode(s){return String(s==null?"":s).trim().replace(/\s+/g," ").toLocaleUpperCase("pt-BR");}
   function pcpNumber(s){
     s=String(s==null?"":s).trim();
@@ -4166,7 +4177,7 @@ SOFTWARE.
       rows:Array.isArray(p.rows)&&p.rows.length?p.rows.map(function(r){r=r||{};var id=/^[a-zA-Z0-9_-]{1,100}$/.test(r.id||"")&&!used[r.id]?r.id:uid();used[id]=true;var stations=Array.isArray(r.stations)&&r.stations.length?r.stations.slice(0,99).map(function(st){st=st||{};return {boxes:String(st.boxes==null?"":st.boxes),workers:String(st.workers==null?"1":st.workers),people:Array.isArray(st.people)?st.people.map(String).slice(0,99):[]};}):[{boxes:String(r.boxes==null?"":r.boxes),workers:String(r.workers==null?"1":r.workers),people:[]}];
         var count=String(r.postCount==null?stations.length:r.postCount);
         if(/^\d+$/.test(count)&&Number(count)>=1&&Number(count)<=99)while(stations.length<Number(count))stations.push({boxes:"",workers:"1",people:[]});
-        return {id:id,code:String(r.code||""),itemId:String(r.itemId||""),postCount:count,stations:stations,simultaneous:r.simultaneous===true,priority:typeof r.priority==="boolean"?r.priority:null};}):[pcpBlankRow()]};
+        return {id:id,code:String(r.code||""),itemId:String(r.itemId||""),sourcePieces:String(r.sourcePieces||""),postCount:count,stations:stations,simultaneous:r.simultaneous===true,priority:typeof r.priority==="boolean"?r.priority:null};}):[pcpBlankRow()]};
   }
   function pcpQueueSave(){pcpChanged=true;pcpDraftPending=true;pcpPlan.cloudPending=true;el("pcpDraftStatus").textContent="Salvando planejamento…";clearTimeout(pcpSaveTimer);pcpSaveTimer=setTimeout(pcpSave,220);}
   function pcpSave(){
@@ -4607,15 +4618,15 @@ SOFTWARE.
     tr.innerHTML='<td class="pcp-cell pcp-row-no"><label class="pcp-mobile-label">Ordem</label><input class="pcp-seq-input" type="number" inputmode="numeric" min="1" step="1" required autocomplete="off"><small>Editar ordem</small></td>'+
       '<td class="pcp-cell pcp-code-cell"><label class="pcp-mobile-label">Código da peça</label><input class="pcp-code-input" data-pcp="code" type="text" list="pcpCodes" autocomplete="off" spellcheck="false" placeholder="Digite o código"><small data-msg="code">Selecione no cadastro</small></td>'+
       '<td class="pcp-cell pcp-desc-cell"><span class="pcp-mobile-label">Descrição da peça</span><span class="pcp-readonly pcp-desc" data-out="description">—</span><small data-out="base">Preenchida pelo código</small><select data-pcp="itemId" hidden></select></td>'+
-      '<td class="pcp-cell pcp-qty-cell"><span class="pcp-mobile-label">Peças por caixa</span><span class="pcp-readonly" data-out="qty">—</span><small>Do cadastro</small></td>'+
+      '<td class="pcp-cell pcp-qty-cell"><div><span class="pcp-mobile-label">Peças por caixa</span><span class="pcp-readonly" data-out="qty">—</span><small>Do cadastro</small></div><div><label class="pcp-mobile-label">Peças na embalagem de origem</label><input data-pcp="sourcePieces" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div><div><span class="pcp-mobile-label">Caixas calculadas</span><output class="pcp-readonly" data-out="sourceBoxes"></output><select class="pcp-source-target" aria-label="Posto de destino das caixas calculadas" hidden></select><button type="button" class="btn btn-ghost pcp-source-send">↓ Usar nas caixas</button></div></td>'+
       '<td class="pcp-cell pcp-stations-cell" colspan="2"><div class="pcp-station-controls"><div class="pcp-post-count"><label>Quantidade de postos</label><input data-pcp="postCount" type="number" inputmode="numeric" min="1" max="99" step="1" required><small data-msg="postCount"></small></div><span class="pcp-simultaneous" aria-live="polite">1 posto</span></div><small class="pcp-mode-hint"></small><div class="pcp-stations-list"></div></td>'+
       '<td class="pcp-cell pcp-total-cell"><span class="pcp-mobile-label">Tempo total</span><output class="pcp-readonly pcp-row-time" data-out="time">—</output><small data-out="timeHint">Aguardando dados</small></td>'+
       '<td class="pcp-cell pcp-priority-cell"><span class="pcp-mobile-label">Prioridade</span><button type="button" class="pcp-priority-btn" aria-pressed="false"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 21V4m0 0c5-4 9 4 14 0v10c-5 4-9-4-14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Prioridade</span></button><small class="pcp-priority-hint">Clique para marcar</small></td>'+
       '<td class="pcp-remove-cell"><button type="button" class="pcp-remove" title="Remover linha"><svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>Remover</button></td>';
     var calculator=document.createElement("section");
     calculator.className="pcp-calculator";
-    calculator.setAttribute("aria-label","Calculadora da linha "+(index+1));
-    calculator.innerHTML='<strong>Calculadora</strong><div class="pcp-calc-result"><button type="button" class="calc-key pcp-send" aria-label="Enviar resultado para Caixas a transbordar">← <span>Usar nas caixas</span></button><span class="pcp-send-tip" role="tooltip"></span><div class="calc-display" role="status" tabindex="0" title="Clique para calcular pelo teclado">0</div></div><select class="pcp-calc-target" aria-label="Posto que receberá o resultado" hidden></select>';
+    calculator.setAttribute("aria-label","Calculadora de itens fracionados da linha "+(index+1));
+    calculator.innerHTML='<strong>Calculadora de itens fracionados</strong><button type="button" class="btn btn-ghost pcp-divide-box">÷ Peças por caixa</button><div class="pcp-calc-result"><button type="button" class="calc-key pcp-send" aria-label="Enviar resultado para Caixas a transbordar">← <span>Usar nas caixas</span></button><span class="pcp-send-tip" role="tooltip"></span><div class="calc-display" role="status" tabindex="0" title="Clique para calcular pelo teclado">0</div></div><select class="pcp-calc-target" aria-label="Posto que receberá o resultado" hidden></select>';
     calculator.appendChild(el("calcPop").querySelector(".calc-grid").cloneNode(true));
     var tip=calculator.querySelector(".pcp-send-tip");
     tip.id="pcp-send-tip-"+row.id;
@@ -4623,6 +4634,12 @@ SOFTWARE.
     calculator.querySelector(".pcp-calc-target").addEventListener("change",function(){pcpUpdateSendTip(this);});
     var display=calculator.querySelector(".calc-display");
     var controls=bindCalculator(calculator,display);
+    calculator.querySelector(".pcp-divide-box").addEventListener("click",function(){
+      controls.divideByBox(pcpResolve(row).qty);
+    });
+    tr.querySelector(".pcp-source-send").addEventListener("click",function(){
+      sendBoxes(tr.querySelector('[data-out="sourceBoxes"]').textContent,tr.querySelector(".pcp-source-target"));
+    });
     calculator.querySelector(".pcp-send").addEventListener("click",function(){
       controls.equals();
       if(!(pcpNumber(display.textContent)>0)){
@@ -4630,15 +4647,17 @@ SOFTWARE.
         display.focus();
         return;
       }
-      var target=calculator.querySelector(".pcp-calc-target");
+      sendBoxes(display.textContent,calculator.querySelector(".pcp-calc-target"));
+    });
+    function sendBoxes(value,target){
       var boxes=tr.querySelectorAll('[data-station-field="boxes"]')[target.selectedIndex];
       if(!boxes)return;
-      boxes.value=display.textContent;
+      boxes.value=value;
       boxes.dispatchEvent(new Event("input",{bubbles:true}));
       boxes.focus();
       boxes.select();
       toast("Quantidade enviada ao Posto "+(target.selectedIndex+1)+".");
-    });
+    }
     tr.querySelector(".pcp-total-cell").appendChild(calculator);
     var seq=tr.querySelector(".pcp-seq-input");seq.id="pcp-"+row.id+"-seq";seq.parentElement.querySelector("label").htmlFor=seq.id;
     seq.addEventListener("change",function(){pcpMoveRow(row,tr,seq);});
@@ -4695,6 +4714,10 @@ SOFTWARE.
       }
       list.appendChild(node);
     });
+    var sourceTarget=tr.querySelector(".pcp-source-target"),sourceIndex=sourceTarget.selectedIndex;
+    sourceTarget.replaceChildren(...Array.from(target.options,function(option){return option.cloneNode(true);}));
+    sourceTarget.hidden=target.hidden;
+    sourceTarget.selectedIndex=sourceIndex>=0&&sourceIndex<stations.length?sourceIndex:0;
     target.selectedIndex=previous>=0&&previous<stations.length?previous:0;
     pcpUpdateSendTip(target);
   }
@@ -4703,7 +4726,7 @@ SOFTWARE.
     tip.textContent="Clique para preencher “Caixas a transbordar” do Posto "+(target.selectedIndex+1)+" com o resultado da calculadora.";
   }
   function pcpUpdateRow(row,tr,index){
-    if(index==null)index=pcpPlan.rows.indexOf(row);var r=pcpResolve(row),inputNames={code:"Código da peça",postCount:"Quantidade de postos",itemId:"Cadastro da peça"};
+    if(index==null)index=pcpPlan.rows.indexOf(row);var r=pcpResolve(row),inputNames={sourcePieces:"Peças na embalagem de origem",code:"Código da peça",postCount:"Quantidade de postos",itemId:"Cadastro da peça"};
     var seq=tr.querySelector(".pcp-seq-input");if(document.activeElement!==seq)seq.value=String(index+1);seq.max=String(pcpPlan.rows.length);
     seq.setAttribute("aria-label","SEQ. da linha "+(index+1));seq.title="Digite a posição de 1 a "+pcpPlan.rows.length+" e pressione Enter ou saia do campo";
     var priority=pcpIsPriority(row,r.item),button=tr.querySelector(".pcp-priority-btn");
@@ -4719,6 +4742,12 @@ SOFTWARE.
     function msg(k,text,bad){var node=tr.querySelector('[data-msg="'+k+'"]');node.textContent=text;node.classList.toggle("pcp-error-text",!!bad);node.id="pcp-"+row.id+"-"+k+"-hint";var inp=tr.querySelector('[data-pcp="'+k+'"]');inp.setAttribute("aria-invalid",bad?"true":"false");inp.setAttribute("aria-describedby",node.id);}
     out("description",r.item?r.item.partName||"Descrição não cadastrada":"—");
     out("qty",r.item?r.item.qtyPerBox||"—":"—");
+    var source=pcpNumber(row.sourcePieces),usable=r.qty>0,boxes=usable&&Number.isInteger(source)&&source>0?formatBR(source/r.qty,8):"";
+    out("sourceBoxes",boxes||"—");
+    tr.querySelector(".pcp-source-send").disabled=!(pcpNumber(boxes)>0);
+    var divide=tr.querySelector(".pcp-divide-box");
+    divide.disabled=!usable;
+    divide.textContent="÷ Peças por caixa"+(usable?" ("+r.item.qtyPerBox+")":"");
     out("base",r.item?(r.catalogError||((r.item.posto?r.item.posto+" · ":"")+tbClock(r.per)+" / caixa")):"Preenchida pelo código");
     tr.querySelector('[data-out="base"]').classList.toggle("pcp-error-text",!!r.catalogError);
     msg("code",r.codeError||(r.item?"Peça localizada":"Selecione no cadastro"),r.codeError);

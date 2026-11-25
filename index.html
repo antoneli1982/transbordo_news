@@ -1048,6 +1048,17 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
 body[data-page="historico"] #pgHistorico{display:block;padding:clamp(12px,3vw,32px);background:var(--bg)}
 #pgHistorico .pcp-runs{max-width:1100px;margin:0 auto}
+#stopDialog{margin:auto;width:min(520px,calc(100% - 24px));max-height:90vh;padding:clamp(16px,4vw,26px);border:1px solid var(--line);border-radius:16px;background:var(--card);color:var(--ink)}
+#stopDialog::backdrop{background:#0b1323bb}
+#stopForm{display:grid;gap:14px}
+#stopForm h2,#stopForm p{margin:0}
+#stopForm fieldset{min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px}
+#stopForm legend{padding:0 6px;font-weight:700}
+#stopForm label{display:block;padding:8px}
+#stopForm input[name="boxes"]{display:block;width:100%;margin-top:6px;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+#stopForm [hidden],#stopError:empty{display:none}
+#stopError{color:#e65b55}
+.stop-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
 #historyEdit{margin:auto;width:min(460px,94vw);max-height:90vh;padding:22px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
 #historyEdit::backdrop{background:#0b1323aa}
 #historyForm{display:grid;gap:10px}
@@ -1832,6 +1843,30 @@ html[data-theme="dark"] #pgPCP .pcp-meta{background:#193c36;border-color:#477c70
     <!-- ====== DASHBOARD DE MOVIMENTAÇÕES ====== -->
     <section class="pg" id="pgHistorico" aria-label="Histórico de transbordos">
         <section class="pcp-runs"><h2>Histórico de transbordos</h2><p id="pcpRunStatus" role="status">Aguardando conexão para registrar transbordos.</p><div id="pcpRuns"></div></section>
+      <dialog id="stopDialog" aria-labelledby="stopTitle">
+        <form id="stopForm">
+          <h2 id="stopTitle">Encerrar transbordo</h2>
+          <p id="stopPiece"></p>
+          <fieldset>
+            <legend>Como registrar o total de caixas?</legend>
+            <label><input type="radio" name="source" value="manual" required> Tenho a contagem real</label>
+            <label><input type="radio" name="source" value="method" required> Estimar pelo tempo MTM</label>
+          </fieldset>
+          <label id="stopCountField" hidden>Total de caixas transbordadas
+            <input name="boxes" inputmode="decimal" placeholder="Ex.: 12,5" disabled>
+          </label>
+          <fieldset id="stopLunchField" hidden disabled>
+            <legend>Houve intervalo de almoço durante o transbordo?</legend>
+            <label><input type="radio" name="lunch" value="no" required> Não</label>
+            <label><input type="radio" name="lunch" value="yes" required> Sim, descontar 1 hora</label>
+          </fieldset>
+          <p id="stopError" role="alert"></p>
+          <div class="stop-actions">
+            <button type="button" class="btn btn-ghost" id="stopCancel">Cancelar</button>
+            <button class="btn btn-primary" type="submit">Confirmar encerramento</button>
+          </div>
+        </form>
+      </dialog>
       <dialog id="historyEdit"><form id="historyForm">
         <h2>Editar transbordo</h2><p id="historyCode"></p>
         <label>Descrição da peça<input name="description" required></label>
@@ -5186,9 +5221,9 @@ SOFTWARE.
         var raw=f.boxes.value.trim(),value=pcpNumber(raw);
         if(raw!== (Number.isFinite(r.boxes)?String(r.boxes).replace(".",","):"")){
           if(!Number.isFinite(value))throw Error("Informe o total de caixas. Use vírgula para frações.");
-          next.boxes=value;next.boxSource="manual";
+          next.boxes=value;next.boxSource="manual";next.lunchSeconds=0;
         }else if(r.boxSource==="method"&&r.method&&(next.start!==r.start||next.end!==r.end)){
-          next.boxes=(next.end-next.start)/1000/r.method.secondsPerPiece/r.method.piecesPerBox;
+          next.boxes=productiveSeconds(next)/r.method.secondsPerPiece/r.method.piecesPerBox;
         }
       }
       await historyChange(r,next);el("historyEdit").close();toast("Alterações salvas neste aparelho.");
@@ -5280,7 +5315,7 @@ SOFTWARE.
         body.append(station);
       });
     }
-    if(r.boxSource==="method"&&r.method)body.append(histElement("h4","","Estimativa pelo método"),histElement("p","",pcpFormat((r.end-r.start)/1000)+" s decorridos ÷ "+pcpFormat(r.method.secondsPerPiece)+" s/peça ÷ "+pcpFormat(r.method.piecesPerBox)+" peças/caixa."));
+    if(r.boxSource==="method"&&r.method)body.append(histElement("h4","","Estimativa pelo método"),histElement("p","",pcpFormat(productiveSeconds(r))+" s de produção"+(r.lunchSeconds?" (1 hora de almoço descontada)":"")+" ÷ "+pcpFormat(r.method.secondsPerPiece)+" s/peça ÷ "+pcpFormat(r.method.piecesPerBox)+" peças/caixa."));
     return body;
   }
   function execPaint(){
@@ -5326,26 +5361,56 @@ SOFTWARE.
     });
     el("pcpRunStatus").textContent=!execReady?(runLocalReady?"Modo local · Start e Stop disponíveis neste aparelho":"Carregando registros locais…"):Object.keys(runQueue).length?"Registros locais pendentes: "+Object.keys(runQueue).length:"";
   }
+  function productiveSeconds(run){
+    return Math.max(0,(run.end-run.start)/1000-(run.lunchSeconds||0));
+  }
+  function askStopDetails(active,end){
+    var dialog=el("stopDialog"),form=el("stopForm"),fields=form.elements;
+    if(dialog.open)return Promise.resolve(null);
+    form.reset();
+    el("stopPiece").textContent=[active.code,active.description].filter(Boolean).join(" · ");
+    var count=el("stopCountField"),lunch=el("stopLunchField"),error=el("stopError");
+    function update(){
+      var source=fields.source.value;
+      count.hidden=fields.boxes.disabled=source!=="manual";
+      fields.boxes.required=source==="manual";
+      lunch.hidden=lunch.disabled=source!=="method";
+      error.textContent="";
+    }
+    form.onchange=update;
+    update();
+    return new Promise(function(resolve){
+      var result=null;
+      el("stopCancel").onclick=function(){dialog.close();};
+      dialog.onclose=function(){resolve(result);};
+      form.onsubmit=function(event){
+        event.preventDefault();
+        if(fields.source.value==="manual"){
+          var boxes=pcpNumber(fields.boxes.value);
+          if(!Number.isFinite(boxes)){error.textContent="Informe uma quantidade válida. Para meia caixa, digite 0,5.";return;}
+          result={end:end,boxSource:"manual",boxes:boxes,lunchSeconds:0};
+        }else{
+          var method=active.method;
+          if(!method){
+            var matches=state.items.filter(function(it){return active.catalogId?it.id===active.catalogId:pcpCode(it.partCode)===pcpCode(active.code);});
+            if(matches.length===1)method=execBoxMethod(matches[0],pcpNumber(active.perBox)>0?active.perBox:matches[0].qtyPerBox);
+          }
+          if(!method){error.textContent="Sem dados MTM para estimar. Informe a contagem real ou cadastre o tempo e as peças por caixa.";return;}
+          var lunchSeconds=fields.lunch.value==="yes"?3600:0;
+          var seconds=productiveSeconds({start:active.start,end:end,lunchSeconds:lunchSeconds});
+          result={end:end,boxSource:"method",method:method,lunchSeconds:lunchSeconds,boxes:seconds/method.secondsPerPiece/method.piecesPerBox};
+        }
+        dialog.close();
+      };
+      dialog.showModal();
+    });
+  }
   async function execAction(rowId,active){
     if(!(execReady||runLocalReady)||execBusy.has(rowId))return;
     var FB=window.__FB,record,actual,when=Date.now();
     if(active){
-      var answer=window.prompt("Quantas caixas foram transbordadas de "+active.code+"? Use vírgula para caixa parcial. Deixe em branco para estimar pelo tempo ou digite 0 para registrar zero.","");
-      if(answer===null)return;
-      actual={end:Math.max(active.start,when),boxSource:"manual"};
-      if(answer.trim()){
-        actual.boxes=pcpNumber(answer.trim());
-        if(!Number.isFinite(actual.boxes)){toast("Informe uma quantidade válida de caixas. Para meia caixa, digite 0,5.");return;}
-      }else{
-        var method=active.method;
-        if(!method){
-          var matches=state.items.filter(function(it){return active.catalogId?it.id===active.catalogId:pcpCode(it.partCode)===pcpCode(active.code);});
-          if(matches.length===1)method=execBoxMethod(matches[0],pcpNumber(active.perBox)>0?active.perBox:matches[0].qtyPerBox);
-        }
-        if(!method){toast("Para estimar, cadastre tempo por caixa e peças por caixa ou informe o total de caixas no Stop. O transbordo continua aberto.");return;}
-        actual.method=method;actual.boxSource="method";
-        actual.boxes=(actual.end-active.start)/1000/method.secondsPerPiece/method.piecesPerBox;
-      }
+      actual=await askStopDetails(active,Math.max(active.start,when));
+      if(!actual)return;
     }else{
       var row=pcpPlan.rows.find(function(r){return r.id===rowId;});if(!row)return;
       var r=pcpResolve(row);

@@ -32,11 +32,12 @@ async function credentials(alias,password) {
     remote=await online();
     profile=await remote.service.signIn(alias,password);
     raw=await vaultKey(remote.F,remote.db,profile.uid);
-    expires=await issueLease(profile,raw,password);
+
   }
   const vault=await openVault(profile.uid,raw);
   if(profile.role!=='viewer')await migrateLegacy(vault);
   await vault.warm();
+  if(remote)expires=await issueLease(profile,raw,password);
   return {profile,remote,vault,expires};
 }
 async function screen() {

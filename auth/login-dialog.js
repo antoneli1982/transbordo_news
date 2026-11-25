@@ -76,7 +76,7 @@ export function solicitarAcesso({ entrar, recuperar }) {
           resolve(perfil);
         }
       } catch (error) {
-        status.textContent = error?.code === 'auth/network-request-failed'
+        status.textContent = error?.code === 'access/migration' ? error.message : error?.code === 'auth/network-request-failed'
           ? 'Falha de conexão. Confira a rede e tente novamente.'
           : redefinir ? 'Não foi possível solicitar o link agora.' : 'Confira seus dados ou consulte o responsável pelo acesso.';
       } finally {

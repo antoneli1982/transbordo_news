@@ -16,18 +16,21 @@ async function get(store,key) { const db=await database();return req(db.transact
 async function put(store,key,value) { const db=await database(), t=db.transaction(store,'readwrite'), done=finished(t);t.objectStore(store).put(value,key);await done; }
 async function remove(store,key) { const db=await database(), t=db.transaction(store,'readwrite'), done=finished(t);t.objectStore(store).delete(key);await done; }
 const leaseContext = alias => 'transbordonews/offline/v1/'+alias;
+const hash = async text=>hex(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text)));
+export const mediaKey = async url=>'media:'+await hash(url);
+async function leaseId(alias){return hash(leaseContext(alias));}
 export async function issueLease(profile,raw,password) {
   const salt=random(16),key=await aes(await derive(password,salt)), expires=Date.now()+shift;
   for(const alias of new Set([profile.login,profile.email])) {
-    await put('leases',alias,{salt,...await seal(key,leaseContext(alias),{profile,raw,expires})});
+    await put('leases',await leaseId(alias),{salt,...await seal(key,leaseContext(alias),{profile,raw,expires})});
   }
   return expires;
 }
 export async function revokeLease(profile) {
-  await Promise.all([profile.login,profile.email].map(alias=>remove('leases',alias)));
+  await Promise.all([profile.login,profile.email].map(async alias=>remove('leases',await leaseId(alias))));
 }
 export async function unlockOffline(alias,password) {
-  const r=await get('leases',alias);if(!r)throw Error('Entre uma vez com conexão neste aparelho.');
+  const r=await get('leases',await leaseId(alias));if(!r)throw Error('Entre uma vez com conexão neste aparelho.');
   const value=await open(await aes(await derive(password,r.salt)),leaseContext(alias),r);
   if(Date.now()>=value.expires || value.expires-Date.now()>shift) throw Error('Reconecte para renovar o acesso.');
   return value;
@@ -45,7 +48,7 @@ export async function openVault(uid,raw) {
   const channel=typeof BroadcastChannel==='function'?new BroadcastChannel(name):null;
   const context=k=>uid+'/'+k;
   const read=async k=>{const r=await get('data',[uid,k]);return r?open(key,context(k),r):undefined;};
-  async function mutate(k,change) {
+  async function modify(k,change) {
     // Compare-and-swap no IndexedDB. A criptografia acontece fora da transação curta.
     for(;;) {
       const prior=await get('data',[uid,k]);
@@ -60,8 +63,15 @@ export async function openVault(uid,raw) {
     }
   }
   const writes=new Map();
+  function mutate(k,change) {
+    const task=modify(k,change);pending.add(task);
+    task.then(()=>pending.delete(task),()=>pending.delete(task));return task;
+  }
   function write(k,v) {
-    const action=(writes.get(k)||Promise.resolve()).catch(()=>{}).then(()=>mutate(k,()=>v));
+    const action=(writes.get(k)||Promise.resolve()).catch(()=>{}).then(async()=>{
+      const record={...await seal(key,context(k),v),rev:hex(random(12))};
+      await put('data',[uid,k],record);channel?.postMessage(k);
+    });
     writes.set(k,action);pending.add(action);
     action.then(clear,clear);return action;
     function clear(){pending.delete(action);if(writes.get(k)===action)writes.delete(k);}
@@ -72,6 +82,11 @@ export async function openVault(uid,raw) {
     for(const [,k] of keys)memory.set(k.slice(3),await read(k));
   }
   channel?.addEventListener('message',async e=>{
+    if(e.data==='catalog'){
+      const record=await read('catalog');
+      if(record)window.dispatchEvent(new StorageEvent('storage',{key:'sese_transbordo_v4',newValue:record.json}));
+      return;
+    }
     if(typeof e.data!=='string'||!e.data.startsWith('ls:'))return;
     const k=e.data.slice(3),value=await read(e.data);
     memory.set(k,value);window.dispatchEvent(new StorageEvent('storage',{key:k,newValue:value}));
@@ -84,7 +99,7 @@ export async function openVault(uid,raw) {
       write('ls:'+k,v).catch(e=>{if(memory.get(k)===v)memory.delete(k);report(e);});}
   };
   window.addEventListener('beforeunload',e=>{if(pending.size){e.preventDefault();e.returnValue='';}});
-  return {storage,warm,read,write,mutate,report,async flush(){while(pending.size)await Promise.all([...pending]);}};
+  return {storage,warm,read,write,mutate,report,mediaKey,async flush(){while(pending.size)await Promise.all([...pending]);}};
 }
 export async function migrateLegacy(vault) {
   async function copy(k,value) {
@@ -103,8 +118,7 @@ export async function migrateLegacy(vault) {
   }
   const legacy=await req(indexedDB.open('sese_transbordo_db'));
   try {
-    if(!legacy.objectStoreNames.contains('kv'))return;
-    const keys=await req(legacy.transaction('kv').objectStore('kv').getAllKeys());
+    const keys=legacy.objectStoreNames.contains('kv')?await req(legacy.transaction('kv').objectStore('kv').getAllKeys()):[];
     for(const k of keys){
       if(typeof k!=='string'||!appKeys(k))continue;
       const value=await req(legacy.transaction('kv').objectStore('kv').get(k));if(value===undefined)continue;
@@ -115,10 +129,32 @@ export async function migrateLegacy(vault) {
       await done;
     }
   }finally{legacy.close();}
+  if(!window.caches)return;
+  for(const name of ['transbordo-images-v1','transbordo-mtm-v1']){
+    if(!(await caches.has(name)))continue;
+    const cache=await caches.open(name);
+    for(const request of await cache.keys()){
+      let response=await cache.match(request);
+      if(!response)continue;
+      if(response.type==='opaque'){
+        try{response=await fetch(request.url,{credentials:'omit',referrerPolicy:'no-referrer',cache:'no-store'});}
+        catch{response=null;}
+      }
+      if(!response?.ok){
+        const error=Error('Não foi possível proteger um anexo antigo deste posto. Reconecte o aparelho para concluir a migração.');
+        error.code='access/migration';throw error;
+      }
+      const blob=await response.blob();
+      const encoded=await new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(r.result);r.onerror=no;r.readAsDataURL(blob);});
+      const k=await mediaKey(request.url);await copy(k,encoded);
+      await cache.delete(request);
+    }
+    if(!(await cache.keys()).length)await caches.delete(name);
+  }
 }
 export function memoryVault() {
   const m=new Map();
-  return {storage:{getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,String(v))},read:async k=>m.get(k),
+  return {mediaKey,storage:{getItem:k=>m.get(k)??null,setItem:(k,v)=>m.set(k,String(v))},read:async k=>m.get(k),
     write:async(k,v)=>{m.set(k,v);},mutate:async(k,fn)=>{const v=fn(m.get(k));if(v!==undefined)m.set(k,v);return m.get(k);},
     warm:async()=>{},flush:async()=>{},report:()=>{}};
 }

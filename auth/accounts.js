@@ -64,16 +64,12 @@ export function accounts({apps,A,F,config,auth,db,logged}) {
     const app=apps.initializeApp(config,'provision-'+crypto.randomUUID());
     const secondary=A.initializeAuth(app,{persistence:A.inMemoryPersistence});
     if(auth.emulatorConfig&&!secondary.emulatorConfig)A.connectAuthEmulator(secondary,auth.emulatorConfig.url||'http://127.0.0.1:9099',{disableWarnings:true});
-    let user,created=false;
+    let user;
     try {
-      try {user=(await A.createUserWithEmailAndPassword(secondary,email,password)).user;created=true;}
+      try {user=(await A.createUserWithEmailAndPassword(secondary,email,password)).user;}
       catch(e){if(e.code!=='auth/email-already-in-use')throw e;
         user=(await A.signInWithEmailAndPassword(secondary,email,password)).user;}
       return await work(user.uid);
-    } catch(e) {
-      if(created && ['permission-denied','already-exists','invalid-argument'].includes(e.code))
-        await A.deleteUser(user).catch(()=>{});
-      throw e;
     } finally {await A.signOut(secondary).catch(()=>{});await apps.deleteApp(app);}
   }
   async function save(form,original) {

@@ -17,15 +17,14 @@ async function requireSenior(request) {
 }
 exports.createAccessUser = onCall(async request => {
   const actor = await requireSenior(request);
-  const { name, email, password, role } = request.data || {};
+  const { email, password, role } = request.data || {};
   const login = aliasOf(request.data?.login);
-  if (typeof name !== "string" || !name.trim() || name.length > 120 ||
-      typeof email !== "string" || email.length > 254 || !email.includes("@") ||
-      typeof password !== "string" || password.length < 12 || password.length > 128 ||
+  if (typeof email !== "string" || email.length > 254 || !email.includes("@") ||
+      typeof password !== "string" || password.length < 8 || password.length > 128 ||
       !/^[a-z0-9._-]{3,40}$/.test(login) || !roles.has(role))
-    fail("invalid-argument", "Revise os dados e use uma senha de pelo menos 12 caracteres.");
+    fail("invalid-argument", "Revise os dados e use uma senha de pelo menos 8 caracteres.");
   let account;
-  try { account = await auth.createUser({email:email.trim(), password, displayName:name.trim(), disabled:true}); }
+  try { account = await auth.createUser({email:email.trim(), password, displayName:login, disabled:true}); }
   catch (_) { fail("already-exists", "Não foi possível cadastrar a conta. Confira o e-mail."); }
   try {
     await db.runTransaction(async tx => {
@@ -33,7 +32,7 @@ exports.createAccessUser = onCall(async request => {
       if (actorDoc.data()?.role !== "senior" || actorDoc.data()?.active !== true) fail("permission-denied", "Acesso revogado.");
       if (existing.exists) fail("already-exists", "Login já cadastrado.");
       tx.create(logins.doc(login), {uid:account.uid});
-      tx.create(users.doc(account.uid), {name:name.trim(), email:account.email, login, role, active:true, createdAt:FieldValue.serverTimestamp()});
+      tx.create(users.doc(account.uid), {email:account.email, login, role, active:true, createdAt:FieldValue.serverTimestamp()});
       tx.create(audit.doc(), {actor, action:"user.create", target:account.uid, role, at:FieldValue.serverTimestamp()});
     });
   } catch (e) {

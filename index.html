@@ -1073,7 +1073,7 @@ body[data-demo="true"] .d-status i{background:#135cc3}
 .pcp-code-input{text-transform:uppercase;letter-spacing:.02em}
 .pcp-cell input[aria-invalid="true"]{border-color:#dcab62;background:#fffbf5}
 .pcp-cell .pcp-readonly{font-size:15px;font-weight:650;min-height:41px;padding:9px 0 5px;color:#273a53;display:block;overflow-wrap:anywhere}
-.pcp-desc{line-height:1.4;font-size:14px!important;font-weight:600!important}
+.pcp-desc{line-height:1.4;font-size:14px;font-weight:600}
 .pcp-cell small{display:block;font-size:10.5px;line-height:1.5;color:#7f8ca0;margin-top:5px;min-height:15px;overflow-wrap:anywhere}
 .pcp-cell .pcp-error-text{color:#aa6921}
 .pcp-cell select{margin-top:6px;font-size:11px;height:auto;min-height:35px;padding:6px}
@@ -1550,12 +1550,13 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 #pgPCP .pcp-table{display:block;min-width:0;width:100%}
 #pgPCP .pcp-table :is(colgroup,thead){display:none}
 #pgPCP #pcpRows{display:grid;gap:22px}
-#pgPCP .pcp-row{display:grid;grid-template-columns:90px minmax(150px,.9fr) minmax(175px,1.5fr) minmax(215px,.95fr);grid-template-areas:"ord code descr qty" "stations stations stations total" "priority priority actions actions";align-items:start;gap:20px;padding:clamp(14px,2vw,28px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
+#pgPCP .pcp-row{display:grid;grid-template-columns:90px minmax(150px,.9fr) minmax(175px,1.5fr) minmax(215px,.95fr);grid-template-areas:"descr descr descr descr" "ord code code qty" "stations stations stations total" "priority priority actions actions";align-items:start;gap:20px;padding:clamp(14px,2vw,28px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
 #pgPCP .pcp-row.pcp-priority{border-inline-start:5px solid #d84c43}
 #pgPCP .pcp-row td{position:static;display:block;min-width:0;padding:0;text-align:left;border:0}
 #pgPCP td.pcp-row-no{grid-area:ord}
 #pgPCP .pcp-code-cell{grid-area:code}
-#pgPCP .pcp-desc-cell{grid-area:descr}
+#pgPCP .pcp-desc-cell{grid-area:descr;padding-bottom:12px;border-bottom:1px solid var(--line)}
+#pgPCP .pcp-desc-cell .pcp-readonly.pcp-desc{display:block;width:100%;max-width:none;height:auto;padding:0;font-size:clamp(26px,2.4vw,38px);font-weight:700;line-height:1.18;white-space:normal;overflow-wrap:anywhere}
 #pgPCP .pcp-qty-cell{grid-area:qty}
 #pgPCP .pcp-stations-cell{grid-area:stations;border-top:1px solid var(--line);padding-top:16px}
 #pgPCP td.pcp-total-cell{grid-area:total;padding:14px!important;background:var(--card-2);border:1px solid var(--line)!important;border-radius:10px}
@@ -1582,10 +1583,10 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 #pgPCP .calc-key{font-size:18px}
 #pgPCP .pcp-heading p{max-width:64ch;font-size:16px}
 @media(max-width:940px){
-#pgPCP .pcp-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"ord code" "descr qty" "stations total" "priority actions"}
+#pgPCP .pcp-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"descr descr" "ord code" "qty qty" "stations total" "priority actions"}
 }
 @media(max-width:680px){
-#pgPCP .pcp-row{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);grid-template-areas:"ord code" "descr descr" "qty qty" "stations stations" "total total" "priority actions";gap:16px}
+#pgPCP .pcp-row{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);grid-template-areas:"descr descr" "ord code" "qty qty" "stations stations" "total total" "priority actions";gap:16px}
 #pgPCP .pcp-station{grid-template-columns:minmax(0,1fr)}
 #pgPCP .pcp-summary{position:static}
 }

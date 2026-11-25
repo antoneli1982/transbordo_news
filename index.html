@@ -1550,7 +1550,7 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 #pgPCP .pcp-table{display:block;min-width:0;width:100%}
 #pgPCP .pcp-table :is(colgroup,thead){display:none}
 #pgPCP #pcpRows{display:grid;gap:22px}
-#pgPCP .pcp-row{display:grid;grid-template-columns:90px minmax(150px,.9fr) minmax(175px,1.5fr) minmax(215px,.95fr);grid-template-areas:"descr descr descr descr" "ord code code qty" "stations stations stations total" "priority priority actions actions";align-items:start;gap:20px;padding:clamp(14px,2vw,28px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
+#pgPCP .pcp-row{display:grid;grid-template-columns:90px minmax(150px,.9fr) minmax(175px,1.5fr) minmax(215px,.95fr);grid-template-areas:"ord code code qty" "descr descr descr descr" "stations stations stations total" "priority priority actions actions";align-items:start;gap:20px;padding:clamp(14px,2vw,28px);border:1px solid var(--line);border-radius:14px;background:var(--card);color:var(--ink)}
 #pgPCP .pcp-row.pcp-priority{border-inline-start:5px solid #d84c43}
 #pgPCP .pcp-row td{position:static;display:block;min-width:0;padding:0;text-align:left;border:0}
 #pgPCP td.pcp-row-no{grid-area:ord}
@@ -1583,10 +1583,10 @@ body[data-lay="tv"] .d-docinfo{margin-top:7px}
 #pgPCP .calc-key{font-size:18px}
 #pgPCP .pcp-heading p{max-width:64ch;font-size:16px}
 @media(max-width:940px){
-#pgPCP .pcp-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"descr descr" "ord code" "qty qty" "stations total" "priority actions"}
+#pgPCP .pcp-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"ord code" "qty qty" "descr descr" "stations total" "priority actions"}
 }
 @media(max-width:680px){
-#pgPCP .pcp-row{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);grid-template-areas:"descr descr" "ord code" "qty qty" "stations stations" "total total" "priority actions";gap:16px}
+#pgPCP .pcp-row{grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);grid-template-areas:"ord code" "qty qty" "descr descr" "stations stations" "total total" "priority actions";gap:16px}
 #pgPCP .pcp-station{grid-template-columns:minmax(0,1fr)}
 #pgPCP .pcp-summary{position:static}
 }

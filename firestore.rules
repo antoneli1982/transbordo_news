@@ -1,0 +1,131 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function document(area, id) { return /databases/$(database)/documents/$(area)/$(id); }
+    function signed() { return request.auth != null; }
+    function primary(uid) { return uid == 'dAgYSGswrIOhVYxiB7VXAzqVOhk1'; }
+    function profile() { return get(document('accessUsers', request.auth.uid)).data; }
+    function active() {
+      return signed() && profile().active == true && profile().email == request.auth.token.email
+        && profile().role in ['senior', 'editor', 'viewer'];
+    }
+    function senior() { return active() && profile().role == 'senior'; }
+    function writer() { return active() && profile().role in ['senior', 'editor']; }
+    function bootstrap(uid) {
+      return signed() && primary(uid) && request.auth.uid == uid && !exists(document('accessUsers', uid));
+    }
+    function validLogin(login) { return login is string && login.matches('^[a-z0-9._-]{3,40}$'); }
+    function anonymous() { return signed() && request.auth.token.firebase.sign_in_provider == 'anonymous'; }
+    function screen() { return anonymous() && get(document('accessScreens', request.auth.uid)).data.active == true; }
+    function head(area, target) {
+      return /databases/$(database)/documents/accessChanges/$(area)/targets/$(target);
+    }
+    function mayRecord(area, target) {
+      return (area == 'paineis' && writer()) || (area == 'accessUsers' && (bootstrap(target) || senior()))
+        || (area == 'accessScreens' && senior());
+    }
+    function eventMatches(id, area, target, kind) {
+      let path = document('accessAudit', id);
+      let log = getAfter(path).data;
+      return !exists(path) && log.actor == request.auth.uid && log.at == request.time
+        && log.area == area && log.target == target && log.kind == kind;
+    }
+    function audited(area, target, kind) {
+      return eventMatches(getAfter(head(area, target)).data.event, area, target, kind);
+    }
+    function actualChange(log) {
+      let path = document(log.area, log.target);
+      return (log.kind == 'create' && !exists(path) && existsAfter(path))
+        || (log.kind == 'delete' && exists(path) && !existsAfter(path))
+        || (log.kind == 'update' && exists(path) && existsAfter(path)
+          && get(path).data != getAfter(path).data);
+    }
+    function accurateFields(log) {
+      let path = document(log.area, log.target);
+      let before = exists(path) ? get(path).data : {};
+      let after = existsAfter(path) ? getAfter(path).data : {};
+      return log.fields is list && log.fields.size() <= 100
+        && log.fields.toSet() == after.diff(before).affectedKeys()
+        && (log.area == 'accessUsers' ? (log.before == (exists(path) ? before : null)
+          && log.after == (existsAfter(path) ? after : null)) : !log.keys().hasAny(['before','after']));
+    }
+    match /accessAudit/{id} {
+      allow get, list: if senior();
+      allow create: if request.resource.data.keys().hasOnly(['actor','at','area','target','kind','fields','before','after'])
+        && request.resource.data.target is string && !request.resource.data.target.matches('.*/.*')
+        && mayRecord(request.resource.data.area, request.resource.data.target)
+        && request.resource.data.actor == request.auth.uid && request.resource.data.at == request.time
+        && getAfter(head(request.resource.data.area, request.resource.data.target)).data.event == id
+        && actualChange(request.resource.data) && accurateFields(request.resource.data);
+    }
+    match /accessChanges/{area}/targets/{target} {
+      allow create, update: if mayRecord(area, target)
+        && request.resource.data.keys().hasOnly(['event'])
+        && getAfter(document('accessAudit', request.resource.data.event)).data.area == area
+        && getAfter(document('accessAudit', request.resource.data.event)).data.target == target
+        && !exists(document('accessAudit', request.resource.data.event));
+    }
+    match /paineis/{id} {
+      allow read: if active() || (screen() && (id in ['principal','pcp','tv_demo'] || id.matches('^att_[a-zA-Z0-9_-]+$')));
+      allow create: if writer() && audited('paineis', id, 'create');
+      allow update: if writer() && audited('paineis', id, 'update');
+      allow delete: if writer() && audited('paineis', id, 'delete');
+    }
+    match /accessUsers/{uid} {
+      function valid() {
+        let p = request.resource.data;
+        return p.keys().hasOnly(['login','email','role','active']) && validLogin(p.login)
+          && p.email is string && p.email.size() <= 254 && p.email.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+          && p.role in ['senior','editor','viewer'] && p.active is bool
+          && (!p.active || getAfter(document('accessLogins',p.login)).data.uid == uid)
+          && (!primary(uid) || (p.active && p.role == 'senior' && p.login == 'ivan.antoneli'));
+      }
+      allow get: if signed() && (request.auth.uid == uid || senior());
+      allow list: if senior();
+      allow create: if (senior() || (bootstrap(uid) && request.resource.data.email == request.auth.token.email))
+        && valid() && audited('accessUsers',uid,'create');
+      allow update: if senior() && uid != request.auth.uid && !primary(uid)
+        && request.resource.data.email == resource.data.email && valid() && audited('accessUsers',uid,'update');
+    }
+    match /accessLogins/{login} {
+      function linked(uid) { return getAfter(document('accessUsers',uid)).data.login == login; }
+      allow get: if signed() && (request.auth.uid == resource.data.uid || senior() || bootstrap(request.auth.uid));
+      allow list: if senior();
+      allow create, update: if signed() && validLogin(login) && linked(request.resource.data.uid)
+        && request.resource.data.keys().hasOnly(['uid','ticket'])
+        && (request.resource.data.ticket == null || request.resource.data.ticket.matches('^[0-9a-f]{64}$'))
+        && (senior() || (bootstrap(request.auth.uid) && request.resource.data.uid == request.auth.uid)
+          || (active() && request.resource.data.uid == request.auth.uid && resource.data.uid == request.auth.uid))
+        && (!exists(document('accessLogins',login)) || resource.data.uid == request.resource.data.uid
+          || (senior() && getAfter(document('accessUsers',resource.data.uid)).data.active == false));
+      allow delete: if senior() && !primary(resource.data.uid)
+        && (getAfter(document('accessUsers',resource.data.uid)).data.login != login
+          || getAfter(document('accessUsers',resource.data.uid)).data.active == false);
+    }
+    match /loginTickets/{id} {
+      function aliasAfter() { return getAfter(document('accessLogins',request.resource.data.login)).data; }
+      allow get: if get(document('accessLogins',resource.data.login)).data.ticket == id;
+      allow create, update: if signed() && validLogin(request.resource.data.login)
+        && request.resource.data.keys().hasOnly(['login','iv','box'])
+        && request.resource.data.iv is string && request.resource.data.iv.size() == 16
+        && request.resource.data.box is string && request.resource.data.box.size() <= 1400
+        && aliasAfter().ticket == id && (senior() || aliasAfter().uid == request.auth.uid);
+      allow delete: if senior() || (active() && resource.data.login == profile().login);
+    }
+    match /accessVaults/{uid} {
+      allow get: if active() && uid == request.auth.uid;
+      allow create: if active() && uid == request.auth.uid
+        && request.resource.data.keys().hasOnly(['key']) && request.resource.data.key.matches('^[a-f0-9]{64}$');
+    }
+    match /accessScreens/{uid} {
+      allow get: if signed() && (uid == request.auth.uid || senior());
+      allow list: if senior();
+      allow create: if anonymous() && uid == request.auth.uid && request.resource.data.keys().hasOnly(['active','code'])
+        && request.resource.data.active == false && request.resource.data.code.matches('^[A-F0-9]{8}$');
+      allow update: if senior() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['active'])
+        && request.resource.data.active is bool && audited('accessScreens',uid,'update');
+    }
+    // Coleção de outro aplicativo deste projeto. Preserva sua política anterior.
+    match /cipa_inscricoes/{item=**} { allow read, write: if true; }
+  }
+}

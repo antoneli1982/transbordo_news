@@ -1,65 +1,22 @@
-// Update this version when changing the offline shell.
-const CACHE = "transbordo-shell-20261125-6";
-const HOME = new URL("index.html", self.registration.scope).href;
-self.addEventListener("install", event => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE);
-    await cache.add(new Request(HOME, {cache: "reload"}));
-    await self.skipWaiting();
+const CACHE='transbordo-shell-auth-20261125-2';
+const base=new URL(self.registration.scope);
+const paths=['index.html','auth/start.js','auth/login-dialog.js','auth/access.css','auth/accounts.js','auth/database.js','auth/firebase.js','auth/project.mjs','auth/vault.js','auth/crypto.js','auth/admin.js'];
+const shell=new Set(paths.map(p=>new URL(p,base).href));
+const home=new URL('index.html',base).href;
+self.addEventListener('install',e=>e.waitUntil((async()=>{
+  const c=await caches.open(CACHE);await c.addAll([...shell].map(url=>new Request(url,{cache:'reload'})));await self.skipWaiting();
+})()));
+self.addEventListener('activate',e=>e.waitUntil((async()=>{
+  for(const name of await caches.keys())if(name.startsWith('transbordo-shell-')&&name!==CACHE)await caches.delete(name);
+  await self.clients.claim();
+})()));
+self.addEventListener('fetch',e=>{
+  const r=e.request,u=new URL(r.url);
+  if(r.method!=='GET'||u.origin!==base.origin)return;
+  const isHome=r.mode==='navigate'&&(u.pathname===base.pathname||u.pathname===new URL(home).pathname);
+  const key=isHome?home:u.href;
+  if(!shell.has(key))return;
+  e.respondWith((async()=>{const c=await caches.open(CACHE);const stored=await c.match(key);
+    return stored||fetch(r);
   })());
-});
-self.addEventListener("activate", event => {
-  event.waitUntil((async () => {
-    for (const key of await caches.keys()) {
-      if (key.startsWith("transbordo-shell-") && key !== CACHE) await caches.delete(key);
-    }
-    await self.clients.claim();
-  })());
-});
-self.addEventListener("fetch", event => {
-  const req = event.request, url = new URL(req.url);
-  if (req.method !== "GET") return;
-  const root = new URL(self.registration.scope);
-  if (req.destination === "image" && url.protocol === "https:") {
-    event.respondWith((async () => {
-      const cache = await caches.open("transbordo-images-v1");
-      try {
-        const response = await fetch(req);
-        if (response.ok || response.type === "opaque") {
-          try {
-            if (!/no-store/i.test(response.headers.get("cache-control") || "")) {
-              await cache.put(req, response.clone());
-              const keys = await cache.keys();
-              if (keys.length > 100) await cache.delete(keys[0]);
-            }
-          } catch (_) { /* Quota reached. The image still opens online. */ }
-          return response;
-        }
-        return await cache.match(req) || response;
-      } catch (err) {
-        const saved = await cache.match(req);
-        if (saved) return saved;
-        throw err;
-      }
-    })());
-    return;
-  }
-  if (req.mode === "navigate" && url.origin === root.origin &&
-      (url.pathname === root.pathname || url.pathname === new URL(HOME).pathname)) {
-    event.respondWith((async () => {
-      const cache = await caches.open(CACHE);
-      try {
-        const response = await fetch(req);
-        if (response.ok && (response.headers.get("content-type") || "").includes("text/html")) {
-          await cache.put(HOME, response.clone());
-          return response;
-        }
-        return await cache.match(HOME) || response;
-      } catch (err) {
-        const saved = await cache.match(HOME);
-        if (saved) return saved;
-        throw err;
-      }
-    })());
-  }
 });

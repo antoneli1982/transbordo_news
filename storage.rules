@@ -1,12 +1,7 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    function profile() { return firestore.get(/databases/(default)/documents/accessUsers/$(request.auth.uid)); }
-    function active() { return request.auth != null && profile().data.active == true && profile().data.role in ['senior','editor','viewer']; }
-    match /anexos/{path=**} {
-      allow read: if active();
-      allow write: if active() && profile().data.role in ['senior','editor'];
-    }
+    // Os anexos desta versão ficam no Firestore e seguem as regras do painel.
     match /{path=**} { allow read, write: if false; }
   }
 }

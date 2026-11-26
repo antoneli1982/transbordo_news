@@ -1180,7 +1180,7 @@ body[data-demo="true"] .d-status i{background:#135cc3}
 .pcp-draft-status{font-size:11px;color:#718098;white-space:nowrap;padding-top:2px}
 .pcp-alert{border:1px solid #efdcb8;background:#fffaf0;color:#9b641d;padding:11px 15px;border-radius:9px;font-size:12px;margin-top:18px;line-height:1.5}
 .pcp-alert[hidden]{display:none}
-.pcp-summary{position:sticky;bottom:0;z-index:7;flex-shrink:0;background:#fff;border-top:1px solid #dce4ef;box-shadow:0 -6px 25px #1d355108;padding:17px 32px}
+.pcp-summary{position:sticky;bottom:0;z-index:7;flex-shrink:0;background:#fff;border-top:1px solid #dce4ef;box-shadow:0 -6px 25px #1d355108;padding:6px 32px}
 .pcp-summary-inner{max-width:1536px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:24px}
 .pcp-metrics{display:flex;align-items:center;gap:34px}
 .pcp-metric{display:flex;flex-direction:column;gap:3px;min-width:90px}
@@ -1191,6 +1191,13 @@ body[data-demo="true"] .d-status i{background:#135cc3}
 .pcp-total-label svg{height:14px;width:14px}
 .pcp-grand-total output{display:block;color:#065fee;font-size:31px;font-weight:750;font-variant-numeric:tabular-nums;line-height:1.3;letter-spacing:-.035em;white-space:nowrap}
 .pcp-grand-total small{display:block;font-size:10px;color:#8591a2}
+@media screen and (min-width:761px){
+  .pcp-grand-total{display:grid;grid-template-columns:auto auto;align-items:center;column-gap:12px}
+  .pcp-grand-total output{grid-column:2;grid-row:1 / 3;font-size:26px;line-height:1.1}
+  .pcp-grand-total small{grid-column:1}
+  .pcp-metric{gap:0}
+  .pcp-metric strong{line-height:1.15}
+}
 .pcp-mobile-label{display:none}
 #pcpPrint{display:none}
 /* Embalagens: catálogo sem programação ou ativação de transbordo. */
@@ -1210,7 +1217,7 @@ body[data-demo="true"] .d-status i{background:#135cc3}
 @media(max-width:1040px){#pgLista .catalog-grid{grid-template-columns:1fr}.catalog-note{padding-right:24px;padding-left:24px}}
 @media(max-width:600px){.catalog-note{padding:0 16px 18px;font-size:12px}.catalog-item .ei-info{display:block;grid-column:1;grid-row:1}.catalog-item .ei-foot{grid-row:2}.catalog-item .catalog-facts{grid-template-columns:1fr;gap:7px}.catalog-facts>div{padding:7px 9px}}
 @media(min-width:1550px){.pcp-table col:nth-child(2){width:198px}.pcp-table col:nth-child(4){width:123px}.pcp-table col:nth-child(5){width:147px}.pcp-table col:nth-child(6){width:147px}.pcp-table col:nth-child(7){width:174px}}
-@media(max-width:1100px){.pcp-main{padding:24px}.pcp-summary{padding:16px 24px}.pcp-heading h1{font-size:26px}.pcp-heading p{font-size:13px}.pcp-metrics{gap:22px}.pcp-table-wrap{scrollbar-width:thin}}
+@media(max-width:1100px){.pcp-main{padding:24px}.pcp-summary{padding:6px 24px}.pcp-heading h1{font-size:26px}.pcp-heading p{font-size:13px}.pcp-metrics{gap:22px}.pcp-table-wrap{scrollbar-width:thin}}
 @media(max-width:760px){
   .ed-nav{grid-column:1/-1}
   .ed-tab{flex:1 0 auto;min-width:max-content;font-size:11px;padding-right:8px;padding-left:8px;gap:5px}
@@ -1243,7 +1250,7 @@ body[data-demo="true"] .d-status i{background:#135cc3}
   .pcp-cell small{margin-top:3px;font-size:10px}.pcp-total-cell{border:1px solid #e0e9fa!important;padding:10px!important;border-radius:8px;align-self:start}
   .pcp-row-time{font-size:20px!important}.pcp-table td.pcp-remove-cell{position:absolute;right:10px;top:47px;padding:0}
   .pcp-under-table{flex-direction:column;gap:12px}.pcp-draft-status{font-size:10px}
-  .pcp-summary{padding:12px 16px}.pcp-summary-inner{gap:15px;align-items:center}.pcp-metrics{gap:14px;flex-wrap:wrap}.pcp-metric{min-width:50px;gap:0}
+  .pcp-summary{padding:5px 16px}.pcp-summary-inner{gap:15px;align-items:center}.pcp-metrics{gap:14px;flex-wrap:wrap}.pcp-metric{min-width:50px;gap:0}
   .pcp-metric strong{font-size:17px}.pcp-metric span{font-size:9px}.pcp-metric:nth-child(3){display:none}
   .pcp-grand-total{padding-left:14px}.pcp-grand-total output{font-size:25px}.pcp-grand-total small{font-size:8px;max-width:175px}.pcp-total-label{font-size:9px}
 }

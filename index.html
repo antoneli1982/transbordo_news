@@ -1984,6 +1984,7 @@ body[data-lay="tv"] .tv-transbordo-note p{font-size:clamp(20px,1.75vw,34px);line
 .multi-thumb.photo-unavailable{display:flex;align-items:center;padding:5px;font-size:11px;overflow-wrap:anywhere}
 </style>
 <style>.catalog-item .ei-foot{flex-wrap:wrap}.catalog-item .catalog-delete{color:#a42121;border-color:#c47c7c}html[data-theme="dark"] .catalog-item .catalog-delete{color:#ffb9b9;border-color:#ad7272}</style>
+<style>#d-workers strong{display:block;margin-top:.3em;color:var(--ink);font-size:1em}.time-sub:has(#d-workers){flex-direction:column;align-items:stretch}body #d-workers,body[data-lay] #d-workers.is-names{display:block;max-width:100%;text-align:right}</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <main id="accessGate" aria-labelledby="accessTitle">
@@ -4204,6 +4205,11 @@ window.transbordoAccess.then(function startTransbordo(){
       var pt=el("d-workers-label-pt"),en=el("d-workers-label-en"),plural=names.length?names.length>1:count>1;
       if(pt)pt.textContent=plural?"Colaboradores":"Colaborador";if(en)en.textContent=plural?"Team members":"Team member";
       setTvField("d-workers",value,".time-sub");
+      if(node&&names.length&&count>0){
+        var total=document.createElement("strong");
+        total.textContent=count+(count===1?" colaborador":" colaboradores");
+        node.appendChild(total);
+      }
     })();
     updateTotalTime();fitTimeCard();
     el("d-updated").textContent=it.updated||"";

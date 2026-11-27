@@ -1951,6 +1951,19 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   #edNav .ed-tab { font-size: 13px; padding: 5px 3px; }
 }
 </style>
+<style>@media screen {
+body[data-lay="tv"] .det-prod{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:5px 16px}
+body[data-lay="tv"] .det-prod>.det-info,body[data-lay="tv"] .det-prod>.det-top-meta{display:contents}
+body[data-lay="tv"] .det-seqrow{grid-area:1/1;min-width:0}
+body[data-lay="tv"] .det-name-wrap{min-width:0}
+body[data-lay="tv"] .det-name{font-size:clamp(22px,2.45vw,38px);overflow-wrap:anywhere}
+body[data-lay="tv"] .d-timerctl{grid-area:1/2;justify-self:end}
+body[data-lay="tv"] #d-supplierRow{grid-area:2/1}
+body[data-lay="tv"] .det-prod .d-docinfo{grid-area:3/1/4/-1;margin:0}
+body[data-lay="tv"] .det-prod .tv-transbordo-note{grid-area:4/1/5/-1;width:100%;min-width:0}
+}
+.multi-thumb.photo-unavailable{display:flex;align-items:center;padding:5px;font-size:11px;overflow-wrap:anywhere}
+</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <main id="accessGate" aria-labelledby="accessTitle">
@@ -3773,7 +3786,7 @@ window.transbordoAccess.then(function startTransbordo(){
     var imgs=Array.isArray(images)?images.filter(Boolean):[];
     imgs.forEach(function(src,i){
       var t=document.createElement("div");t.className="multi-thumb";
-      var img=document.createElement("img");img.alt="";img.onerror=function(){t.style.display="none";};img.src=src;
+      var img=document.createElement("img");img.alt="";img.onerror=function(){img.hidden=true;t.classList.add("photo-unavailable");t.appendChild(document.createTextNode("Foto indisponível"));};img.src=src;
       var rm=document.createElement("button");rm.type="button";rm.className="mth-rm";rm.title="Remover";
       rm.innerHTML='<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>';
       (function(idx){rm.addEventListener("click",function(e){e.stopPropagation();removeSlotImage(slot,idx);});})(i);
@@ -3837,8 +3850,13 @@ window.transbordoAccess.then(function startTransbordo(){
     var target=pendingTarget, mode=pendingMode;
     var max=imageUploadMaxDimension(target);
     var itAtStart=(target==="logo")?null:currentItem();
+    var targetId=itAtStart&&itAtStart.id;
     if(target!=="logo"&&!itAtStart)return;
     fileToDataURL(file,max,function(url,details){
+      if(target!=="logo"){
+        itAtStart=state.items.find(function(item){return item.id===targetId;});
+        if(!itAtStart){toast("O cadastro foi removido antes de concluir o envio.");return;}
+      }
       if(mode==="add"){applyImageAdd(target,itAtStart,url);}else{applyImage(target,itAtStart,url);}
       queueSave();
       if(url.length>ATT_MAX) toast("Imagem enorme (acima de ~4MB) — ficou SÓ neste PC.");

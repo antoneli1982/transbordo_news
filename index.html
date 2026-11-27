@@ -1964,6 +1964,7 @@ body[data-lay="tv"] .det-prod .tv-transbordo-note{grid-area:4/1/5/-1;width:100%;
 }
 .multi-thumb.photo-unavailable{display:flex;align-items:center;padding:5px;font-size:11px;overflow-wrap:anywhere}
 </style>
+<style>.catalog-item .ei-foot{flex-wrap:wrap}.catalog-item .catalog-delete{color:#a42121;border-color:#c47c7c}html[data-theme="dark"] .catalog-item .catalog-delete{color:#ffb9b9;border-color:#ad7272}</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <main id="accessGate" aria-labelledby="accessTitle">
@@ -3462,8 +3463,8 @@ window.transbordoAccess.then(function startTransbordo(){
       foot.appendChild(duplicate);
     }
     var obsolete=document.createElement("button");obsolete.type="button";obsolete.className="btn btn-ghost btn-sm obsolete-toggle";obsolete.textContent=obsoleteActionLabel(it.obsolete===true);obsolete.setAttribute("aria-pressed",String(it.obsolete===true));obsolete.addEventListener("click",function(e){e.stopPropagation();toggleObsolete(it.id);});foot.appendChild(obsolete);
-    var del=document.createElement("button");del.type="button";del.className="ei-del";del.title="Excluir cadastro";del.setAttribute("aria-label","Excluir cadastro de "+(it.partCode||it.partName));del.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';del.addEventListener("click",function(e){e.stopPropagation();removeItem(it.id);});
-    row.appendChild(info);row.appendChild(thumb);row.appendChild(foot);row.appendChild(del);return row;
+    var del=document.createElement("button");del.type="button";del.className="btn btn-ghost btn-sm catalog-delete";del.textContent="Excluir card";del.setAttribute("aria-label","Excluir card de "+(it.partCode||it.partName));del.addEventListener("click",function(e){e.stopPropagation();removeItem(it.id);});
+    row.appendChild(info);row.appendChild(thumb);foot.appendChild(del);row.appendChild(foot);return row;
   }
 
   /* ===== Proteção por senha para ações destrutivas =====
@@ -3589,7 +3590,7 @@ window.transbordoAccess.then(function startTransbordo(){
     if(j<0||j>=state.items.length)return;
     selectItem(state.items[j].id);
   }
-  function removeItem(id){var i=state.items.map(function(x){return x.id;}).indexOf(id);if(i<0)return;authorizeDestructive("excluir este item cadastrado",function(){
+  function removeItem(id){var i=state.items.map(function(x){return x.id;}).indexOf(id);if(i<0)return;authorizeDestructive("excluir o card "+[state.items[i].partCode,state.items[i].partName].filter(Boolean).join(" · "),function(){
     var j=state.items.map(function(x){return x.id;}).indexOf(id);if(j<0)return;
     state.items.splice(j,1);if(currentId===id)currentId=state.items.length?state.items[Math.max(0,j-1)].id:null;
     renderEditorList();populateForm();queueSave();toast("Item removido");

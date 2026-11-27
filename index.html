@@ -107,7 +107,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     attach();refreshers.add(wake);
     // Verify stalled connections without repeatedly downloading the complete execution history.
     watchdog=setInterval(()=>{
-      if(!document.hidden&&(reference.type==="document"||!lastServer)&&Date.now()-lastServer>(reference.path==="paineis/pcp"?15000:120000))refresh();
+      if(!document.hidden&&(reference.type==="document"||!lastServer)&&Date.now()-lastServer>((reference.path==="paineis/pcp"||reference.path==="paineis/colaboradores")?15000:120000))refresh();
     },15000);
     timer=setTimeout(()=>{if(!lastServer)refresh();},3000);
     return ()=>{closed=true;clearTimeout(timer);clearInterval(watchdog);refreshers.delete(wake);if(stop)stop();};
@@ -4797,7 +4797,55 @@ window.transbordoAccess.then(function startTransbordo(){
     }catch(e){pcpPeople=peopleNormalize(PEOPLE_SEED.concat(Array.isArray(local)?local:[]));}
     peopleRefresh();
   }
+  var peopleRef=null,peopleBusy=false,peopleLast=[],peoplePending={},peopleRemote={},peopleInit=false;
+  var peopleQueueKey=PEOPLE_KEY+"_pending_v1";
+  function peopleIndex(list){
+    return Object.fromEntries(list.map(p=>[(p.chapa?"vw:"+peopleLower(p.chapa):"nome:"+peopleLower(p.name)),p]));
+  }
+  function peopleDelta(before,after){
+    var old=peopleIndex(before),next=peopleIndex(after),delta={};
+    for(var key of new Set(Object.keys(old).concat(Object.keys(next)))){
+      if(JSON.stringify(old[key])!==JSON.stringify(next[key]))delta[key]=next[key]||null;
+    }
+    return delta;
+  }
+  function peoplePaintShared(){
+    var records=Object.assign(peopleIndex(peopleNormalize(PEOPLE_SEED)),peopleRemote,peoplePending);
+    var list=peopleNormalize(Object.values(records).filter(Boolean));
+    peopleLast=clone(list);
+    if(JSON.stringify(list)===JSON.stringify(pcpPeople))return;
+    pcpPeople=list;lsSet(PEOPLE_KEY,JSON.stringify(list));peopleRefresh();
+    if(pcpReady&&document.body.dataset.page==="pcp")pcpRenderRows();
+    if(pcpReady)pcpRefreshTV();
+  }
+  async function peopleFlush(){
+    if(!peopleRef||!peopleInit||peopleBusy||!navigator.onLine||!Object.keys(peoplePending).length)return;
+    peopleBusy=true;var batch=clone(peoplePending),ok=false;
+    try{
+      var fb=window.__FB;
+      var merged=await fb.runTransaction(fb.db,async function(tx){
+        var snap=await tx.get(peopleRef);
+        var changes=Object.assign({},snap.exists()?JSON.parse(snap.data().changes):{},batch);
+        tx.set(peopleRef,{changes:JSON.stringify(changes)});return changes;
+      });
+      peopleRemote=merged;
+      Object.keys(batch).forEach(k=>{if(JSON.stringify(peoplePending[k])===JSON.stringify(batch[k]))delete peoplePending[k];});
+      lsSet(peopleQueueKey,JSON.stringify(peoplePending));peoplePaintShared();ok=true;
+    }catch(error){toast("Cadastro de colaboradores salvo neste aparelho. Envio pendente.");}
+    finally{peopleBusy=false;if(Object.keys(peoplePending).length)setTimeout(peopleFlush,ok?0:30000);}
+  }
+  function peopleConnect(){
+    if(!window.__FB||peopleRef)return;
+    var fb=window.__FB;peopleRef=fb.doc(fb.db,"paineis","colaboradores");
+    fb.onSnapshot(peopleRef,{includeMetadataChanges:true},function(snap){
+      if(snap.metadata.fromCache||snap.metadata.hasPendingWrites)return;
+      peopleRemote=snap.exists()?JSON.parse(snap.data().changes):{};
+      peopleInit=true;peoplePaintShared();peopleFlush();
+    },function(){peopleInit=false;});
+  }
   function peopleSave(){
+    Object.assign(peoplePending,peopleDelta(peopleLast,pcpPeople));peopleLast=clone(pcpPeople);
+    lsSet(peopleQueueKey,JSON.stringify(peoplePending));peopleFlush();
     try{localStorage.setItem(PEOPLE_KEY,JSON.stringify(pcpPeople));}catch(e){toast("Não foi possível salvar o cadastro neste navegador.");}
     peopleRefresh();if(pcpReady&&pcpPlan&&document.body.dataset.page==="pcp")pcpRenderRows();
   }
@@ -4927,7 +4975,13 @@ window.transbordoAccess.then(function startTransbordo(){
     authorizeDestructive("acessar o cadastro de colaboradores",function(){peopleUnlocked=true;goToPage("colaboradores");peopleRefresh();setTimeout(function(){el("pcpNewPerson").focus();},30);},"Acesso ao cadastro de colaboradores");
   }
   function peopleBoot(){
-    peopleLoad();el("pcpClosePeople").onclick=function(){setPage("pcp");};el("pcpAddPerson").onclick=peopleSubmit;el("pcpCancelPersonEdit").onclick=peopleResetForm;
+    peopleLoad();peopleLast=clone(pcpPeople);
+    var pending=lsGet(peopleQueueKey);
+    peoplePending=pending?JSON.parse(pending):peopleDelta(peopleNormalize(PEOPLE_SEED),pcpPeople);
+    lsSet(peopleQueueKey,JSON.stringify(peoplePending));
+    peopleConnect();window.addEventListener("firebase-ready",peopleConnect,{once:true});
+    window.addEventListener("online",peopleFlush);
+    el("pcpClosePeople").onclick=function(){setPage("pcp");};el("pcpAddPerson").onclick=peopleSubmit;el("pcpCancelPersonEdit").onclick=peopleResetForm;
     ["pcpNewPerson","pcpNewChapa"].forEach(function(id){el(id).addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();peopleSubmit();}});});
     el("pcpNewChapa").addEventListener("input",function(){var pos=this.selectionStart,v=peopleChapa(this.value);if(v!==this.value){this.value=v;try{this.setSelectionRange(pos,pos);}catch(e){}}});
     var peopleDoExport=function(){peopleExport().catch(function(){toast("Não foi possível exportar o Excel.");});};
@@ -4949,7 +5003,7 @@ window.transbordoAccess.then(function startTransbordo(){
       });
       document.addEventListener("keydown",function(ev){if(ev.key==="Escape"&&!m.hidden){ev.preventDefault();peopleImpClose();}});
     })();
-    window.addEventListener("storage",function(e){if(e.key===PEOPLE_KEY)peopleLoad();});
+    window.addEventListener("storage",function(e){if(e.key===PEOPLE_KEY){peopleLoad();peopleLast=clone(pcpPeople);}});
   }
   /* ===== PCP: usa o mesmo cadastro e a mesma função de tempo do painel ===== */
   var PCP_KEY="sese_pcp_plan_v1", pcpPlan=null, pcpSaveTimer=null, pcpChanged=false, pcpReady=false;

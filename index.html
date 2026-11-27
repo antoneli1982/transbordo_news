@@ -5463,8 +5463,9 @@ window.transbordoAccess.then(function startTransbordo(){
         input.addEventListener("input",function(){st[key]=input.value;if(key==="workers")drawPeople();pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
         if(key==="workers")input.addEventListener("blur",function(){
           var count=Math.min(99,Math.max(1,Math.floor(Number(input.value)||1)));
+          var corrected=input.value!==String(count);
           st.workers=input.value=String(count);st.people=st.people.slice(0,count);
-          drawPeople();pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();
+          if(corrected)drawPeople();pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();
         });
         if(key==="boxes")input.addEventListener("blur",function(){st.boxes=st.boxes.trim();input.value=st.boxes;pcpQueueSave();});
       });

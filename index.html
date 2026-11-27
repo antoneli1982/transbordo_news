@@ -5434,11 +5434,11 @@ window.transbordoAccess.then(function startTransbordo(){
     stations.forEach(function(st,stationIndex){
       target.add(new Option("Posto "+(stationIndex+1),String(stationIndex)));
       var node=document.createElement("div");node.className="pcp-station";
-      node.innerHTML='<div class="pcp-station-head"><b>Posto '+(stationIndex+1)+'</b><output>—</output></div><div><label>Caixas a transbordar</label><input data-station-field="boxes" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><small data-station-msg="boxes"></small></div><div><label>Quantidade de colaboradores</label><input data-station-field="workers" type="number" inputmode="numeric" min="1" max="99" step="1"><small data-station-msg="workers">Clique no número para abrir os nomes</small></div><div class="pcp-person-slots" hidden></div>';
-      var slots=node.querySelector(".pcp-person-slots"),number=node.querySelector('[data-station-field="workers"]');
+      node.innerHTML='<div class="pcp-station-head"><b>Posto '+(stationIndex+1)+'</b><output>—</output></div><div><label>Caixas a transbordar</label><input data-station-field="boxes" type="text" inputmode="decimal" autocomplete="off" placeholder="0"><small data-station-msg="boxes"></small></div><div><label>Quantidade de colaboradores</label><input data-station-field="workers" type="number" inputmode="numeric" min="1" max="99" step="1"><small data-station-msg="workers">Um campo de nome por colaborador</small></div><div class="pcp-person-slots"></div>';
+      var slots=node.querySelector(".pcp-person-slots");
       function drawPeople(){
         var count=Number(st.workers);slots.replaceChildren();
-        if(!Number.isInteger(count)||count<1||count>99)return;
+        if(!Number.isInteger(count)||count<1||count>99)count=1;
         st.people=Array.isArray(st.people)?st.people:[];
         for(let slot=0;slot<count;slot++){
           const field=document.createElement("div"),label=document.createElement("label"),input=document.createElement("input");
@@ -5458,17 +5458,17 @@ window.transbordoAccess.then(function startTransbordo(){
           });
         }
       }
-      number.addEventListener("click",function(){slots.hidden=false;drawPeople();});
-      number.addEventListener("focus",function(){slots.hidden=false;drawPeople();});
-      node.querySelectorAll("input").forEach(function(input){
+      node.querySelectorAll("input[data-station-field]").forEach(function(input){
         var key=input.dataset.stationField;input.value=st[key];input.id="pcp-"+row.id+"-station-"+stationIndex+"-"+key;input.previousElementSibling.htmlFor=input.id;
-        input.addEventListener("input",function(){st[key]=input.value;if(key==="workers"&&!slots.hidden)drawPeople();pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
+        input.addEventListener("input",function(){st[key]=input.value;if(key==="workers")drawPeople();pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
+        if(key==="workers")input.addEventListener("blur",function(){
+          var count=Math.min(99,Math.max(1,Math.floor(Number(input.value)||1)));
+          st.workers=input.value=String(count);st.people=st.people.slice(0,count);
+          drawPeople();pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();
+        });
         if(key==="boxes")input.addEventListener("blur",function(){st.boxes=st.boxes.trim();input.value=st.boxes;pcpQueueSave();});
       });
-      if(Number(st.workers)===1){
-        slots.hidden=false;
-        drawPeople();
-      }
+      drawPeople();
       list.appendChild(node);
     });
     var sourceTarget=tr.querySelector(".pcp-source-target"),sourceIndex=sourceTarget.selectedIndex;
@@ -6127,7 +6127,7 @@ window.transbordoAccess.then(function startTransbordo(){
     });
     if(!plan)return [];
     return plan.rows.map(row=>pcpResolve(row,catalog)).filter(function(r){return r.active&&r.item&&r.item.obsolete!==true;}).map(function(r){
-      var named=[],seen={};r.stations.forEach(function(st){(st.station.people||[]).forEach(function(value){var name=peopleNameFromStored(value),key=peopleLower(name);if(name&&!seen[key]){seen[key]=true;named.push(name);}});});
+      var named=[],seen={};r.stations.forEach(function(st){(st.station.people||[]).slice(0,st.workers).forEach(function(value){var name=peopleNameFromStored(value),key=peopleLower(name);if(name&&!seen[key]){seen[key]=true;named.push(name);}});});
       return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:r.count&&r.stations.every(st=>!st.boxError)?pcpFormat(r.boxes):"",workers:r.count&&r.stations.every(st=>!st.workerError)?String(r.workers):"",pcpPeopleNames:named,pcpCs:r.cs,pcpPostCount:r.count,pcpSimultaneous:r.count>1,status:"open",pcpRowId:r.row.id,pcpSeq:plan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
     });
   }

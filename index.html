@@ -3114,6 +3114,8 @@ window.transbordoAccess.then(function startTransbordo(){
     }
   }
 
+  var sharedTvPlan=null,sharedTvCatalog=null;
+  function tvPlan(){return sharedTvPlan||pcpPlan;}
   function connectFirebase(){
     if(!window.__FB){ setSyncStatus("Offline (local)", "warn"); return; }
     var FB = window.__FB;
@@ -3133,6 +3135,7 @@ window.transbordoAccess.then(function startTransbordo(){
           var remote = normalize(JSON.parse(data.state||"{}"));
           hydrateState(remote, function(hy){
             if(snapshotNumber!==latestSnapshot)return;
+            sharedTvCatalog=hy.items;pcpRefreshTV();
             if(localDirty||saveT){initialSyncDone=true;flushCatalog();saveToFirebase(lastSavedAt);return;}
             var newState = mergeKeepLocalAttachments(hy, state);
             var keepId = currentId;
@@ -3165,6 +3168,16 @@ window.transbordoAccess.then(function startTransbordo(){
       }
 
       var data = snap.data();
+      // Exiba texto e planejamento antes de baixar todos os anexos do catálogo.
+      try{
+        var summary=JSON.parse(data.state,function(key,value){
+          return typeof value==="string"&&value.startsWith("fb:")?(attCache[value.slice(3)]||""):value;
+        });
+        if(Array.isArray(summary.items)){
+          sharedTvCatalog=normalize(summary).items;
+          pcpRefreshTV();
+        }
+      }catch(error){console.warn("Falha ao ler catálogo para TV",error);}
       var rTs = (typeof data.updatedAt === "number") ? data.updatedAt : 0;
 
       // Eco da nossa própria escrita: confirma que a nuvem já guardou o que salvamos.
@@ -4320,7 +4333,7 @@ window.transbordoAccess.then(function startTransbordo(){
   function followSharedSequence(){
     var count=getVisible().length;
     if(!count){showEmpty(true);return;}
-    var anchor=isDemoMode()?(demoState.savedAt||0):(pcpPlan.savedAt||0);
+    var anchor=isDemoMode()?(demoState.savedAt||0):(tvPlan().savedAt||0);
     var position=sharedPosition(Date.now(),interval(),count,anchor);
     goTo(position.index,position.offset);
   }
@@ -4804,8 +4817,8 @@ window.transbordoAccess.then(function startTransbordo(){
     if(!pcpPlan)return;clearTimeout(pcpSaveTimer);pcpDraftPending=false;pcpPlan.savedAt=Date.now();pcpPlan.revision=uid();pcpPlan.cloudPending=true;demoUpdateUI();pcpRefreshTV();pcpPersistDraft();pcpScheduleCloud();
   }
   function pcpStationCount(row){var v=String(row.postCount);return /^\d+$/.test(v)&&Number(v)>=1&&Number(v)<=99?Number(v):0;}
-  function pcpResolve(row){
-    var code=pcpSearchKey(row.code),matches=state.items.filter(function(it){return code&&pcpSearchKey(it.partCode)===code;});
+  function pcpResolve(row,catalog){
+    var code=pcpSearchKey(row.code),matches=(Array.isArray(catalog)?catalog:state.items).filter(function(it){return code&&pcpSearchKey(it.partCode)===code;});
     var item=matches.length===1?matches[0]:matches.find(function(it){return it.id===row.itemId;});
     if(!item&&!row.itemId&&matches.length>1){
       // Preserve o cadastro de linhas antigas quando a grafia original identifica uma única peça.
@@ -6010,7 +6023,7 @@ window.transbordoAccess.then(function startTransbordo(){
   var DEMO_KEY="sese_tv_demo_v1",demoState=null,demoChanged=false,demoHydrated=false;
   var demoCloudRef=null,demoCloudStarted=false,demoCloudReady=false,demoCloudBusy=false,demoCloudError=false;
   var DEMO_CLIENT="demo-"+uid();
-  function isDemoMode(){return !!(demoState&&demoState.enabled&&(!pcpPlan||!pcpPlan.savedAt||demoState.savedAt>=pcpPlan.savedAt));}
+  function isDemoMode(){var plan=document.body.dataset.view==="display"?tvPlan():pcpPlan;return !!(demoState&&demoState.enabled&&(!plan||!plan.savedAt||demoState.savedAt>=plan.savedAt));}
   function demoNormalize(value){
     value=value&&typeof value==="object"?value:{};
     return {enabled:value.enabled===true,savedAt:Number(value.savedAt)||0,revision:String(value.revision||""),cloudPending:value.cloudPending===true};
@@ -6108,13 +6121,14 @@ window.transbordoAccess.then(function startTransbordo(){
   var PCP_CLIENT="pcp-"+uid();
   function getVisible(){
     // A demonstração lê SOMENTE o cadastro: sem filtros, ordem, volumes ou prioridades do PCP.
-    if(isDemoMode())return state.items.filter(function(it){return it.obsolete!==true;}).map(function(it,index){
+    var plan=tvPlan(),catalog=sharedTvCatalog||state.items;
+    if(isDemoMode())return catalog.filter(function(it){return it.obsolete!==true;}).map(function(it,index){
       return Object.assign({},it,{id:"demo-"+it.id,sourceItemId:it.id,pcpSeq:index+1});
     });
-    if(!pcpPlan)return [];
-    return pcpPlan.rows.map(pcpResolve).filter(function(r){return r.active&&r.item&&r.item.obsolete!==true;}).map(function(r){
+    if(!plan)return [];
+    return plan.rows.map(row=>pcpResolve(row,catalog)).filter(function(r){return r.active&&r.item&&r.item.obsolete!==true;}).map(function(r){
       var named=[],seen={};r.stations.forEach(function(st){(st.station.people||[]).forEach(function(value){var name=peopleNameFromStored(value),key=peopleLower(name);if(name&&!seen[key]){seen[key]=true;named.push(name);}});});
-      return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:r.count&&r.stations.every(st=>!st.boxError)?pcpFormat(r.boxes):"",workers:r.count&&r.stations.every(st=>!st.workerError)?String(r.workers):"",pcpPeopleNames:named,pcpCs:r.cs,pcpPostCount:r.count,pcpSimultaneous:r.count>1,status:"open",pcpRowId:r.row.id,pcpSeq:pcpPlan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
+      return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:r.count&&r.stations.every(st=>!st.boxError)?pcpFormat(r.boxes):"",workers:r.count&&r.stations.every(st=>!st.workerError)?String(r.workers):"",pcpPeopleNames:named,pcpCs:r.cs,pcpPostCount:r.count,pcpSimultaneous:r.count>1,status:"open",pcpRowId:r.row.id,pcpSeq:plan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
     });
   }
   function pcpRefreshTV(){
@@ -6166,12 +6180,13 @@ window.transbordoAccess.then(function startTransbordo(){
     FB.onSnapshot(pcpCloudRef,{includeMetadataChanges:true},function(snap){
       var fromCache=!!(snap.metadata&&snap.metadata.fromCache);
       if(!snap.exists()){
-        if(fromCache)return;pcpCloudInitialDone=true;
+        if(fromCache)return;pcpCloudInitialDone=true;sharedTvPlan=pcpNormalize({rows:[]});pcpRefreshTV();
         if(pcpHydrated&&pcpPlan.savedAt>0){pcpPlan.cloudPending=true;pcpScheduleCloud();}return;
       }
       var data=snap.data()||{},remote;
       try{remote=typeof data.plan==="string"?JSON.parse(data.plan):data.plan;}catch(e){return;}
       if(!remote||!Array.isArray(remote.rows))return;
+      if(!fromCache&&!snap.metadata.hasPendingWrites){sharedTvPlan=pcpNormalize(remote);pcpRefreshTV();}
       // A cached snapshot may paint the TV, but cannot authorize overwriting the server.
       if(!fromCache)pcpCloudInitialDone=true;
       if(!fromCache&&!snap.metadata.hasPendingWrites&&(!pcpPlan.cloudPending||data.updatedBy===PCP_CLIENT))lsSet(versionStore("pcp"),serverVersion(data));

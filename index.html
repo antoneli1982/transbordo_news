@@ -33,12 +33,12 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     if (!navigator.onLine || connecting || window.__FB) return;
     connecting = true;
     try {
-    const [appSDK, firestore, storageSDK] = await Promise.all(["app","firestore","storage"].map(
+    const [appSDK, firestore] = await Promise.all(["app","firestore"].map(
       name => import("https://www.gstatic.com/firebasejs/10.13.0/firebase-"+name+".js")
     ));
     const {initializeApp} = appSDK;
     const {getFirestore,doc,setDoc,onSnapshot,getDoc,collection,query,where,documentId,runTransaction} = firestore;
-    const {getStorage,ref,uploadBytes,getDownloadURL} = storageSDK;
+
   const firebaseConfig = {
     apiKey: "AIzaSyAo_gNiMOatevfbT5zdhCuizp_yFKTlfCA",
     authDomain: "transbordonews.firebaseapp.com",
@@ -50,11 +50,26 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
-  const storage = getStorage(app);
 
+
+  function listenShared(reference,...args){
+    const failure=args.pop();
+    let stop,timer,closed=false;
+    function attach(){
+      if(closed)return;
+      stop=onSnapshot(reference,...args,error=>{
+        if(typeof failure==="function")failure(error);
+        if(!closed)timer=setTimeout(attach,30000);
+      });
+    }
+    attach();
+    return ()=>{closed=true;clearTimeout(timer);if(stop)stop();};
+  }
   // expõe pra dentro da IIFE principal
-  window.__FB = { db, doc, setDoc, onSnapshot, getDoc, collection, query, where, documentId, runTransaction };
-  window.__FBS = { storage, ref, uploadBytes, getDownloadURL };
+  window.__FB = { db, doc, setDoc, onSnapshot:listenShared, getDoc, collection, query, where, documentId, runTransaction };
+  import("https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js").then(({getStorage,ref,uploadBytes,getDownloadURL})=>{
+    window.__FBS={storage:getStorage(app),ref,uploadBytes,getDownloadURL};
+  }).catch(()=>{});
   window.dispatchEvent(new Event("firebase-ready"));
     } catch (e) {
       if(navigator.onLine)setTimeout(connectSDK,30000);
@@ -3104,8 +3119,10 @@ window.transbordoAccess.then(function startTransbordo(){
     FB_REF = FB.doc(FB.db, "paineis", "principal");
     setSyncStatus("Conectando...", "warn");
 
+    var latestSnapshot=0;
     FB.onSnapshot(FB_REF,{includeMetadataChanges:true}, function(snap){
       if(snap.metadata&&(snap.metadata.fromCache||snap.metadata.hasPendingWrites))return;
+      var snapshotNumber=++latestSnapshot;
       FB_READY = true;
 
       // Aplica o estado da nuvem por cima do local: resolve as imagens "fb:att_xxx" ANTES de
@@ -3114,6 +3131,7 @@ window.transbordoAccess.then(function startTransbordo(){
         try{
           var remote = normalize(JSON.parse(data.state||"{}"));
           hydrateState(remote, function(hy){
+            if(snapshotNumber!==latestSnapshot)return;
             if(localDirty||saveT){initialSyncDone=true;flushCatalog();saveToFirebase(lastSavedAt);return;}
             var newState = mergeKeepLocalAttachments(hy, state);
             var keepId = currentId;
@@ -3175,7 +3193,7 @@ window.transbordoAccess.then(function startTransbordo(){
       }
       adoptRemote(data, rTs);
     }, function(err){
-      console.error("Firestore listener error:", err);
+      FB_READY=false;initialSyncDone=false;console.error("Firestore listener error:", err);
       reportFirebaseError(err);
     });
   }
@@ -4286,7 +4304,18 @@ window.transbordoAccess.then(function startTransbordo(){
   var rotIdx=0,rotStart=0,rotRAF=null,rotPaused=false,rotPausedAt=0,rotEmpty=false,tvTransitionTimer=null;
   function interval(){return (state.settings.intervalSec||15)*1000;}
   function showEmpty(on){rotEmpty=on;if(on){clearTimeout(tvTransitionTimer);stopCardSS();shownItem=null;applyPriorityUI(null);el("progFill").style.width="0%";}var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";el("dMain").appendChild(e);}el("dEmpty").textContent=isDemoMode()?"Nenhum cadastro ativo para exibir no modo demonstrativo.":"Nenhuma peça completa no PCP Planejamento. Preencha código, caixas e colaboradores para exibir na TV.";detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";var _ds0=el("d-seq");if(_ds0)_ds0.textContent="";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
-  function goTo(i){
+  function sharedPosition(now,duration,count,anchor){
+    var elapsed=Math.max(0,now-anchor);
+    return {index:Math.floor(elapsed/duration)%count,offset:elapsed%duration};
+  }
+  function followSharedSequence(){
+    var count=getVisible().length;
+    if(!count){showEmpty(true);return;}
+    var anchor=isDemoMode()?(demoState.savedAt||0):(pcpPlan.savedAt||0);
+    var position=sharedPosition(Date.now(),interval(),count,anchor);
+    goTo(position.index,position.offset);
+  }
+  function goTo(i,offset){
     clearTimeout(tvTransitionTimer);
     var items=getVisible();if(!items.length){showEmpty(true);return;}showEmpty(false);
     rotIdx=((i%items.length)+items.length)%items.length;
@@ -4298,14 +4327,14 @@ window.transbordoAccess.then(function startTransbordo(){
       renderItem(latest[index]);startCardSS(latest[index]);el("d-idx").textContent=(index+1)+" / "+latest.length;
       var sequence=el("d-seq");if(sequence)sequence.textContent=String(latest[index].pcpSeq||index+1);highlightList(index);detail.style.opacity="1";
     },170);
-    rotStart=performance.now();el("progFill").style.width="0%";cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
+    rotStart=performance.now()-(offset||0);el("progFill").style.width="0%";cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
   }
-  function loopProg(){if(rotPaused)return;var iv=interval(),elapsed=performance.now()-rotStart;if(elapsed>=iv){next();return;}el("progFill").style.width=((elapsed/iv)*100).toFixed(1)+"%";rotRAF=requestAnimationFrame(loopProg);}
+  function loopProg(){if(rotPaused)return;var iv=interval(),elapsed=performance.now()-rotStart;if(elapsed>=iv){followSharedSequence();return;}el("progFill").style.width=((elapsed/iv)*100).toFixed(1)+"%";rotRAF=requestAnimationFrame(loopProg);}
   function next(){if(!getVisible().length){showEmpty(true);return;}goTo(rotIdx+1);}
   function prev(){if(!getVisible().length){showEmpty(true);return;}goTo(rotIdx-1);}
   function setPauseIcon(){el("iconPause").innerHTML=rotPaused?'<path d="M7 5l12 7-12 7z"/>':'<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';el("btnPause").title=rotPaused?"Continuar":"Pausar";}
   function togglePause(){if(!rotPaused){rotPaused=true;rotPausedAt=performance.now();cancelAnimationFrame(rotRAF);}else{rotPaused=false;rotStart+=(performance.now()-rotPausedAt);rotRAF=requestAnimationFrame(loopProg);}setPauseIcon();}
-  function startRotation(){buildList();if(!getVisible().length){showEmpty(true);return;}showEmpty(false);rotPaused=false;setPauseIcon();goTo(0);}
+  function startRotation(){buildList();if(!getVisible().length){showEmpty(true);return;}showEmpty(false);rotPaused=false;setPauseIcon();followSharedSequence();}
   function stopRotation(){clearTimeout(tvTransitionTimer);cancelAnimationFrame(rotRAF);stopCardSS();}
   el("btnPrev").addEventListener("click",prev);el("btnNext").addEventListener("click",next);el("btnPause").addEventListener("click",togglePause);
   /* view / TV */
@@ -6003,7 +6032,7 @@ window.transbordoAccess.then(function startTransbordo(){
   }
   function demoRefresh(){
     demoUpdateUI();
-    if(document.body.dataset.view==="display"){rotIdx=0;stopRotation();buildList();goTo(0);}
+    if(document.body.dataset.view==="display"){rotIdx=0;stopRotation();buildList();followSharedSequence();}
   }
   function demoToggle(){
     demoChanged=true;demoCloudError=false;
@@ -6084,6 +6113,7 @@ window.transbordoAccess.then(function startTransbordo(){
     var current=shownItem&&shownItem.id,items=getVisible();clearTimeout(tvTransitionTimer);buildList();
     if(!items.length){showEmpty(true);return;}
     var index=items.findIndex(function(it){return it.id===current;}),wasEmpty=rotEmpty;
+    if(!rotPaused&&!previewTvTimer){followSharedSequence();return;}
     if(index<0||wasEmpty){goTo(Math.min(rotIdx,items.length-1));return;}
     showEmpty(false);rotIdx=index;renderItem(items[index]);startCardSS(items[index]);el("tvDetail").style.opacity="1";
     el("d-idx").textContent=(index+1)+" / "+items.length;el("d-seq").textContent=String(items[index].pcpSeq||index+1);highlightList(index);
@@ -6142,7 +6172,7 @@ window.transbordoAccess.then(function startTransbordo(){
       if(pcpDraftPending||(pcpPlan&&pcpPlan.cloudPending)){pcpScheduleCloud();return;}
       if(!pcpPlan||!remote.revision||pcpPlan.revision!==remote.revision)pcpApplySharedPlan(remote);
       else pcpLocalStatus();
-    },function(){el("pcpDraftStatus").textContent="PCP salvo neste navegador · conexão da TV indisponível";});
+    },function(){pcpCloudInitialDone=false;el("pcpDraftStatus").textContent="PCP salvo neste navegador · conexão da TV indisponível";});
     window.addEventListener("online",pcpScheduleCloud);
   }
 

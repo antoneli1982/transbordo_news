@@ -1648,7 +1648,28 @@ html[data-theme="dark"] #pgPCP #pcpRows>.pcp-row:nth-child(even){background:#243
 html[data-theme="dark"] #pgPCP #pcpRows>.pcp-row.pcp-priority{border-inline-start-color:#ff8279}
 #pgPCP .pcp-row td{position:static;display:block;min-width:0;padding:0;text-align:left;border:0}
 #pgPCP td.pcp-row-no{grid-area:ord}
-#pgPCP .pcp-code-cell{grid-area:code}
+/* Siga o foco sem deslocar os campos nem cobrir os avisos de pendência. */
+#pgPCP{--pcp-focus:#1659bd;--pcp-focus-bg:#e5efff;--pcp-focus-text:#123f81}
+html[data-theme="dark"] #pgPCP{--pcp-focus:#8ec0ff;--pcp-focus-bg:#203b60;--pcp-focus-text:#dcecff}
+#pgPCP .pcp-row:focus-within{outline:2px solid var(--pcp-focus);outline-offset:2px}
+#pgPCP :is(.pcp-meta>div,.pcp-code-cell,.pcp-row-no,.pcp-desc-cell,.pcp-qty-cell>div,.pcp-post-count,.pcp-station>div:not(.pcp-person-slots),.pcp-person-field,.pcp-calculator):focus-within{
+  background-color:var(--pcp-focus-bg);border-radius:7px;box-shadow:0 0 0 4px var(--pcp-focus-bg)
+}
+#pgPCP :is(input,select):focus,#pgPCP .pcp-calculator :focus-visible{
+  outline:3px solid var(--pcp-focus);outline-offset:2px
+}
+#pgPCP :is(.pcp-meta>div,.pcp-cell,.pcp-qty-cell>div,.pcp-post-count,.pcp-station>div,.pcp-person-field):focus-within>label{
+  color:var(--pcp-focus-text);font-weight:700
+}
+#pgPCP td.pcp-code-cell{grid-area:code;position:relative}
+.pcp-part-results:not([hidden]){position:absolute;z-index:15;inset-inline-start:0;width:max(100%,min(25rem,85vw));max-height:min(18rem,42vh);overflow:auto;overscroll-behavior:contain;background:var(--card);color:var(--ink);border:1px solid var(--muted);border-radius:8px;box-shadow:0 5px 16px #0003}
+.pcp-part-results [role="option"],.pcp-part-empty{display:block;padding:10px 12px;overflow-wrap:anywhere;font-size:15px;line-height:1.4}
+.pcp-part-results [role="option"]+ [role="option"]{border-top:1px solid var(--line)}
+.pcp-part-results [role="option"]{cursor:pointer}
+.pcp-part-results [role="option"]:is(:hover,[aria-selected="true"]){background:var(--card-2);box-shadow:inset 3px 0 #0877df}
+.pcp-part-results [aria-disabled="true"]{cursor:default;color:var(--muted)}
+.pcp-part-results strong,.pcp-part-results span{display:block}
+@media(max-width:680px){.pcp-part-results:not([hidden]){inset-inline-start:auto;inset-inline-end:0}}
 #pgPCP .pcp-desc-cell{grid-area:descr;padding-bottom:12px;border-bottom:1px solid var(--line)}
 #pgPCP .pcp-desc-cell .pcp-readonly.pcp-desc{display:block;width:100%;max-width:none;height:auto;padding:0;font-size:clamp(26px,2.4vw,38px);font-weight:700;line-height:1.18;white-space:normal;overflow-wrap:anywhere}
 #pgPCP .pcp-meta{background:#dfefe8;border:1px solid #8fb6a7;border-inline-start:5px solid #387d69}
@@ -2270,7 +2291,6 @@ window.transbordoAccess = new Promise(function (unlock) {
           </div>
         </div>
       </footer>
-      <datalist id="pcpCodes"></datalist>
     </section>
 
 
@@ -4710,10 +4730,20 @@ window.transbordoAccess.then(function startTransbordo(){
     window.addEventListener("storage",function(e){if(e.key===PEOPLE_KEY)peopleLoad();});
   }
   /* ===== PCP: usa o mesmo cadastro e a mesma função de tempo do painel ===== */
-  var PCP_KEY="sese_pcp_plan_v1", pcpPlan=null, pcpSaveTimer=null, pcpChanged=false, pcpCatalogSignature="", pcpReady=false;
+  var PCP_KEY="sese_pcp_plan_v1", pcpPlan=null, pcpSaveTimer=null, pcpChanged=false, pcpReady=false;
   function pcpToday(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
   function pcpBlankRow(){return {id:uid(),code:"",itemId:"",sourcePieces:"",postCount:"1",stations:[{boxes:"",workers:"1",people:[]}],simultaneous:false,priority:false};}
   function pcpCode(s){return String(s==null?"":s).trim().replace(/\s+/g," ").toLocaleUpperCase("pt-BR");}
+  function pcpSearchKey(value){return normBusca(value).replace(/[.\s]+/g,"");}
+  function pcpSearchParts(term){
+    var key=pcpSearchKey(term);
+    return state.items.filter(function(item){
+      return !key||pcpSearchKey(item.partCode).includes(key)||pcpSearchKey(item.partName).includes(key);
+    }).sort(function(a,b){
+      return pcpSearchKey(a.partCode).localeCompare(pcpSearchKey(b.partCode),"pt-BR",{numeric:true})||
+        String(a.partName||"").localeCompare(String(b.partName||""),"pt-BR");
+    });
+  }
   function pcpNumber(s){
     s=String(s==null?"":s).trim();
     if(!/^(?:\d+|\d{1,3}(?:\.\d{3})+)(?:,\d+)?$/.test(s))return NaN;
@@ -4735,10 +4765,16 @@ window.transbordoAccess.then(function startTransbordo(){
   }
   function pcpStationCount(row){var v=String(row.postCount);return /^\d+$/.test(v)&&Number(v)>=1&&Number(v)<=99?Number(v):0;}
   function pcpResolve(row){
-    var code=pcpCode(row.code),matches=state.items.filter(function(it){return code&&pcpCode(it.partCode)===code;});
-    var item=matches.length===1?matches[0]:matches.filter(function(it){return it.id===row.itemId;})[0]||null;
+    var code=pcpSearchKey(row.code),matches=state.items.filter(function(it){return code&&pcpSearchKey(it.partCode)===code;});
+    var item=matches.length===1?matches[0]:matches.find(function(it){return it.id===row.itemId;});
+    if(!item&&!row.itemId&&matches.length>1){
+      // Preserve o cadastro de linhas antigas quando a grafia original identifica uma única peça.
+      var original=matches.filter(function(it){return pcpCode(it.partCode)===pcpCode(row.code);});
+      if(original.length===1)item=original[0];
+    }
+    item=item||null;
     var count=pcpStationCount(row),stations=row.stations.slice(0,count||1);
-    var active=!!code||String(row.postCount)!=="1"||stations.some(function(st){return String(st.boxes).trim()!==""||String(st.workers)!=="1";});
+    var active=!!String(row.code||"").trim()||String(row.postCount)!=="1"||stations.some(function(st){return String(st.boxes).trim()!==""||String(st.workers)!=="1";});
     var qty=item?pcpNumber(item.qtyPerBox):NaN,per=item?tbSecs(item.time):0;
     var validTime=item&&/^(?:\d+(?:[,.]\d+)?|\d+:\d{1,2}(?:[,.]\d{1,2})?|\d+:\d{1,2}:\d{1,2}(?:[,.]\d{1,2})?)$/.test(String(item.time||"").trim())&&isFinite(per)&&per>0;
     var codeError="",catalogError="",countError=active&&!count?"Use de 1 a 99 postos.":"";
@@ -5163,10 +5199,105 @@ window.transbordoAccess.then(function startTransbordo(){
     pcpQueueSave();pcpUpdateTotals();if(keepFocus)inp.focus();
     toast("Item movido para o SEQ. "+position+".");
   }
+  function pcpBindPartSearch(input,row,tr){
+    var results=tr.querySelector(".pcp-part-results"),items=[],active=-1,term="";
+    results.id=input.id+"-results";
+    input.setAttribute("aria-controls",results.id);
+
+    function close(){
+      results.hidden=true;
+      input.setAttribute("aria-expanded","false");
+      input.removeAttribute("aria-activedescendant");
+      active=-1;
+    }
+    function show(query){
+      term=query;
+      items=pcpSearchParts(term);
+      active=-1;
+      input.removeAttribute("aria-activedescendant");
+      var options=document.createDocumentFragment();
+      items.forEach(function(item,index){
+        var option=document.createElement("div"),code=document.createElement("strong"),details=document.createElement("span");
+        option.id=results.id+"-"+index;
+        option.dataset.index=String(index);
+        option.setAttribute("role","option");
+        option.setAttribute("aria-selected","false");
+        if(!pcpSearchKey(item.partCode))option.setAttribute("aria-disabled","true");
+        code.textContent=item.partCode||"Sem código";
+        details.textContent=[item.partName,item.posto,(item.dest||{}).name,item.qtyPerBox&&item.qtyPerBox+" pç/caixa",item.obsolete===true?"Obsoleto":""].filter(Boolean).join(" · ");
+        option.append(code,details);
+        options.appendChild(option);
+      });
+      if(!items.length){
+        var empty=document.createElement("div");
+        empty.className="pcp-part-empty";
+        empty.textContent=pcpSearchKey(term)?"Nenhuma peça encontrada.":"Nenhuma peça cadastrada.";
+        options.appendChild(empty);
+      }
+      results.replaceChildren(options);
+      results.scrollTop=0;
+      results.hidden=false;
+      input.setAttribute("aria-expanded","true");
+    }
+    function choose(item){
+      if(!item||!pcpSearchKey(item.partCode))return;
+      row.code=item.partCode;
+      row.itemId=item.id;
+      input.value=row.code;
+      close();
+      pcpUpdateRow(row,tr);
+      pcpUpdateTotals();
+      pcpQueueSave();
+    }
+    input.addEventListener("focus",function(){show("");});
+    input.addEventListener("click",function(){if(results.hidden)show("");});
+    input.addEventListener("input",function(){show(input.value);});
+    input.addEventListener("pcp-catalog-change",function(){show(term);});
+    input.addEventListener("blur",function(){
+      close();
+      var item=pcpResolve(row).item;
+      var code=item?item.partCode:pcpCode(row.code);
+      if(code!==row.code||(item&&row.itemId!==item.id)){
+        row.code=code;
+        if(item)row.itemId=item.id;
+        input.value=code;
+        pcpUpdateRow(row,tr);
+        pcpQueueSave();
+      }
+    });
+    // Mantenha o foco no campo até o clique escolher o cadastro.
+    results.addEventListener("mousedown",function(e){e.preventDefault();});
+    results.addEventListener("click",function(e){
+      var option=e.target.closest('[role="option"]');
+      if(option)choose(items[Number(option.dataset.index)]);
+    });
+    input.addEventListener("keydown",function(e){
+      if(e.isComposing)return;
+      if(e.key==="Escape"&&!results.hidden){e.preventDefault();close();return;}
+      if(e.key==="Enter"&&!results.hidden){
+        var item=active>=0?items[active]:items.length===1?items[0]:pcpResolve(row).item;
+        if(item){e.preventDefault();choose(item);}
+        return;
+      }
+      if(e.key!=="ArrowDown"&&e.key!=="ArrowUp")return;
+      e.preventDefault();
+      if(results.hidden)show("");
+      var step=e.key==="ArrowDown"?1:-1;
+      var next=active<0?(step>0?0:items.length-1):active+step;
+      while(items[next]&&!pcpSearchKey(items[next].partCode))next+=step;
+      if(!items[next])return;
+      if(active>=0)results.children[active].setAttribute("aria-selected","false");
+      active=next;
+      var option=results.children[active];
+      option.setAttribute("aria-selected","true");
+      input.setAttribute("aria-activedescendant",option.id);
+      option.scrollIntoView({block:"nearest"});
+    });
+  }
   function pcpNodeRow(row,index){
     var tr=document.createElement("tr");tr.className="pcp-row";tr.dataset.rowId=row.id;
     tr.innerHTML='<td class="pcp-cell pcp-row-no"><label class="pcp-mobile-label">Ordem</label><input class="pcp-seq-input" type="number" inputmode="numeric" min="1" step="1" required autocomplete="off"><small>Editar ordem</small></td>'+
-      '<td class="pcp-cell pcp-code-cell"><label class="pcp-mobile-label">Código da peça</label><input class="pcp-code-input" data-pcp="code" type="text" list="pcpCodes" autocomplete="off" spellcheck="false" placeholder="Digite o código"><small data-msg="code">Selecione no cadastro</small></td>'+
+      '<td class="pcp-cell pcp-code-cell"><label class="pcp-mobile-label">Código da peça</label><input class="pcp-code-input" data-pcp="code" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" autocomplete="off" spellcheck="false" placeholder="Código ou descrição"><div class="pcp-part-results" role="listbox" aria-label="Peças cadastradas" hidden></div><small data-msg="code">Selecione no cadastro</small></td>'+
       '<td class="pcp-cell pcp-desc-cell"><span class="pcp-mobile-label">Descrição da peça</span><span class="pcp-readonly pcp-desc" data-out="description">—</span><small data-out="base">Preenchida pelo código</small><select data-pcp="itemId" hidden></select></td>'+
       '<td class="pcp-cell pcp-qty-cell"><div><span class="pcp-mobile-label">Peças por caixa</span><span class="pcp-readonly" data-out="qty">—</span><small>Do cadastro</small></div><div><label class="pcp-mobile-label">Peças na embalagem de origem</label><input data-pcp="sourcePieces" type="text" inputmode="numeric" autocomplete="off" placeholder="0"></div><div><span class="pcp-mobile-label">Caixas calculadas</span><output class="pcp-readonly" data-out="sourceBoxes"></output><select class="pcp-source-target" aria-label="Posto de destino das caixas calculadas" hidden></select><button type="button" class="btn btn-ghost pcp-source-send">↓ Usar nas caixas</button></div></td>'+
       '<td class="pcp-cell pcp-stations-cell" colspan="2"><div class="pcp-station-controls"><div class="pcp-post-count"><label>Quantidade de postos</label><input data-pcp="postCount" type="number" inputmode="numeric" min="1" max="99" step="1" required><small data-msg="postCount"></small></div><span class="pcp-simultaneous" aria-live="polite">1 posto</span></div><small class="pcp-mode-hint"></small><div class="pcp-stations-list"></div></td>'+
@@ -5224,8 +5355,10 @@ window.transbordoAccess.then(function startTransbordo(){
       var key=inp.dataset.pcp;inp.value=row[key];inp.id="pcp-"+row.id+"-"+key;
       var label=inp.parentElement.querySelector("label");if(label)label.htmlFor=inp.id;
       var event=key==="itemId"?"change":"input";
-      inp.addEventListener(event,function(){row[key]=inp.value;if(key==="code")row.itemId="";if(key==="postCount"&&pcpStationCount(row)){while(row.stations.length<pcpStationCount(row))row.stations.push({boxes:"",workers:"1",people:[]});pcpRenderStations(row,tr);}pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
-      if(key==="code")inp.addEventListener("blur",function(){row.code=pcpCode(row.code);inp.value=row.code;pcpUpdateRow(row,tr);pcpQueueSave();});
+      inp.addEventListener(event,function(){row[key]=inp.value;if(key==="code")row.itemId="";
+        if(key==="itemId"&&row.itemId){var chosen=pcpResolve(row).item;if(chosen){row.code=chosen.partCode;tr.querySelector(".pcp-code-input").value=row.code;}}
+        if(key==="postCount"&&pcpStationCount(row)){while(row.stations.length<pcpStationCount(row))row.stations.push({boxes:"",workers:"1",people:[]});pcpRenderStations(row,tr);}pcpUpdateRow(row,tr);pcpUpdateTotals();pcpQueueSave();});
+      if(key==="code")pcpBindPartSearch(inp,row,tr);
       if(key==="boxes")inp.addEventListener("blur",function(){row.boxes=row.boxes.trim();inp.value=row.boxes;pcpUpdateRow(row,tr);pcpQueueSave();});
     });
     tr.querySelector(".pcp-remove").addEventListener("click",function(){
@@ -5344,7 +5477,7 @@ window.transbordoAccess.then(function startTransbordo(){
       select.innerHTML="";var prompt=document.createElement("option");prompt.value="";prompt.textContent="Selecione o posto / embalagem";select.appendChild(prompt);
       r.matches.forEach(function(it){var opt=document.createElement("option");opt.value=it.id;opt.textContent=[it.posto,(it.dest||{}).name,(it.qtyPerBox||"?")+" pç/caixa",tbClock(tbSecs(it.time))].filter(Boolean).join(" · ");select.appendChild(opt);});select.dataset.signature=sig;
     }
-    if(r.matches.length>1)select.value=row.itemId;
+    if(r.matches.length>1)select.value=r.item?r.item.id:"";
     out("time",r.valid?tbClock(r.cs/100):"—");out("timeHint",r.valid?(r.count===1?"1 posto":r.count+" postos · "+"maior tempo"):r.active?"Complete os dados":"Aguardando dados");
   }
   function pcpRenderRows(){
@@ -5361,9 +5494,10 @@ window.transbordoAccess.then(function startTransbordo(){
   }
   function pcpRefresh(){
     if(!pcpReady||!pcpPlan)return;
-    var codes={};state.items.forEach(function(it){var c=pcpCode(it.partCode);if(c&&!codes[c])codes[c]=it.partName||"";});
-    var sig=JSON.stringify(codes);if(sig!==pcpCatalogSignature){pcpCatalogSignature=sig;var list=el("pcpCodes");list.innerHTML="";Object.keys(codes).sort().forEach(function(c){var o=document.createElement("option");o.value=c;o.label=codes[c];list.appendChild(o);});}
-    el("pcpCatalogStatus").textContent=Object.keys(codes).length+" códigos disponíveis no cadastro";
+    var total=state.items.length;
+    el("pcpCatalogStatus").textContent=total+(total===1?" peça cadastrada":" peças cadastradas");
+    var openInput=el("pcpRows").querySelector('.pcp-code-input[aria-expanded="true"]');
+    if(openInput)openInput.dispatchEvent(new Event("pcp-catalog-change"));
     pcpPlan.rows.forEach(function(row,index){var tr=el("pcpRows").children[index];if(tr)pcpUpdateRow(row,tr,index);});pcpUpdateTotals();
     if(document.body.dataset.page==="pcp"){var logo=document.querySelector(".ed-top .logo-img");if(logo){logo.src=LOGO_DEFAULT;logo.alt="SESÉ";}}
     peopleRefresh();
@@ -5702,7 +5836,7 @@ window.transbordoAccess.then(function startTransbordo(){
         }else{
           var method=active.method;
           if(!method){
-            var matches=state.items.filter(function(it){return active.catalogId?it.id===active.catalogId:pcpCode(it.partCode)===pcpCode(active.code);});
+            var matches=state.items.filter(function(it){return active.catalogId?it.id===active.catalogId:pcpSearchKey(active.code)&&pcpSearchKey(it.partCode)===pcpSearchKey(active.code);});
             if(matches.length===1)method=execBoxMethod(matches[0],pcpNumber(active.perBox)>0?active.perBox:matches[0].qtyPerBox);
           }
           if(!method){error.textContent="Sem dados MTM para estimar. Informe a contagem real ou cadastre o tempo e as peças por caixa.";return;}

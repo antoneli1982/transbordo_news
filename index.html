@@ -52,6 +52,22 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   const db = initializeFirestore(app,{experimentalForceLongPolling:true});
 
 
+  async function readPanelOverHttps(reference,signal){
+    const path=reference.path.split("/").map(encodeURIComponent).join("/");
+    const url="https://firestore.googleapis.com/v1/projects/"+firebaseConfig.projectId+"/databases/(default)/documents/"+path;
+    const response=await fetch(url,{cache:"no-store",signal});
+    if(!response.ok)throw Error("Firestore HTTP "+response.status);
+    const record=await response.json();
+    function unpack(field){
+      if("mapValue" in field)return fields(field.mapValue.fields);
+      if("arrayValue" in field)return (field.arrayValue.values||[]).map(unpack);
+      if("integerValue" in field)return Number(field.integerValue);
+      return Object.values(field)[0];
+    }
+    function fields(values){return Object.fromEntries(Object.entries(values||{}).map(([key,value])=>[key,unpack(value)]));}
+    const data=fields(record.fields);
+    return {exists:()=>true,data:()=>data,metadata:{fromCache:false,hasPendingWrites:false}};
+  }
   const refreshers=new Set();
   function listenShared(reference,...args){
     const failure=args.pop(),receive=args.pop(),options=args[0]||{};
@@ -71,10 +87,12 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     function refresh(){
       if(closed||reading||!navigator.onLine)return;
       reading=true;const started=generation;
-      const read=reference.type==="document"?getDocFromServer:getDocsFromServer;
-      read(reference).then(snap=>{if(started===generation)deliver(snap);}).catch(error=>{
+      const controller=new AbortController();
+      const timeout=setTimeout(()=>controller.abort(),10000);
+      const request=reference.type==="document"?readPanelOverHttps(reference,controller.signal):getDocsFromServer(reference);
+      request.then(snap=>{if(started===generation)deliver(snap);}).catch(error=>{
         if(!closed){lastSignature=null;if(typeof failure==="function")failure(error);}
-      }).finally(()=>{reading=false;});
+      }).finally(()=>{clearTimeout(timeout);reading=false;});
     }
     function attach(){
       if(closed)return;
@@ -89,9 +107,9 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
     attach();refreshers.add(wake);
     // Verify stalled connections without repeatedly downloading the complete execution history.
     watchdog=setInterval(()=>{
-      if(!document.hidden&&(reference.type==="document"||!lastServer)&&Date.now()-lastServer>120000)refresh();
-    },30000);
-    timer=setTimeout(()=>{if(!lastServer)refresh();},12000);
+      if(!document.hidden&&(reference.type==="document"||!lastServer)&&Date.now()-lastServer>(reference.path==="paineis/pcp"?15000:120000))refresh();
+    },15000);
+    timer=setTimeout(()=>{if(!lastServer)refresh();},3000);
     return ()=>{closed=true;clearTimeout(timer);clearInterval(watchdog);refreshers.delete(wake);if(stop)stop();};
   }
   let lastWake=0;

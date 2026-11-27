@@ -2280,7 +2280,7 @@ window.transbordoAccess = new Promise(function (unlock) {
             <svg class="pcp-btn-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 21h8M12 17v4m-2-13 5 3-5 3V8Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
             <span>Modo Demonstrativo</span><span class="pcp-demo-state" id="pcpDemoState">Desligado</span>
           </button>
-          <p class="pcp-demo-copy"><span id="pcpDemoDescription" role="status">A TV segue as linhas completas do PCP. Ligue para exibir todos os itens cadastrados, independentemente do planejamento.</span><small id="pcpDemoSync" role="status">O planejamento é preservado ao ligar e desligar.</small></p>
+          <p class="pcp-demo-copy"><span id="pcpDemoDescription" role="status">A TV exibe cada peça selecionada no PCP. Ligue para exibir todos os itens cadastrados, independentemente do planejamento.</span><small id="pcpDemoSync" role="status">O planejamento é preservado ao ligar e desligar.</small></p>
           <div class="theme-options" role="group" aria-label="Aparência da tela">
             <button type="button" class="theme-choice" data-theme-choice="light" aria-pressed="false">☀ <span>Tela clara</span></button>
             <button type="button" class="theme-choice" data-theme-choice="dark" aria-pressed="true">☾ <span>Tela escura</span></button>
@@ -2507,7 +2507,7 @@ window.transbordoAccess = new Promise(function (unlock) {
               <textarea data-field="transbordoObs" id="cad-transbordoObs" rows="2" placeholder="Ex.: Posicionar as peças com a etiqueta voltada para cima."></textarea>
             </div>
             <div class="field ded-box">
-              <div class="hint">Planeje caixas e colaboradores na aba PCP. A TV acompanha as linhas completas do planejamento.</div>
+              <div class="hint">Planeje caixas e colaboradores na aba PCP. A TV acompanha as peças assim que são selecionadas.</div>
               <button class="btn btn-ghost btn-sm" type="button" id="btnCadastroPCP" style="margin-top:10px">Abrir PCP · Planejamento</button>
             </div>
           </div>
@@ -4199,7 +4199,7 @@ window.transbordoAccess.then(function startTransbordo(){
     if(flow)flow.classList.toggle("tv-one-card",(hasOrigin?1:0)+(hasDest?1:0)<=1);
     setTvField("d-boxes",it.qtyBoxes,".time-sub");
     (function(){
-      var names=it.pcpRowId&&Array.isArray(it.pcpPeopleNames)?it.pcpPeopleNames.filter(Boolean):[],count=it.pcpRowId?Number(it.workers):nWorkers(it.workers),value=names.length?names.join(" | "):String(count||1),node=el("d-workers");
+      var names=it.pcpRowId&&Array.isArray(it.pcpPeopleNames)?it.pcpPeopleNames.filter(Boolean):[],count=it.pcpRowId?Number(it.workers):nWorkers(it.workers),value=names.length?names.join(" | "):(it.pcpRowId&&!count?"":String(count||1)),node=el("d-workers");
       if(node)node.classList.toggle("is-names",names.length>0);
       var pt=el("d-workers-label-pt"),en=el("d-workers-label-en"),plural=names.length?names.length>1:count>1;
       if(pt)pt.textContent=plural?"Colaboradores":"Colaborador";if(en)en.textContent=plural?"Team members":"Team member";
@@ -4306,7 +4306,7 @@ window.transbordoAccess.then(function startTransbordo(){
   /* rotation */
   var rotIdx=0,rotStart=0,rotRAF=null,rotPaused=false,rotPausedAt=0,rotEmpty=false,tvTransitionTimer=null;
   function interval(){return (state.settings.intervalSec||15)*1000;}
-  function showEmpty(on){rotEmpty=on;if(on){clearTimeout(tvTransitionTimer);stopCardSS();shownItem=null;applyPriorityUI(null);el("progFill").style.width="0%";}var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";el("dMain").appendChild(e);}el("dEmpty").textContent=isDemoMode()?"Nenhum cadastro ativo para exibir no modo demonstrativo.":"Nenhuma peça completa no PCP Planejamento. Preencha código, caixas e colaboradores para exibir na TV.";detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";var _ds0=el("d-seq");if(_ds0)_ds0.textContent="";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
+  function showEmpty(on){rotEmpty=on;if(on){clearTimeout(tvTransitionTimer);stopCardSS();shownItem=null;applyPriorityUI(null);el("progFill").style.width="0%";}var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";el("dMain").appendChild(e);}el("dEmpty").textContent=isDemoMode()?"Nenhum cadastro ativo para exibir no modo demonstrativo.":"Aguardando uma peça no planejamento. Selecione uma peça ativa no PCP para exibi-la aqui.";detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";var _ds0=el("d-seq");if(_ds0)_ds0.textContent="";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
   function sharedPosition(now,duration,count,anchor){
     var elapsed=Math.max(0,now-anchor);
     return {index:Math.floor(elapsed/duration)%count,offset:elapsed%duration};
@@ -4795,7 +4795,7 @@ window.transbordoAccess.then(function startTransbordo(){
   }
   function pcpQueueSave(){pcpChanged=true;pcpDraftPending=true;pcpPlan.cloudPending=true;el("pcpDraftStatus").textContent="Salvando planejamento…";clearTimeout(pcpSaveTimer);pcpSaveTimer=setTimeout(pcpSave,220);}
   function pcpSave(){
-    if(!pcpPlan)return;clearTimeout(pcpSaveTimer);pcpDraftPending=false;pcpPlan.savedAt=Date.now();pcpPlan.revision=uid();pcpPlan.cloudPending=true;pcpPersistDraft();pcpScheduleCloud();
+    if(!pcpPlan)return;clearTimeout(pcpSaveTimer);pcpDraftPending=false;pcpPlan.savedAt=Date.now();pcpPlan.revision=uid();pcpPlan.cloudPending=true;demoUpdateUI();pcpRefreshTV();pcpPersistDraft();pcpScheduleCloud();
   }
   function pcpStationCount(row){var v=String(row.postCount);return /^\d+$/.test(v)&&Number(v)>=1&&Number(v)<=99?Number(v):0;}
   function pcpResolve(row){
@@ -6004,7 +6004,7 @@ window.transbordoAccess.then(function startTransbordo(){
   var DEMO_KEY="sese_tv_demo_v1",demoState=null,demoChanged=false,demoHydrated=false;
   var demoCloudRef=null,demoCloudStarted=false,demoCloudReady=false,demoCloudBusy=false,demoCloudError=false;
   var DEMO_CLIENT="demo-"+uid();
-  function isDemoMode(){return !!(demoState&&demoState.enabled);}
+  function isDemoMode(){return !!(demoState&&demoState.enabled&&(!pcpPlan||!pcpPlan.savedAt||demoState.savedAt>=pcpPlan.savedAt));}
   function demoNormalize(value){
     value=value&&typeof value==="object"?value:{};
     return {enabled:value.enabled===true,savedAt:Number(value.savedAt)||0,revision:String(value.revision||""),cloudPending:value.cloudPending===true};
@@ -6014,7 +6014,7 @@ window.transbordoAccess.then(function startTransbordo(){
     document.body.dataset.demo=String(enabled);
     button.setAttribute("aria-pressed",String(enabled));button.title=enabled?"Desligar e voltar ao PCP normal":"Ligar o modo demonstrativo";
     el("pcpDemoState").textContent=enabled?"Ligado":"Desligado";
-    el("pcpDemoDescription").textContent=enabled?"A TV exibe todos os itens cadastrados e ignora os dados do PCP. Desligue para voltar ao planejamento.":"A TV segue as linhas completas do PCP. Ligue para exibir todos os itens cadastrados, independentemente do planejamento.";
+    el("pcpDemoDescription").textContent=enabled?"A TV exibe todos os itens cadastrados e ignora os dados do PCP. Desligue para voltar ao planejamento.":"A TV exibe cada peça selecionada no PCP. Ligue para exibir todos os itens cadastrados, independentemente do planejamento.";
     el("d-count-label").textContent=enabled?"ITENS CADASTRADOS":"ITENS DO PCP";
     el("d-count-label-en").textContent=enabled?"REGISTERED ITEMS":"PCP ITEMS";
     el("tv-list-label").textContent=enabled?"Todos os cadastrados":"Em transbordo";
@@ -6106,9 +6106,9 @@ window.transbordoAccess.then(function startTransbordo(){
       return Object.assign({},it,{id:"demo-"+it.id,sourceItemId:it.id,pcpSeq:index+1});
     });
     if(!pcpPlan)return [];
-    return pcpPlan.rows.map(pcpResolve).filter(function(r){return r.valid&&r.item.obsolete!==true;}).map(function(r){
+    return pcpPlan.rows.map(pcpResolve).filter(function(r){return r.active&&r.item&&r.item.obsolete!==true;}).map(function(r){
       var named=[],seen={};r.stations.forEach(function(st){(st.station.people||[]).forEach(function(value){var name=peopleNameFromStored(value),key=peopleLower(name);if(name&&!seen[key]){seen[key]=true;named.push(name);}});});
-      return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:pcpFormat(r.boxes),workers:String(r.workers),pcpPeopleNames:named,pcpCs:r.cs,pcpPostCount:r.count,pcpSimultaneous:r.count>1,status:"open",pcpRowId:r.row.id,pcpSeq:pcpPlan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
+      return Object.assign({},r.item,{id:"pcp-"+r.row.id,sourceItemId:r.item.id,qtyBoxes:r.count&&r.stations.every(st=>!st.boxError)?pcpFormat(r.boxes):"",workers:r.count&&r.stations.every(st=>!st.workerError)?String(r.workers):"",pcpPeopleNames:named,pcpCs:r.cs,pcpPostCount:r.count,pcpSimultaneous:r.count>1,status:"open",pcpRowId:r.row.id,pcpSeq:pcpPlan.rows.indexOf(r.row)+1,priority:pcpIsPriority(r.row,r.item)});
     });
   }
   function pcpRefreshTV(){
@@ -6134,7 +6134,7 @@ window.transbordoAccess.then(function startTransbordo(){
   }
   function pcpApplySharedPlan(plan){
     pcpPlan=pcpNormalize(plan);pcpPlan.cloudPending=false;pcpChanged=true;pcpDraftPending=false;clearTimeout(pcpSaveTimer);
-    pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();pcpPersistDraft();
+    demoUpdateUI();pcpMetaIntoInputs();pcpRenderRows();pcpRefresh();pcpPersistDraft();
   }
   function pcpScheduleCloud(){
     clearTimeout(pcpCloudTimer);

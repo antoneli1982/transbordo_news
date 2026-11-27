@@ -3723,62 +3723,38 @@ window.transbordoAccess.then(function startTransbordo(){
   function imageResultDetails(before,after,width,height,optimized){
     return {beforeBytes:before,afterBytes:after,width:width||0,height:height||0,optimized:optimized===true};
   }
-  function fileToDataURL(file,maxDim,cb){
-    var reader=new FileReader();
-    reader.onload=function(){
-      var original=reader.result;
-      var originalBytes=(file&&file.size)||dataURLByteLength(original);
-      var type=String((file&&file.type)||"").toLowerCase();
-      var name=String((file&&file.name)||"").toLowerCase();
-      var untouched=/image\/svg/.test(type)||/\.svg$/.test(name)||/image\/gif/.test(type)||/\.gif$/.test(name);
-      if(untouched){cb(original,imageResultDetails(originalBytes,originalBytes,0,0,false));return;}
-      var img=new Image();
-      img.onload=function(){
-        try{
-          var longest=Math.max(img.width,img.height);
-          var limit=Math.max(IMAGE_MIN_DIMENSION,parseInt(maxDim,10)||1920);
-          if(longest<=limit&&originalBytes<=IMAGE_TARGET_BYTES){
-            cb(original,imageResultDetails(originalBytes,originalBytes,img.width,img.height,false));
-            return;
-          }
-          function encode(dim,quality){
-            var scale=Math.min(1,dim/longest);
-            var width=Math.max(1,Math.round(img.width*scale));
-            var height=Math.max(1,Math.round(img.height*scale));
-            var canvas=document.createElement("canvas");
-            canvas.width=width;canvas.height=height;
-            var context=canvas.getContext("2d");
-            context.imageSmoothingEnabled=true;
-            context.imageSmoothingQuality="high";
-            context.drawImage(img,0,0,width,height);
-            var output=canvas.toDataURL("image/webp",quality);
-            if(/^data:image\/webp/i.test(output))return {source:output,width:width,height:height};
-            var fallback=/image\/(png|webp)/.test(type)?"image/png":"image/jpeg";
-            return {source:canvas.toDataURL(fallback,quality),width:width,height:height};
-          }
-          var dimension=Math.min(limit,longest);
-          var qualities=[0.93,0.90,0.87,0.84];
-          var encoded=null;
-          for(var qIndex=0;qIndex<qualities.length;qIndex++){
-            encoded=encode(dimension,qualities[qIndex]);
-            if(dataURLByteLength(encoded.source)<=IMAGE_TARGET_BYTES)break;
-          }
-          while(dataURLByteLength(encoded.source)>IMAGE_TARGET_BYTES&&dimension>IMAGE_MIN_DIMENSION){
-            dimension=Math.max(IMAGE_MIN_DIMENSION,Math.round(dimension*0.88));
-            encoded=encode(dimension,0.86);
-          }
-          var finalBytes=dataURLByteLength(encoded.source);
-          var optimized=finalBytes<originalBytes||encoded.width<img.width||encoded.height<img.height;
-          cb(encoded.source,imageResultDetails(originalBytes,finalBytes,encoded.width,encoded.height,optimized));
-        }catch(error){
-          cb(original,imageResultDetails(originalBytes,originalBytes,img.width,img.height,false));
-        }
-      };
-      img.onerror=function(){cb(original,imageResultDetails(originalBytes,originalBytes,0,0,false));};
-      img.src=original;
-    };
-    reader.onerror=function(){cb("",imageResultDetails(0,0,0,0,false));};
-    reader.readAsDataURL(file);
+  async function fileToDataURL(file,maxDim,cb){
+    var objectUrl=URL.createObjectURL(file),image=new Image(),bitmap=null,result=null;
+    function readBlob(blob){return new Promise(function(resolve,reject){
+      var reader=new FileReader();reader.onload=function(){resolve(reader.result);};reader.onerror=reject;reader.readAsDataURL(blob);
+    });}
+    try{
+      image.src=objectUrl;
+      try{await image.decode();}catch(error){
+        bitmap=await createImageBitmap(file);image=bitmap;
+      }
+      var width=image.naturalWidth||image.width,height=image.naturalHeight||image.height;
+      if(!width||!height)throw Error("Dimensões inválidas");
+      var longest=Math.max(width,height),limit=maxDim||1920;
+      if(file.size<=IMAGE_TARGET_BYTES&&longest<=limit&&/^image\/(jpeg|png|webp|gif|svg\+xml)$/i.test(file.type)){
+        result=[await readBlob(file),imageResultDetails(file.size,file.size,width,height,false)];
+      }else{
+        var canvas=document.createElement("canvas"),dim=Math.min(longest,limit),blob;
+        do{
+          canvas.width=Math.max(1,Math.round(width*dim/longest));
+          canvas.height=Math.max(1,Math.round(height*dim/longest));
+          var ctx=canvas.getContext("2d");ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality="high";
+          ctx.drawImage(image,0,0,canvas.width,canvas.height);
+          blob=await new Promise(function(resolve){canvas.toBlob(resolve,"image/webp",0.9);});
+          if(!blob||!blob.size)throw Error("Falha na conversão");
+          if(blob.size<=IMAGE_TARGET_BYTES||dim<=IMAGE_MIN_DIMENSION)break;
+          dim=Math.max(IMAGE_MIN_DIMENSION,Math.floor(dim*0.82));
+        }while(true);
+        result=[await readBlob(blob),imageResultDetails(file.size,blob.size,canvas.width,canvas.height,true)];
+      }
+    }catch(error){toast("Não foi possível abrir "+(file.name||"a imagem")+". Tente exportar a foto em JPG ou PNG.");}
+    finally{URL.revokeObjectURL(objectUrl);if(bitmap)bitmap.close();}
+    if(result)cb(result[0],result[1]);
   }
   /* IMAGE OPTIMIZER END */
   /* ===== MULTI-IMAGEM: helpers e handlers ===== */
@@ -3906,7 +3882,7 @@ window.transbordoAccess.then(function startTransbordo(){
       if(url.length>ATT_MAX) toast("MTM enorme (acima de ~4MB) — ficou SÓ neste PC. Reduza o PDF ou cole um link (ex.: Google Drive) no campo de URL.");
       else toast("MTM anexado — vai aparecer nas TVs.");
     };
-    if(/^image\//.test(file.type)){
+    if(!(/^application\/pdf$/i.test(file.type)||/\.pdf$/i.test(file.name))){
       fileToDataURL(file,imageUploadMaxDimension("mtm"),function(u){done(u);});
     }else{
       var r=new FileReader();

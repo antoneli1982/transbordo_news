@@ -37,7 +37,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
       name => import("https://www.gstatic.com/firebasejs/10.13.0/firebase-"+name+".js")
     ));
     const {initializeApp} = appSDK;
-    const {getFirestore,doc,setDoc,onSnapshot,getDoc,collection,query,where,documentId,runTransaction} = firestore;
+    const {initializeFirestore,doc,setDoc,onSnapshot,getDoc,getDocFromServer,getDocsFromServer,collection,query,where,documentId,runTransaction} = firestore;
 
   const firebaseConfig = {
     apiKey: "AIzaSyAo_gNiMOatevfbT5zdhCuizp_yFKTlfCA",
@@ -49,29 +49,66 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
   };
 
   const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
+  const db = initializeFirestore(app,{experimentalForceLongPolling:true});
 
 
+  const refreshers=new Set();
   function listenShared(reference,...args){
-    const failure=args.pop();
-    let stop,timer,closed=false;
+    const failure=args.pop(),receive=args.pop(),options=args[0]||{};
+    let stop,timer,watchdog,closed=false,reading=false,lastServer=0,generation=0,lastSignature=null;
+    function deliver(snap){
+      if(closed)return;
+      if(!snap.metadata.fromCache&&!snap.metadata.hasPendingWrites){
+        lastServer=Date.now();generation++;
+        if(reference.type==="document"){
+          const signature=JSON.stringify(snap.exists()?snap.data():null);
+          if(signature===lastSignature)return;
+          lastSignature=signature;
+        }
+      }
+      receive(snap);
+    }
+    function refresh(){
+      if(closed||reading||!navigator.onLine)return;
+      reading=true;const started=generation;
+      const read=reference.type==="document"?getDocFromServer:getDocsFromServer;
+      read(reference).then(snap=>{if(started===generation)deliver(snap);}).catch(error=>{
+        if(!closed){lastSignature=null;if(typeof failure==="function")failure(error);}
+      }).finally(()=>{reading=false;});
+    }
     function attach(){
       if(closed)return;
-      stop=onSnapshot(reference,...args,error=>{
+      if(stop)stop();
+      stop=onSnapshot(reference,options,deliver,error=>{
+        lastSignature=null;
         if(typeof failure==="function")failure(error);
-        if(!closed)timer=setTimeout(attach,30000);
+        if(!closed){clearTimeout(timer);timer=setTimeout(attach,15000);}
       });
     }
-    attach();
-    return ()=>{closed=true;clearTimeout(timer);if(stop)stop();};
+    function wake(){if(!closed){lastSignature=null;refresh();}}
+    attach();refreshers.add(wake);
+    // Verify stalled connections without repeatedly downloading the complete execution history.
+    watchdog=setInterval(()=>{
+      if(!document.hidden&&(reference.type==="document"||!lastServer)&&Date.now()-lastServer>120000)refresh();
+    },30000);
+    timer=setTimeout(()=>{if(!lastServer)refresh();},12000);
+    return ()=>{closed=true;clearTimeout(timer);clearInterval(watchdog);refreshers.delete(wake);if(stop)stop();};
   }
+  let lastWake=0;
+  function refreshShared(){
+    if(Date.now()-lastWake<3000)return;lastWake=Date.now();
+    refreshers.forEach(refresh=>refresh());
+  }
+  window.addEventListener("online",refreshShared);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshShared();});
   // expõe pra dentro da IIFE principal
-  window.__FB = { db, doc, setDoc, onSnapshot:listenShared, getDoc, collection, query, where, documentId, runTransaction };
+  window.__FB = { db, doc, setDoc, onSnapshot:listenShared, getDoc, getDocFromServer, collection, query, where, documentId, runTransaction, refreshShared };
   import("https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js").then(({getStorage,ref,uploadBytes,getDownloadURL})=>{
     window.__FBS={storage:getStorage(app),ref,uploadBytes,getDownloadURL};
   }).catch(()=>{});
   window.dispatchEvent(new Event("firebase-ready"));
     } catch (e) {
+      window.dispatchEvent(new CustomEvent("firebase-error",{detail:e}));
       if(navigator.onLine)setTimeout(connectSDK,30000);
     } finally { connecting=false; }
   }
@@ -1237,7 +1274,7 @@ body[data-demo="true"] .d-status i{background:#135cc3}
   .ed-nav{grid-column:1/-1}
   .ed-tab{flex:1 0 auto;min-width:max-content;font-size:11px;padding-right:8px;padding-left:8px;gap:5px}
   .ed-tab .tc{display:none}
-  body[data-page="pcp"] #sync-badge{display:none!important}
+  body[data-page="pcp"] #sync-badge{top:auto!important;bottom:8px!important;right:8px!important;max-width:calc(100vw - 16px);font-size:10px!important}
   body[data-page="pcp"] .ed-top{padding:0 16px;gap:0 12px;grid-template-columns:1fr auto}
   body[data-page="pcp"] .ed-top .brand{padding:16px 0;grid-column:1;grid-row:1}
   body[data-page="pcp"] .ed-top .logo{height:25px}
@@ -1985,6 +2022,7 @@ body[data-lay="tv"] .tv-transbordo-note p{font-size:clamp(20px,1.75vw,34px);line
 </style>
 <style>.catalog-item .ei-foot{flex-wrap:wrap}.catalog-item .catalog-delete{color:#a42121;border-color:#c47c7c}html[data-theme="dark"] .catalog-item .catalog-delete{color:#ffb9b9;border-color:#ad7272}</style>
 <style>#d-workers strong{display:block;margin-top:.3em;color:var(--ink);font-size:1em}.time-sub:has(#d-workers){flex-direction:column;align-items:stretch}body #d-workers,body[data-lay] #d-workers.is-names{display:block;max-width:100%;text-align:right}</style>
+<style>.sync-review{border:2px solid #e29435;background:#fff4df;color:#442500;padding:14px;border-radius:12px;margin:12px 0;white-space:normal}.sync-review p{margin:0 0 10px;font-size:14px}.sync-review button{margin:4px;background:#fff!important;color:#442500!important;border-color:#bb7b2e!important}body[data-view="display"] #sync-badge{font-size:12px!important;top:auto!important;bottom:10px!important;right:10px!important}</style>
 </head>
 <body data-view="editor" data-lay="flow" data-page="pcp">
 <main id="accessGate" aria-labelledby="accessTitle">
@@ -3125,7 +3163,7 @@ window.transbordoAccess.then(function startTransbordo(){
     var latestSnapshot=0;
     FB.onSnapshot(FB_REF,{includeMetadataChanges:true}, function(snap){
       if(snap.metadata&&(snap.metadata.fromCache||snap.metadata.hasPendingWrites))return;
-      var snapshotNumber=++latestSnapshot;
+      var snapshotNumber=++latestSnapshot;catalogApplyRevision++;
       FB_READY = true;
 
       // Aplica o estado da nuvem por cima do local: resolve as imagens "fb:att_xxx" ANTES de
@@ -3141,7 +3179,7 @@ window.transbordoAccess.then(function startTransbordo(){
             var keepId = currentId;
             state = newState;
             lastSavedAt = Math.max(lastSavedAt, rTs);
-            lsSet(versionStore("catalog"),serverVersion(data));
+            rememberSyncBase("catalog",data);
             initialSyncDone = true;
             localDirty = false;
             if(keepId && state.items.some(function(i){return i.id===keepId;})) currentId = keepId;
@@ -3182,11 +3220,8 @@ window.transbordoAccess.then(function startTransbordo(){
 
       // Eco da nossa própria escrita: confirma que a nuvem já guardou o que salvamos.
       if(data.updatedBy === CLIENT_ID){
-        lsSet(versionStore("catalog"),serverVersion(data));
-        lastSavedAt = Math.max(lastSavedAt, rTs);
-        initialSyncDone = true;
-        if(rTs>=lastSavedAt)markCatalogPending(false);
-        setSyncStatus(localDirty?"Alterações locais pendentes":"Sincronizado",localDirty?"warn":"ok");
+        initialSyncDone=true;
+        // Only the matching write promise can acknowledge a pending local edit.
         return;
       }
 
@@ -3200,8 +3235,8 @@ window.transbordoAccess.then(function startTransbordo(){
       // Se HÁ edição local pendente, é conflito real => preserva o que está sendo editado aqui
       // e republica. Decidir por "edição pendente" (e não por relógio) deixa a sincronização
       // imune à diferença de horário entre computadores.
-      if(localDirty){
-        setSyncStatus("Alterações locais pendentes", "warn");
+      if(localDirty||saveT){
+        flushCatalog();setSyncStatus("Alterações locais pendentes", "warn");
         try{ saveToFirebase(lastSavedAt); }catch(e){}
         return;
       }
@@ -3291,39 +3326,145 @@ window.transbordoAccess.then(function startTransbordo(){
     });
   }
 
-  // Commit against the server version the operator actually saw. A second
-  // device can change the same document while this device is disconnected.
-  var syncReviews=new Map();
+  /* SYNC_CORE_START: deterministic reconciliation; shared with regression tests. */
+  function syncEqual(a,b){
+    if(a===b)return true;
+    if(!a||!b||typeof a!=="object"||typeof b!=="object"||Array.isArray(a)!==Array.isArray(b))return false;
+    var ak=Object.keys(a).sort(),bk=Object.keys(b).sort();
+    return ak.length===bk.length&&ak.every(function(k,i){return k===bk[i]&&syncEqual(a[k],b[k]);});
+  }
+  function syncMerge(base,local,remote,path,conflicts){
+    if(syncEqual(local,remote))return local;
+    if(syncEqual(local,base))return remote;
+    if(syncEqual(remote,base))return local;
+    if(path.endsWith(".updated"))return local; // descriptive timestamp, not an operational field
+    if(Array.isArray(base)&&Array.isArray(local)&&Array.isArray(remote)){
+      var all=base.concat(local,remote),keyed=all.every(function(v){return v&&typeof v==="object"&&typeof v.id==="string";});
+      if(keyed){
+        var ids=function(list){return list.map(function(v){return v.id;});};
+        var bi=ids(base),li=ids(local),ri=ids(remote);
+        if([bi,li,ri].some(function(v){return new Set(v).size!==v.length;})){conflicts.push(path);return local;}
+        var common=bi.filter(function(id){return li.includes(id)&&ri.includes(id);});
+        var bo=bi.filter(id=>common.includes(id)),lo=li.filter(id=>common.includes(id)),ro=ri.filter(id=>common.includes(id));
+        if(!syncEqual(lo,bo)&&!syncEqual(ro,bo)&&!syncEqual(lo,ro)){conflicts.push(path+".ordem");return local;}
+        var order=(!syncEqual(lo,bo)?li:ri).slice();
+        li.concat(ri,bi).forEach(function(id){if(!order.includes(id))order.push(id);});
+        var bm=new Map(base.map(v=>[v.id,v])),lm=new Map(local.map(v=>[v.id,v])),rm=new Map(remote.map(v=>[v.id,v]));
+        return order.map(function(id){return syncMerge(bm.get(id),lm.get(id),rm.get(id),path+"["+id+"]",conflicts);}).filter(v=>v!==undefined);
+      }
+      // Stations and selected names are atomic: index changes must never move a person to another station.
+    }else if(base&&local&&remote&&[base,local,remote].every(v=>typeof v==="object"&&!Array.isArray(v))){
+      var result={};
+      new Set(Object.keys(base).concat(Object.keys(local),Object.keys(remote))).forEach(function(k){
+        var value=syncMerge(base[k],local[k],remote[k],path+"."+k,conflicts);
+        if(value!==undefined)Object.defineProperty(result,k,{value:value,enumerable:true,writable:true,configurable:true});
+      });
+      return result;
+    }
+    conflicts.push(path);return local;
+  }
+  function syncContent(key,payload){
+    var value=JSON.parse(key==="pcp"?payload.plan:payload.state);
+    if(key==="pcp"){delete value.savedAt;delete value.revision;delete value.cloudPending;}
+    return value;
+  }
+  function syncReconcile(key,base,local,remote){
+    var conflicts=[],left=syncContent(key,local),right=syncContent(key,remote);
+    if(!base){if(!syncEqual(left,right))conflicts.push("versão anterior indisponível");return {payload:local,conflicts:conflicts};}
+    var content=syncMerge(syncContent(key,base),left,right,key,conflicts);
+    if(key==="pcp"){
+      var metadata=JSON.parse(local.plan);
+      content=Object.assign({},content,{savedAt:metadata.savedAt,revision:metadata.revision,cloudPending:false});
+    }
+    var payload=Object.assign({},local);payload[key==="pcp"?"plan":"state"]=JSON.stringify(content);
+    return {payload:payload,conflicts:conflicts};
+  }
+  /* SYNC_CORE_END */
+
+  var syncReviews=new Map(),syncBases={};
   function versionStore(key){return "transbordo-server-version-"+key;}
   function serverVersion(data){return String(data.updatedAt||0)+"|"+String(data.updatedBy||"");}
+  function rememberSyncBase(key,payload){
+    syncBases[key]=clone(payload);lsSet(versionStore(key),serverVersion(payload));
+    lsSet(versionStore(key)+"-base",JSON.stringify(payload));
+  }
+  function readSyncBase(key){
+    if(syncBases[key])return syncBases[key];
+    try{var saved=JSON.parse(lsGet(versionStore(key)+"-base")||"null");
+      if(saved&&serverVersion(saved)===lsGet(versionStore(key)))return syncBases[key]=saved;
+    }catch(e){}return null;
+  }
+  function clearSyncReview(key){var review=syncReviews.get(key);if(review)review.remove();syncReviews.delete(key);}
+  async function backupSyncDraft(key){
+    var value=key==="pcp"?pcpPlan:state;
+    var backup=JSON.stringify({savedAt:Date.now(),type:key,data:value});
+    await idbSet("transbordo-recovery-"+key,backup);
+    // Also export the preserved local version so recovery is available outside this browser.
+    peopleDownload(new Blob([backup],{type:"application/json"}),"transbordo-"+key+"-copia-local-"+Date.now()+".json");
+  }
+  function showSyncReview(key,reference,retry){
+    if(syncReviews.has(key))return;
+    var box=document.createElement("div");box.className="sync-review";box.setAttribute("role","alert");
+    var name=key==="pcp"?"planejamento":"cadastro",message=document.createElement("p");
+    message.textContent="Há alterações diferentes no "+name+" deste computador e na base compartilhada. Sua cópia local está preservada. Escolha qual usar:";box.appendChild(message);
+    function option(label,action){var button=document.createElement("button");button.type="button";button.className="btn btn-ghost btn-sm";button.textContent=label;button.onclick=async function(){
+      button.disabled=true;try{await action();}catch(e){toast("Não foi possível concluir: "+(e.message||"confira a conexão"));}finally{button.disabled=false;}
+    };box.appendChild(button);}
+    option("Receber dados compartilhados",async function(){
+      var snap=await window.__FB.getDocFromServer(reference);
+      if(snap.metadata.fromCache||!snap.exists())throw Error("aguarde a conexão com a base");
+      var data=snap.data();await backupSyncDraft(key);clearSyncReview(key);rememberSyncBase(key,data);
+      if(key==="pcp"){sharedTvPlan=pcpNormalize(JSON.parse(data.plan));pcpApplySharedPlan(sharedTvPlan);}
+      else{clearTimeout(saveT);saveT=null;markCatalogPending(false);applyCommittedCatalog(data);}
+      toast("Dados compartilhados recebidos. A cópia local anterior foi exportada.");
+    });
+    option("Enviar dados deste computador",async function(){
+      if(!window.confirm("Substituir o "+name+" compartilhado pelos dados deste computador? Os outros computadores receberão esta versão."))return;
+      var snap=await window.__FB.getDocFromServer(reference);
+      if(snap.metadata.fromCache)throw Error("aguarde a conexão com a base");
+      await backupSyncDraft(key);
+      if(snap.exists())rememberSyncBase(key,snap.data());
+      clearSyncReview(key);retry();
+    });
+    var status=key==="pcp"?el("pcpDraftStatus"):el("edNowCode");
+    status.parentElement.appendChild(box);syncReviews.set(key,box);
+  }
   async function publishChecked(key,reference,payload,retry){
     if(syncReviews.has(key))throw Error("revisao");
-    var fb=window.__FB,expected=lsGet(versionStore(key)),remoteVersion=null;
+    var fb=window.__FB,expected=lsGet(versionStore(key)),base=readSyncBase(key),committed;
     try{
       await fb.runTransaction(fb.db,async function(tx){
-        var snap=await tx.get(reference);
-        remoteVersion=snap.exists()?serverVersion(snap.data()):null;
-        if(remoteVersion!==expected&&remoteVersion!==serverVersion(payload))throw Error("revisao");
-        tx.set(reference,payload);
+        var snap=await tx.get(reference),remote=snap.exists()?snap.data():null;
+        committed=payload;
+        if(remote){
+          if(base||serverVersion(remote)!==expected){
+            var merged=syncReconcile(key,base,payload,remote);
+            if(merged.conflicts.length)throw Error("revisao");
+            committed=merged.payload;
+          }
+        }else if(base||expected)throw Error("revisao");
+        tx.set(reference,committed);
       });
-      lsSet(versionStore(key),serverVersion(payload));
+      return committed;
     }catch(e){
-      if(e.message==="revisao"&&!syncReviews.has(key)){
-        var btn=document.createElement("button");btn.type="button";btn.className="btn btn-ghost btn-sm";
-        var name=key==="pcp"?"PCP":"cadastro";
-        btn.textContent="Revisar sincronização do "+name;
-        var status=key==="pcp"?el("pcpDraftStatus"):el("edNowCode");
-        status.parentElement.appendChild(btn);syncReviews.set(key,btn);
-        btn.onclick=function(){
-          if(!window.confirm("Outro aparelho alterou o "+name+". Enviar a versão deste aparelho e substituir a versão compartilhada? Cancelar mantém as duas versões separadas."))return;
-          lsSet(versionStore(key),remoteVersion||"");syncReviews.delete(key);btn.remove();retry();
-        };
-      }
+      if(e.message==="revisao")showSyncReview(key,reference,retry);
       throw e;
     }
   }
+  var catalogCloudBusy=false,catalogSaveAgain=false,catalogEditRevision=0,catalogApplyRevision=0;
+  function applyCommittedCatalog(data){
+    var revision=catalogEditRevision,applyRevision=++catalogApplyRevision;
+    hydrateState(normalize(JSON.parse(data.state)),function(remote){
+      if(revision!==catalogEditRevision||localDirty||saveT||applyRevision!==catalogApplyRevision)return;
+      sharedTvCatalog=remote.items;state=mergeKeepLocalAttachments(remote,state);
+      if(!state.items.some(it=>it.id===currentId))currentId=state.items.length?state.items[0].id:null;
+      persistLocal(state,data.updatedAt);reRenderAll();setSyncStatus("Cadastro sincronizado","ok");
+    });
+  }
   function saveToFirebase(ts){
     if(!FB_REF || !window.__FB || !initialSyncDone || !navigator.onLine) return;
+    if(syncReviews.has("catalog"))return;
+    if(catalogCloudBusy){catalogSaveAgain=true;return;}
     clearTimeout(FB_SAVE_T);
     var stamp = (typeof ts==="number"&&ts) ? ts : Date.now();
     FB_SAVE_T = setTimeout(function(){
@@ -3331,6 +3472,7 @@ window.transbordoAccess.then(function startTransbordo(){
       try{ light = dehydrateState(state, pending); }
       catch(err){ console.error("dehydrate:",err); setSyncStatus("Erro ao preparar sync","err"); return; }
       var payload = JSON.stringify(light);
+      var sentRevision=catalogEditRevision,outgoing={state:payload,updatedAt:stamp,updatedBy:CLIENT_ID};
       // com referências, o doc principal é minúsculo; só estouraria com MILHARES de itens.
       if(payload.length > 1000000){
         setSyncStatus("Texto grande demais p/ nuvem", "warn");
@@ -3340,21 +3482,30 @@ window.transbordoAccess.then(function startTransbordo(){
       setSyncStatus(pending.length?("Enviando "+pending.length+" anexo(s)..."):"Salvando...", "warn");
       // 1) sobe cada anexo NOVO (em pedaços se for grande); só marca como "já enviado" se DER CERTO.
       //    2) depois grava o doc principal leve. Assim o painel nunca aponta p/ um anexo pela metade.
+      catalogCloudBusy=true;catalogSaveAgain=false;
       var writes=pending.map(function(p){ return writeAttDoc(p.tok,p.data).then(function(){ hashToToken[p.hash]=p.tok; }); });
       Promise.all(writes).then(function(){
-        return publishChecked("catalog",FB_REF,{state:payload,updatedAt:stamp,updatedBy:CLIENT_ID},()=>saveToFirebase(lastSavedAt));
-      }).then(function(){
-        if(stamp===lastSavedAt){markCatalogPending(false);setSyncStatus("Sincronizado","ok");}
+        return publishChecked("catalog",FB_REF,outgoing,()=>saveToFirebase(lastSavedAt));
+      }).then(function(committed){
+        if(sentRevision===catalogEditRevision&&!saveT){
+          rememberSyncBase("catalog",committed);markCatalogPending(false);
+          if(!syncEqual(syncContent("catalog",outgoing),syncContent("catalog",committed)))applyCommittedCatalog(committed);
+          else setSyncStatus("Cadastro sincronizado","ok");
+        }else{
+          // Keep the sent state as the ancestor. The next transaction reconciles edits made during upload.
+          rememberSyncBase("catalog",outgoing);catalogSaveAgain=true;
+        }
       }).catch(function(e){
         console.error("Erro Firestore:", e);
         if(e.code==="unavailable")setTimeout(()=>{if(localDirty)saveToFirebase(lastSavedAt);},10000);
         if(e.message==="revisao")setSyncStatus("Cadastro local preservado · revisar sincronização","warn");else reportFirebaseError(e);
-      });
+      }).finally(function(){catalogCloudBusy=false;if(catalogSaveAgain&&!syncReviews.has("catalog")){catalogSaveAgain=false;saveToFirebase(lastSavedAt);}});
     }, 700);
   }
   /* ============ /SINCRONIZAÇÃO FIREBASE ============ */
 
   function save(){
+    catalogEditRevision++;
     var ts=Date.now();
     // Edição feita DEPOIS do 1º sync com a nuvem tem prioridade até ser confirmada lá.
     // (Antes do 1º sync não marcamos: seria uma edição em cima do exemplo, que não pode
@@ -6144,7 +6295,7 @@ window.transbordoAccess.then(function startTransbordo(){
   }
   function pcpLocalStatus(){
     if(!pcpPlan)return;
-    el("pcpDraftStatus").textContent=pcpDraftPending?"Salvando planejamento…":pcpPlan.cloudPending?(!navigator.onLine?"PCP salvo neste aparelho · envio pendente":pcpCloudStarted?"PCP salvo neste navegador · sincronizando TV…":"PCP salvo neste navegador · TV local atualizada"):(pcpCloudInitialDone?"PCP sincronizado · TV atualizada":"Planejamento salvo neste navegador");
+    el("pcpDraftStatus").textContent=syncReviews.has("pcp")?"Alterações diferentes entre computadores · escolha uma opção abaixo":pcpDraftPending?"Salvando planejamento…":pcpPlan.cloudPending?(!navigator.onLine?"PCP salvo neste aparelho · envio pendente":pcpCloudStarted?"PCP salvo neste navegador · sincronizando TV…":"PCP salvo neste navegador · TV local atualizada"):(pcpCloudInitialDone?"PCP sincronizado · TV atualizada":"Planejamento salvo neste navegador");
   }
   function pcpPersistDraft(){
     if(!pcpPlan)return;var json=JSON.stringify(pcpPlan),localOK=false;
@@ -6159,6 +6310,7 @@ window.transbordoAccess.then(function startTransbordo(){
   }
   function pcpScheduleCloud(){
     clearTimeout(pcpCloudTimer);
+    if(syncReviews.has("pcp"))return;
     if(!pcpCloudRef||!pcpCloudInitialDone||!pcpHydrated||pcpCloudBusy||!pcpPlan||!pcpPlan.cloudPending)return;
     pcpCloudTimer=setTimeout(pcpPublishPlan,300);
   }
@@ -6168,8 +6320,12 @@ window.transbordoAccess.then(function startTransbordo(){
     if(pcpDraftPending){pcpSave();return;}
     var outgoing=clone(pcpPlan);outgoing.cloudPending=false;var revision=outgoing.revision;
     pcpCloudBusy=true;
-    publishChecked("pcp",pcpCloudRef,{plan:JSON.stringify(outgoing),updatedAt:outgoing.savedAt,updatedBy:PCP_CLIENT},pcpScheduleCloud).then(function(){
-      if(!pcpDraftPending&&pcpPlan.revision===revision){pcpPlan.cloudPending=false;pcpPersistDraft();}
+    publishChecked("pcp",pcpCloudRef,{plan:JSON.stringify(outgoing),updatedAt:outgoing.savedAt,updatedBy:PCP_CLIENT},pcpScheduleCloud).then(function(committed){
+      if(!pcpDraftPending&&pcpPlan.revision===revision){
+        rememberSyncBase("pcp",committed);
+        if(!syncEqual(syncContent("pcp",{plan:JSON.stringify(outgoing)}),syncContent("pcp",committed)))pcpApplySharedPlan(JSON.parse(committed.plan));
+        else{pcpPlan.cloudPending=false;pcpPersistDraft();}
+      }else rememberSyncBase("pcp",{plan:JSON.stringify(outgoing),updatedAt:outgoing.savedAt,updatedBy:PCP_CLIENT});
     }).catch(function(e){
       if(e.code==="unavailable")setTimeout(pcpScheduleCloud,10000);
       el("pcpDraftStatus").textContent=e.message==="revisao"?"PCP local preservado · revisar sincronização":"PCP salvo neste navegador · não foi possível atualizar a TV em outro dispositivo";
@@ -6190,10 +6346,8 @@ window.transbordoAccess.then(function startTransbordo(){
       if(!fromCache&&!snap.metadata.hasPendingWrites){sharedTvPlan=pcpNormalize(remote);pcpRefreshTV();}
       // A cached snapshot may paint the TV, but cannot authorize overwriting the server.
       if(!fromCache)pcpCloudInitialDone=true;
-      if(!fromCache&&!snap.metadata.hasPendingWrites&&(!pcpPlan.cloudPending||data.updatedBy===PCP_CLIENT))lsSet(versionStore("pcp"),serverVersion(data));
-      if(data.updatedBy===PCP_CLIENT){
-        if(!fromCache&&!(snap.metadata&&snap.metadata.hasPendingWrites)&&!pcpDraftPending&&pcpPlan.revision===remote.revision){pcpPlan.cloudPending=false;pcpPersistDraft();}return;
-      }
+      if(!fromCache&&!snap.metadata.hasPendingWrites&&!pcpPlan.cloudPending&&!pcpDraftPending&&!pcpCloudBusy)rememberSyncBase("pcp",data);
+      if(data.updatedBy===PCP_CLIENT)return;
       if(pcpDraftPending||(pcpPlan&&pcpPlan.cloudPending)){pcpScheduleCloud();return;}
       if(!pcpPlan||!remote.revision||pcpPlan.revision!==remote.revision)pcpApplySharedPlan(remote);
       else pcpLocalStatus();
@@ -6452,10 +6606,10 @@ var PCP_PDF_FONTS={"regular":{"name":"BitstreamVeraSans-Roman","data":"AAEAAAARA
     else window.addEventListener("firebase-ready",connectFirebase,{once:true});
   });
   function showOffline(){setSyncStatus(window.transbordoOfflineReady?"Offline · dados neste aparelho":"Sem conexão · dados locais","warn");}
+  window.addEventListener("firebase-error",function(e){setSyncStatus("Conexão indisponível · alterações apenas neste aparelho","err");console.error("Firebase initialization",e.detail);});
   window.addEventListener("offline",showOffline);
   window.addEventListener("offline-shell-ready",function(){
     if(!navigator.onLine)showOffline();
-    else setSyncStatus("Disponível para abrir offline","ok");
   });
   window.addEventListener("offline-shell-error",function(){setSyncStatus("Não foi possível preparar a abertura offline","warn");});
   window.addEventListener("online",function(){if(localDirty&&initialSyncDone)saveToFirebase(lastSavedAt);});

@@ -1905,6 +1905,8 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 #accessPassword::-ms-reveal { display:none; }
 #accessForm button { cursor:pointer; font:inherit; color:inherit; }
 #accessForm button:focus-visible { outline:3px solid white; outline-offset:3px; }
+.pw-entry{position:relative}.pw-entry .pw-input{width:100%;padding-right:48px}
+#pwToggle{position:absolute;right:4px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:42px;height:42px;background:transparent;border:0;color:var(--ink);cursor:pointer}#pwToggle svg{width:22px;height:22px}#pwToggle[aria-pressed="false"] .eye-slash{visibility:hidden}
 #accessToggle { display:grid; place-items:center; width:clamp(44px,5vh,58px); height:44px; padding:0; background:transparent; border:0; }
 #accessToggle .eye-slash { opacity:0; }
 #accessToggle[aria-pressed="true"] .eye-slash { opacity:1; }
@@ -2663,7 +2665,7 @@ window.transbordoAccess = new Promise(function (unlock) {
       </div>
     </div>
     <label class="pw-label" for="pwInput">Senha</label>
-    <input class="pw-input" id="pwInput" type="password" inputmode="numeric" maxlength="6" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="••••••">
+    <div class="pw-entry"><input class="pw-input" id="pwInput" type="password" inputmode="numeric" maxlength="6" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="••••••"><button id="pwToggle" type="button" aria-label="Mostrar senha" aria-pressed="false" aria-controls="pwInput"><svg aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="2.6"/><path class="eye-slash" d="m3 3 18 18"/></svg></button></div>
     <div class="pw-err" id="pwErr" hidden>Senha incorreta. Tente novamente.</div>
     <div class="pw-actions">
       <button class="btn btn-ghost btn-sm" id="pwCancel" data-pw-close>Cancelar</button>
@@ -3440,6 +3442,12 @@ window.transbordoAccess.then(function startTransbordo(){
     info.appendChild(head);info.appendChild(name);info.appendChild(sub);info.appendChild(facts);
     var foot=document.createElement("div");foot.className="ei-foot";
     var edit=document.createElement("button");edit.type="button";edit.className="btn btn-ghost btn-sm catalog-edit";edit.textContent="Editar cadastro";edit.addEventListener("click",function(e){e.stopPropagation();selectItem(it.id);setPage("cadastro");});foot.appendChild(edit);
+    if(!it.obsolete){
+      var duplicate=document.createElement("button");
+      duplicate.type="button";duplicate.className="btn btn-ghost btn-sm";duplicate.textContent="Duplicar";
+      duplicate.addEventListener("click",function(e){e.stopPropagation();createCatalogItem(it);});
+      foot.appendChild(duplicate);
+    }
     var obsolete=document.createElement("button");obsolete.type="button";obsolete.className="btn btn-ghost btn-sm obsolete-toggle";obsolete.textContent=obsoleteActionLabel(it.obsolete===true);obsolete.setAttribute("aria-pressed",String(it.obsolete===true));obsolete.addEventListener("click",function(e){e.stopPropagation();toggleObsolete(it.id);});foot.appendChild(obsolete);
     var del=document.createElement("button");del.type="button";del.className="ei-del";del.title="Excluir cadastro";del.setAttribute("aria-label","Excluir cadastro de "+(it.partCode||it.partName));del.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';del.addEventListener("click",function(e){e.stopPropagation();removeItem(it.id);});
     row.appendChild(info);row.appendChild(thumb);row.appendChild(foot);row.appendChild(del);return row;
@@ -3449,6 +3457,11 @@ window.transbordoAccess.then(function startTransbordo(){
      A senha continua sendo a diária (DDMMAA), mas o formato NÃO é exibido em lugar
      nenhum da tela: o usuário vê apenas "Ação protegida por senha". A digitação é
      mascarada (input type=password), então ninguém lê a senha por cima do ombro. */
+  function setPasswordVisible(show){
+    el("pwInput").type=show?"text":"password";
+    el("pwToggle").setAttribute("aria-pressed",String(show));
+    el("pwToggle").setAttribute("aria-label",show?"Ocultar senha":"Mostrar senha");
+  }
   function dailyDeletePassword(){
     var d=new Date(),p=function(n){return(n<10?"0":"")+n;};
     return p(d.getDate())+p(d.getMonth()+1)+String(d.getFullYear()).slice(-2);
@@ -3459,7 +3472,7 @@ window.transbordoAccess.then(function startTransbordo(){
   function pwClose(){
     var m=el("pwModal");if(!m)return;
     m.hidden=true;m.classList.remove("err");
-    el("pwErr").hidden=true;el("pwInput").value="";
+    el("pwErr").hidden=true;setPasswordVisible(false);el("pwInput").value="";
     _pwOnOk=null;
   }
   function pwConfirm(){
@@ -3484,7 +3497,7 @@ window.transbordoAccess.then(function startTransbordo(){
     el("pwTitle").textContent=title||"Ação protegida por senha";
     el("pwAction").textContent=action?("Confirme para "+action+"."):"";
     m.classList.remove("err");el("pwErr").hidden=true;
-    el("pwInput").value="";
+    setPasswordVisible(false);el("pwInput").value="";
     m.hidden=false;
     setTimeout(function(){try{el("pwInput").focus();}catch(e){}},30);
   }
@@ -3492,6 +3505,7 @@ window.transbordoAccess.then(function startTransbordo(){
     var m=el("pwModal");if(!m)return;
     $all("[data-pw-close]").forEach(function(b){b.addEventListener("click",pwClose);});
     el("pwOk").addEventListener("click",pwConfirm);
+    el("pwToggle").onclick=function(){setPasswordVisible(el("pwInput").type==="password");el("pwInput").focus();};
     el("pwInput").addEventListener("keydown",function(ev){
       if(ev.key==="Enter"){ev.preventDefault();pwConfirm();}
       if(ev.key==="Escape"){ev.preventDefault();pwClose();}
@@ -3505,11 +3519,14 @@ window.transbordoAccess.then(function startTransbordo(){
   })();
   /* monta o cartao de um item; seq>0 desenha o numero da sequencia */
   function selectItem(id){currentId=id;renderEditorList();populateForm();}
-  function addItem(){
+  function addItem(){createCatalogItem(null);}
+  function createCatalogItem(source){
     function openNewItem(){
-      var it=blankItem();
-      it.partName="";
-      it.time="";
+      var it=source?clone(source):blankItem();
+      if(source){
+        it.id=uid();it.partName=(source.partName||"Peça")+" (CÓPIA)";
+        it.status="closed";it.openedAt=null;it.priority=false;it.updated=nowStr();
+      }else{it.partName="";it.time="";}
       state.items.push(upperItem(it));
       currentId=it.id;
       renderEditorList();

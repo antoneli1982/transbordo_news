@@ -1957,10 +1957,14 @@ body[data-lay="tv"] .det-prod>.det-info,body[data-lay="tv"] .det-prod>.det-top-m
 body[data-lay="tv"] .det-seqrow{grid-area:1/1;min-width:0}
 body[data-lay="tv"] .det-name-wrap{min-width:0}
 body[data-lay="tv"] .det-name{font-size:clamp(22px,2.45vw,38px);overflow-wrap:anywhere}
-body[data-lay="tv"] .d-timerctl{grid-area:1/2;justify-self:end}
+
 body[data-lay="tv"] #d-supplierRow{grid-area:2/1}
 body[data-lay="tv"] .det-prod .d-docinfo{grid-area:3/1/4/-1;margin:0}
-body[data-lay="tv"] .det-prod .tv-transbordo-note{grid-area:4/1/5/-1;width:100%;min-width:0}
+body[data-lay="tv"] .det-prod:has(.tv-transbordo-note:not([hidden])){grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+body[data-lay="tv"] .det-prod .tv-transbordo-note{grid-area:1/2/3/3;width:100%;min-width:0;padding:10px 16px}
+body[data-lay="tv"] .tv-transbordo-note strong{font-size:clamp(15px,1.25vw,23px)}
+body[data-lay="tv"] .tv-transbordo-note p{font-size:clamp(20px,1.75vw,34px);line-height:1.2;font-weight:650}
+.pcp-sheet-bar{flex-wrap:wrap}.pcp-tv-interval{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-weight:600}.pcp-tv-interval select{background:var(--card);color:var(--ink);border:1px solid var(--muted);border-radius:6px;padding:8px;font:inherit}
 }
 .multi-thumb.photo-unavailable{display:flex;align-items:center;padding:5px;font-size:11px;overflow-wrap:anywhere}
 </style>
@@ -2274,6 +2278,7 @@ window.transbordoAccess = new Promise(function (unlock) {
         </div>
         <section class="pcp-sheet" aria-label="Linhas do planejamento">
           <div class="pcp-sheet-bar">
+            <div class="pcp-tv-interval"><label for="setTimer">Intervalo entre telas da TV</label><select id="setTimer" data-setting="intervalSec"><option value="10">10 segundos</option><option value="15">15 segundos</option><option value="30">30 segundos</option><option value="45">45 segundos</option><option value="60">60 segundos</option><option value="120">120 segundos</option></select></div>
             <div class="pcp-sheet-title"><svg width="19" height="19" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 9h18M8 9v11" stroke="currentColor" stroke-width="1.6"/></svg>Itens do planejamento</div>
             <span class="pcp-catalog-status" id="pcpCatalogStatus">Cadastro de peças conectado</span>
           </div>
@@ -2501,7 +2506,7 @@ window.transbordoAccess = new Promise(function (unlock) {
           <div class="row3">
             <div class="field"><label for="cad-panelTitle">Título exibido na TV</label><input type="text" data-setting="panelTitle" id="cad-panelTitle" placeholder="Ex.: Transbordo de peças"></div>
             <div class="field"><label for="cad-statusText">Mensagem de status na TV</label><input type="text" data-setting="statusText" id="cad-statusText" placeholder="Ex.: Transbordo em andamento"></div>
-            <div class="field"><label for="setTimer">Intervalo entre telas da TV</label><select id="setTimer" data-setting="intervalSec"><option value="10">10 segundos</option><option value="15">15 segundos</option><option value="30">30 segundos</option><option value="45">45 segundos</option><option value="60">60 segundos</option><option value="120">120 segundos</option></select></div>
+            
           </div>
           <div class="field">
             <label>Logo (substitui o lettering padrão)</label>
@@ -2555,11 +2560,6 @@ window.transbordoAccess = new Promise(function (unlock) {
             <div class="det-line" id="d-supplierRow"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3 7h13l4 5v5a1 1 0 0 1-1 1h-1M3 7v10a1 1 0 0 0 1 1h1m0 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0m6 0a2 2 0 1 0 4 0m-4 0a2 2 0 1 1 4 0M9 18h6" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg><span class="bi det-line-label"><span class="bi-pt"><i class="flag flag-br"></i><span>Fornecedor</span></span><span class="bi-en"><i class="flag flag-us"></i><span>Supplier</span></span></span><span>: <b id="d-supplier"></b></span><span id="d-supplier-en" hidden></span></div>
           </div>
           <div class="det-top-meta">
-            <div class="d-timerctl">
-              <button class="tctl-btn" id="btnTimerDown" title="Menos tempo" aria-label="Menos tempo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-              <span class="d-timer" id="d-timer" title="Tempo até a próxima tela · use − e + para ajustar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 2.8h9M7.5 21.2h9"/><path d="M8 2.8c0 4.6 4 5.6 4 8.9 0-3.3 4-4.3 4-8.9M8 21.2c0-4.6 4-5.6 4-8.9 0 3.3 4 4.3 4 8.9"/><path d="M9.3 4.3h5.4M9.3 19.7h5.4" stroke-width="1.3" opacity=".55"/></svg><span id="d-timerN">15</span>s</span>
-              <button class="tctl-btn" id="btnTimerUp" title="Mais tempo" aria-label="Mais tempo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
-            </div>
             <div class="d-docinfo" id="dDocInfo">
               <span>KSU Classe 10.4</span><i>|</i><span>F-05BR-SCA-234</span><i>|</i><span>Data de emissão / Issue date 20/08/2026</span><i>|</i><span>REV.0</span>
             </div>
@@ -4274,7 +4274,7 @@ window.transbordoAccess.then(function startTransbordo(){
   /* rotation */
   var rotIdx=0,rotStart=0,rotRAF=null,rotPaused=false,rotPausedAt=0,rotEmpty=false,tvTransitionTimer=null;
   function interval(){return (state.settings.intervalSec||15)*1000;}
-  function showEmpty(on){rotEmpty=on;if(on){clearTimeout(tvTransitionTimer);stopCardSS();shownItem=null;applyPriorityUI(null);el("progFill").style.width="0%";}var _dt=el("d-timer");if(_dt)_dt.style.visibility=on?"hidden":"visible";var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";el("dMain").appendChild(e);}el("dEmpty").textContent=isDemoMode()?"Nenhum cadastro ativo para exibir no modo demonstrativo.":"Nenhuma peça completa no PCP Planejamento. Preencha código, caixas e colaboradores para exibir na TV.";detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";var _ds0=el("d-seq");if(_ds0)_ds0.textContent="";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
+  function showEmpty(on){rotEmpty=on;if(on){clearTimeout(tvTransitionTimer);stopCardSS();shownItem=null;applyPriorityUI(null);el("progFill").style.width="0%";}var detail=el("tvDetail");if(on){if(!el("dEmpty")){var e=document.createElement("div");e.id="dEmpty";e.className="d-empty";el("dMain").appendChild(e);}el("dEmpty").textContent=isDemoMode()?"Nenhum cadastro ativo para exibir no modo demonstrativo.":"Nenhuma peça completa no PCP Planejamento. Preencha código, caixas e colaboradores para exibir na TV.";detail.style.display="none";el("tvListBody").innerHTML="";el("d-count").textContent="0";el("d-idx").textContent="0 / 0";var _ds0=el("d-seq");if(_ds0)_ds0.textContent="";cancelAnimationFrame(rotRAF);}else{var ex=el("dEmpty");if(ex)ex.remove();detail.style.display="";}}
   function goTo(i){
     clearTimeout(tvTransitionTimer);
     var items=getVisible();if(!items.length){showEmpty(true);return;}showEmpty(false);
@@ -4287,10 +4287,9 @@ window.transbordoAccess.then(function startTransbordo(){
       renderItem(latest[index]);startCardSS(latest[index]);el("d-idx").textContent=(index+1)+" / "+latest.length;
       var sequence=el("d-seq");if(sequence)sequence.textContent=String(latest[index].pcpSeq||index+1);highlightList(index);detail.style.opacity="1";
     },170);
-    rotStart=performance.now();el("progFill").style.width="0%";updateTimer(interval());cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
+    rotStart=performance.now();el("progFill").style.width="0%";cancelAnimationFrame(rotRAF);if(!rotPaused)rotRAF=requestAnimationFrame(loopProg);
   }
-  function updateTimer(remMs){var n=el("d-timerN");if(!n)return;var s=Math.max(0,Math.ceil(remMs/1000));if(n.textContent!==String(s))n.textContent=String(s);}
-  function loopProg(){if(rotPaused)return;var iv=interval(),elapsed=performance.now()-rotStart;updateTimer(iv-elapsed);if(elapsed>=iv){next();return;}el("progFill").style.width=((elapsed/iv)*100).toFixed(1)+"%";rotRAF=requestAnimationFrame(loopProg);}
+  function loopProg(){if(rotPaused)return;var iv=interval(),elapsed=performance.now()-rotStart;if(elapsed>=iv){next();return;}el("progFill").style.width=((elapsed/iv)*100).toFixed(1)+"%";rotRAF=requestAnimationFrame(loopProg);}
   function next(){if(!getVisible().length){showEmpty(true);return;}goTo(rotIdx+1);}
   function prev(){if(!getVisible().length){showEmpty(true);return;}goTo(rotIdx-1);}
   function setPauseIcon(){el("iconPause").innerHTML=rotPaused?'<path d="M7 5l12 7-12 7z"/>':'<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>';el("btnPause").title=rotPaused?"Continuar":"Pausar";}
@@ -4298,26 +4297,6 @@ window.transbordoAccess.then(function startTransbordo(){
   function startRotation(){buildList();if(!getVisible().length){showEmpty(true);return;}showEmpty(false);rotPaused=false;setPauseIcon();goTo(0);}
   function stopRotation(){clearTimeout(tvTransitionTimer);cancelAnimationFrame(rotRAF);stopCardSS();}
   el("btnPrev").addEventListener("click",prev);el("btnNext").addEventListener("click",next);el("btnPause").addEventListener("click",togglePause);
-  var TIMER_PRESETS=[10,15,30,45,60,120];
-  function applyIntervalSec(sec){
-    sec=parseInt(sec,10)||15;
-    if(TIMER_PRESETS.indexOf(sec)<0){sec=TIMER_PRESETS.reduce(function(a,b){return Math.abs(b-sec)<Math.abs(a-sec)?b:a;});}
-    state.settings.intervalSec=sec;
-    var si=el("setTimer");if(si)si.value=String(sec);
-    rotStart=performance.now();el("progFill").style.width="0%";updateTimer(interval());
-    if(!rotPaused){cancelAnimationFrame(rotRAF);rotRAF=requestAnimationFrame(loopProg);}
-    if(shownItem)startCardSS(shownItem);
-    queueSave();toast("Troca a cada "+sec+"s");
-  }
-  function stepInterval(dir){
-    var cur=parseInt(state.settings.intervalSec,10)||15,i=TIMER_PRESETS.indexOf(cur);
-    if(i<0){cur=TIMER_PRESETS.reduce(function(a,b){return Math.abs(b-cur)<Math.abs(a-cur)?b:a;});i=TIMER_PRESETS.indexOf(cur);}
-    i=Math.max(0,Math.min(TIMER_PRESETS.length-1,i+dir));
-    applyIntervalSec(TIMER_PRESETS[i]);
-  }
-  var _btd=el("btnTimerDown");if(_btd)_btd.addEventListener("click",function(){stepInterval(-1);});
-  var _btu=el("btnTimerUp");if(_btu)_btu.addEventListener("click",function(){stepInterval(1);});
-
   /* view / TV */
   function isFs(){return !!(document.fullscreenElement||document.webkitFullscreenElement);}
   function reqFs(){var d=document.documentElement;try{var result=(d.requestFullscreen||d.webkitRequestFullscreen||function(){}).call(d);if(result&&result.catch)result.catch(function(){});}catch(e){}}

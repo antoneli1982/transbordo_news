@@ -1,5 +1,5 @@
 // Update this version when changing the offline shell.
-const CACHE = "transbordo-shell-20261127-sync-recovery";
+const CACHE = "transbordo-shell-20261128-people-filter";
 const HOME = new URL("index.html", self.registration.scope).href;
 self.addEventListener("install", event => {
   event.waitUntil((async () => {

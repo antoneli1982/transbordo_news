@@ -1447,7 +1447,7 @@ html[data-theme="dark"] .pcp-simultaneous[aria-pressed="true"]{background:#2464d
 /* ===== Cadastro de colaboradores · padrão corporativo ===== */
 .ed-nav .ed-tab[data-page="colaboradores"]{flex:0 0 auto;min-width:max-content}
 body[data-page="colaboradores"] #pgColaboradores{display:block;background:var(--bg);overflow-y:auto;padding:0}
-.people-shell{width:min(1180px,100%);margin:0 auto;padding:34px 32px 72px}
+.people-shell{width:min(1480px,100%);margin:0 auto;padding:34px 32px 72px}
 .people-hero{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:22px}
 .people-eyebrow{font-size:11px;font-weight:750;letter-spacing:.12em;text-transform:uppercase;color:var(--brand);margin-bottom:7px}
 .people-title{margin:0;color:var(--ink);font-size:30px;line-height:1.16;letter-spacing:-.035em;font-weight:730}
@@ -1458,7 +1458,7 @@ body[data-page="colaboradores"] #pgColaboradores{display:block;background:var(--
 .people-stat-ico{display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:var(--brand-50);color:var(--brand-700);flex:0 0 auto}
 .people-stat strong{display:block;font-size:21px;line-height:1.1;color:var(--ink);font-weight:720;font-variant-numeric:tabular-nums}
 .people-stat span{display:block;margin-top:4px;font-size:11.5px;color:var(--muted);line-height:1.35}
-.people-grid{display:grid;grid-template-columns:minmax(320px,.78fr) minmax(0,1.35fr);gap:18px;align-items:start}
+.people-grid{display:grid;grid-template-columns:minmax(280px,.48fr) minmax(0,1.52fr);gap:18px;align-items:start}
 .people-card{background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:var(--sh1);overflow:hidden}
 .people-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 21px 17px;border-bottom:1px solid var(--line)}
 .people-card-kicker{font-size:10.5px;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
@@ -1481,15 +1481,21 @@ body[data-page="colaboradores"] #pgColaboradores{display:block;background:var(--
 .people-toolbar-copy{font-size:11.5px;color:var(--muted);line-height:1.45}
 .people-toolbar-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
 .people-toolbar .btn{min-height:36px;padding:8px 10px;font-size:12px}
+.people-filter{display:flex;align-items:flex-end;gap:12px;padding:16px 17px;border-bottom:1px solid var(--line)}
+.people-filter .people-field{flex:1;min-width:0;margin:0}
+.people-filter .people-field label{font-size:.875rem}
+.people-filter .people-field input{font-size:1rem}
+.people-filter .btn{min-height:44px}
+.people-results{margin:0;padding:12px 17px;color:var(--muted);font-size:.875rem;border-bottom:1px solid var(--line)}
 .people-list{display:flex;flex-direction:column;min-height:120px}
 .people-row{display:grid;grid-template-columns:minmax(0,1fr) 160px auto;gap:14px;align-items:center;padding:14px 17px;border-bottom:1px solid var(--line);transition:background .15s}
 .people-row:last-child{border-bottom:0}
 .people-row:hover{background:var(--card-2)}
 .people-id{display:flex;align-items:center;gap:11px;min-width:0}
 .people-avatar{width:38px;height:38px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;border-radius:10px;background:var(--brand-50);color:var(--brand-700);font-size:12px;font-weight:800;letter-spacing:.02em}
-.people-name{min-width:0;color:var(--ink);font-size:13.5px;font-weight:680;line-height:1.35;overflow-wrap:anywhere}
+.people-name{min-width:0;color:var(--ink);font-size:1rem;font-weight:680;line-height:1.35;overflow-wrap:anywhere}
 .people-meta{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px;color:var(--muted);font-size:10.5px;line-height:1.35}
-.people-chapa{font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:12px;font-weight:650;overflow-wrap:anywhere}
+.people-chapa{font-variant-numeric:tabular-nums;color:var(--ink-2);font-size:.875rem;font-weight:650;overflow-wrap:anywhere}
 .people-chapa small{display:block;margin-top:3px;color:var(--muted);font-size:10px;font-weight:500}
 .people-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 6px;border-radius:6px;background:#eaf6f1;color:#087454;font-size:10px;font-weight:650;white-space:nowrap}
 .people-badge.off{background:#eef2f7;color:#63748b}
@@ -1555,7 +1561,7 @@ html[data-theme="dark"] .people-row:hover{background:#1b2a3f}
 html[data-theme="dark"] .people-avatar,html[data-theme="dark"] .people-stat-ico{background:#203b62;color:#a9c7ff}
 html[data-theme="dark"] .people-badge{background:#183a32;color:#a0edce}
 html[data-theme="dark"] .people-badge.off{background:#25354d;color:#b9c8dd}
-@media(max-width:900px){.people-grid{grid-template-columns:1fr}.people-stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.people-grid{grid-template-columns:1fr}.people-directory{grid-row:1}.people-stats{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:680px){.people-shell{padding:24px 16px 56px}.people-hero{flex-direction:column}.people-hero-actions{width:100%;justify-content:stretch}.people-hero-actions .btn{flex:1 1 140px}.people-back{width:100%}.people-title{font-size:25px}.people-stats{grid-template-columns:1fr}.people-stat{min-height:66px}.people-row{grid-template-columns:minmax(0,1fr) auto;gap:10px}.people-chapa{grid-column:1}.people-row-actions{grid-column:2;grid-row:1/3}.people-toolbar{align-items:flex-start;flex-direction:column}.people-toolbar-actions{width:100%;justify-content:stretch}.people-toolbar-actions .btn{flex:1}.pcp-person-slots:not([hidden]){grid-template-columns:1fr}}
 </style>
 
@@ -2219,12 +2225,17 @@ window.transbordoAccess = new Promise(function (unlock) {
             </div>
           </section>
 
-          <section class="people-card" aria-labelledby="peopleListTitle">
+          <section class="people-card people-directory" aria-labelledby="peopleListTitle">
             <div class="people-card-head"><div><div class="people-card-kicker">Equipe cadastrada</div><h2 id="peopleListTitle">Colaboradores</h2><p class="people-card-sub" id="pcpPeopleStatus">Nenhum colaborador cadastrado.</p></div></div>
             <div class="people-toolbar">
               <div class="people-toolbar-copy">Planilha padrão: coluna A = <b>Chapa VW</b> · coluna B = <b>Matrícula</b> <span style="opacity:.72">(não utilizada)</span> · coluna C = <b>Nome</b>. O cabeçalho pode permanecer na linha 3.<br>Ao importar, a planilha é analisada e você escolhe entre <b>atualizar</b> o cadastro atual ou <b>substituir</b> todos os registros.</div>
               <div class="people-toolbar-actions"><button type="button" class="btn btn-primary btn-sm people-xls" id="pcpImportPeople"><svg class="people-btn-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15V3m0 12-4-4m4 4 4-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Importar Excel</button><button type="button" class="btn btn-outline btn-sm people-xls" id="pcpExportPeople"><svg class="people-btn-ico" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0-12 4 4m-4-4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 15v3.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>Exportar Excel</button><input type="file" id="pcpPeopleFile" accept=".xlsx"></div>
             </div>
+            <div class="people-filter">
+              <div class="people-field"><label for="pcpPeopleSearch">Filtrar por nome ou chapa Volkswagen</label><input id="pcpPeopleSearch" type="search" placeholder="Digite o nome ou a chapa" autocomplete="off" aria-controls="pcpPeopleList" aria-describedby="pcpPeopleResults"></div>
+              <button type="button" class="btn btn-ghost" id="pcpPeopleClearSearch">Limpar filtro</button>
+            </div>
+            <p class="people-results" id="pcpPeopleResults" role="status" aria-live="polite" aria-atomic="true"></p>
             <div class="people-list" id="pcpPeopleList"></div>
             <div class="people-empty" id="pcpPeopleEmpty"><strong>Nenhum colaborador cadastrado</strong>Cadastre nome e chapa Volkswagen para começar a identificar os postos do PCP.</div>
           </section>
@@ -4770,8 +4781,16 @@ window.transbordoAccess.then(function startTransbordo(){
     if(el("pcpPeopleCount"))el("pcpPeopleCount").textContent=String(pcpPeople.length);
     if(el("pcpPeopleWithChapa"))el("pcpPeopleWithChapa").textContent=String(pcpPeople.filter(function(p){return !!p.chapa;}).length);
     if(el("pcpPeopleAssigned"))el("pcpPeopleAssigned").textContent=String(assigned.length);
-    if(!list)return;list.replaceChildren();if(empty)empty.hidden=pcpPeople.length>0;
-    pcpPeople.forEach(function(person){
+    var search=el("pcpPeopleSearch"),term=pcpSearchKey(search?search.value:""),matches=pcpPeople.filter(function(person){return !term||pcpSearchKey(peopleOption(person)).includes(term);});
+    var results=el("pcpPeopleResults");
+    if(results)results.textContent=term?("Mostrando "+matches.length+" de "+pcpPeople.length+" colaboradores."):("Todos os colaboradores: "+pcpPeople.length+". Ordem alfabética.");
+    if(!list)return;list.replaceChildren();
+    if(empty){
+      empty.hidden=matches.length>0;empty.replaceChildren();
+      var title=document.createElement("strong");title.textContent=pcpPeople.length?"Nenhum colaborador encontrado":"Nenhum colaborador cadastrado";
+      empty.appendChild(title);empty.appendChild(document.createTextNode(pcpPeople.length?"Tente outro nome ou chapa, ou limpe o filtro para ver todos.":"Cadastre nome e chapa Volkswagen para começar a identificar os postos do PCP."));
+    }
+    matches.forEach(function(person){
       var row=document.createElement("article");row.className="people-row";
       var ident=document.createElement("div");ident.className="people-id";
       var avatar=document.createElement("span");avatar.className="people-avatar";avatar.textContent=peopleInitials(person.name);avatar.setAttribute("aria-hidden","true");
@@ -4971,8 +4990,9 @@ window.transbordoAccess.then(function startTransbordo(){
     peopleSave();peopleResetForm();el("pcpNewPerson").focus();
   }
   function peopleOpenPage(){
-    if(peopleUnlocked){goToPage("colaboradores");peopleRefresh();setTimeout(function(){el("pcpNewPerson").focus();},30);return;}
-    authorizeDestructive("acessar o cadastro de colaboradores",function(){peopleUnlocked=true;goToPage("colaboradores");peopleRefresh();setTimeout(function(){el("pcpNewPerson").focus();},30);},"Acesso ao cadastro de colaboradores");
+    el("pcpPeopleSearch").value="";
+    if(peopleUnlocked){goToPage("colaboradores");peopleRefresh();setTimeout(function(){el("pcpPeopleSearch").focus({preventScroll:true});},30);return;}
+    authorizeDestructive("acessar o cadastro de colaboradores",function(){peopleUnlocked=true;goToPage("colaboradores");peopleRefresh();setTimeout(function(){el("pcpPeopleSearch").focus({preventScroll:true});},30);},"Acesso ao cadastro de colaboradores");
   }
   function peopleBoot(){
     peopleLoad();peopleLast=clone(pcpPeople);
@@ -4981,6 +5001,8 @@ window.transbordoAccess.then(function startTransbordo(){
     lsSet(peopleQueueKey,JSON.stringify(peoplePending));
     peopleConnect();window.addEventListener("firebase-ready",peopleConnect,{once:true});
     window.addEventListener("online",peopleFlush);
+    el("pcpPeopleSearch").addEventListener("input",peopleRefresh);
+    el("pcpPeopleClearSearch").onclick=function(){el("pcpPeopleSearch").value="";peopleRefresh();el("pcpPeopleSearch").focus();};
     el("pcpClosePeople").onclick=function(){setPage("pcp");};el("pcpAddPerson").onclick=peopleSubmit;el("pcpCancelPersonEdit").onclick=peopleResetForm;
     ["pcpNewPerson","pcpNewChapa"].forEach(function(id){el(id).addEventListener("keydown",function(e){if(e.key==="Enter"){e.preventDefault();peopleSubmit();}});});
     el("pcpNewChapa").addEventListener("input",function(){var pos=this.selectionStart,v=peopleChapa(this.value);if(v!==this.value){this.value=v;try{this.setSelectionRange(pos,pos);}catch(e){}}});
